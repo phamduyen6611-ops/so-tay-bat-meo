@@ -4,13 +4,15 @@ The Supabase project is `so-tay-bat-meo` (`sxeslpgevuzabvetfijl`). Its `cats` an
 
 In shared mode, anyone can read the cat map, but only accounts listed in `public.cat_editors` can add, edit, or delete records. The browser UI is not the security boundary; the database policies enforce access.
 
-## Finish deployment
+## Deployment status
 
-1. Deploy `index.html` to a static HTTPS host. Supabase Auth invitation links need a stable web URL; the local `file://` URL is not suitable for inviting collaborators.
-2. In Supabase **Authentication → URL Configuration**, set the deployed app URL as the Site URL and add it to the Redirect URLs list.
-3. In Supabase **Authentication → Providers → Email**, disable public sign-ups so only invitations can create accounts.
+The app is hosted on GitHub Pages at <https://phamduyen6611-ops.github.io/so-tay-bat-meo/>. This URL is configured as the Supabase Auth Site URL and Redirect URL, and public email sign-ups are disabled.
 
 ## Invite editors
+
+The first editor has been invited and added to `public.cat_editors`. They need to open the invitation email and set a password on the hosted app before signing in.
+
+To invite another editor:
 
 1. In Supabase **Authentication → Users**, invite the person's email.
 2. Copy the invited user's UUID from the Users list.
