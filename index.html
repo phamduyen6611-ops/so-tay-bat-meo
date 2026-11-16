@@ -354,19 +354,27 @@
 
         .cat-popup-header {
             display: grid;
-            gap: 3px;
+            gap: 5px;
+        }
+
+        .cat-popup-title-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 8px;
         }
 
         .cat-popup-title {
             color: #49363a;
-            font-size: 17px;
+            font-size: 19px;
             font-weight: 900;
             line-height: 1.25;
         }
 
         .cat-popup-location {
-            color: #806b6e;
-            font-size: 12px;
+            color: #9a8d8f;
+            font-size: 11px;
+            line-height: 1.35;
         }
 
         .cat-popup-note {
@@ -403,24 +411,36 @@
             text-align: left;
         }
 
-        .cat-status-heading {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-        }
-
-        .cat-status-label {
-            color: #806b6e;
-            font-weight: 700;
-        }
-
         .cat-status-value {
-            padding: 4px 9px;
+            flex: 0 0 auto;
+            padding: 4px 8px;
             border-radius: 999px;
             background: #ffe5eb;
             color: #8d4655;
+            font-size: 10px;
             font-weight: 900;
+            line-height: 1.3;
+        }
+
+        .cat-status-value[data-status="seen"] {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .cat-status-value[data-status="helped"] {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .cat-status-value[data-status="not_found"] {
+            background: #e5e7eb;
+            color: #4b5563;
+        }
+
+        .cat-status-value[data-status="other"] {
+            border: 1px solid #4b5563;
+            background: white;
+            color: #374151;
         }
 
         .cat-status-note {
@@ -430,35 +450,73 @@
         }
 
         .cat-status-updated {
-            margin-top: 5px;
-            color: #8b777a;
-            font-size: 11px;
+            margin-top: 7px;
+            color: #9a8d8f;
+            font-size: 10px;
+            font-style: italic;
         }
 
         .cat-status-actions {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 7px;
+            gap: 6px;
             margin-top: 9px;
         }
 
         .cat-status-actions button {
-            min-height: 38px;
-            padding: 7px 6px;
-            border: 1px solid #f1cbd2;
-            border-radius: 10px;
-            background: white;
+            min-height: 34px;
+            padding: 5px 8px;
+            border: 1px solid transparent;
+            border-radius: 999px;
             color: var(--text-color);
             font: inherit;
-            font-size: 12px;
-            font-weight: 700;
+            font-size: 11px;
+            font-weight: 800;
             cursor: pointer;
         }
 
+        .cat-status-actions button[data-cat-status="seen"] {
+            border-color: #86efac;
+            background: #f0fdf4;
+            color: #166534;
+        }
+
+        .cat-status-actions button[data-cat-status="helped"] {
+            border-color: #93c5fd;
+            background: #eff6ff;
+            color: #1e40af;
+        }
+
+        .cat-status-actions button[data-cat-status="not_found"] {
+            border-color: #d1d5db;
+            background: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .cat-status-actions button[data-cat-status="other"] {
+            border-color: #6b7280;
+            background: white;
+            color: #374151;
+        }
+
         .cat-status-actions button[aria-pressed="true"] {
-            border-color: var(--primary);
-            background: #ffe8ed;
-            font-weight: 800;
+            box-shadow: inset 0 0 0 1px currentColor;
+        }
+
+        .cat-status-actions button[data-cat-status="seen"][aria-pressed="true"] {
+            background: #dcfce7;
+        }
+
+        .cat-status-actions button[data-cat-status="helped"][aria-pressed="true"] {
+            background: #dbeafe;
+        }
+
+        .cat-status-actions button[data-cat-status="not_found"][aria-pressed="true"] {
+            background: #e5e7eb;
+        }
+
+        .cat-status-actions button[data-cat-status="other"][aria-pressed="true"] {
+            background: #f3f4f6;
         }
 
         .cat-status-actions button:disabled {
@@ -507,6 +565,8 @@
 
         .cat-record-actions {
             margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #f1dfe2;
         }
 
         .cat-record-actions button {
@@ -516,8 +576,16 @@
             font-weight: 800;
         }
 
+        .cat-record-actions button[data-cat-action="edit"] {
+            border-color: #d1d5db;
+            background: #f3f4f6;
+            color: #374151;
+        }
+
         .cat-record-actions button[data-cat-action="delete"] {
-            color: #a64b5b;
+            border-color: #fecaca;
+            background: #fef2f2;
+            color: #b91c1c;
         }
 
         .popup-img {
@@ -1270,7 +1338,7 @@
             imageViewerClose.focus();
         }
 
-        function createCatPopupContent(groupCats, showLocation = false) {
+        function createCatPopupContent(groupCats) {
             const content = document.createElement('div');
             content.className = 'cat-popup-list';
             content.setAttribute('role', 'region');
@@ -1280,16 +1348,21 @@
                 entry.className = 'cat-popup-entry';
                 const header = document.createElement('div');
                 header.className = 'cat-popup-header';
+                const titleRow = document.createElement('div');
+                titleRow.className = 'cat-popup-title-row';
                 const title = document.createElement('b');
                 title.className = 'cat-popup-title';
                 title.textContent = cat.name || 'Mèo chưa đặt tên';
-                header.appendChild(title);
-                if (showLocation) {
-                    const location = document.createElement('div');
-                    location.className = 'cat-popup-location';
-                    location.textContent = formatCatLocation(cat);
-                    header.appendChild(location);
-                }
+                const statusValue = document.createElement('span');
+                statusValue.className = 'cat-status-value';
+                statusValue.dataset.status = cat.current_status || 'unknown';
+                statusValue.textContent = getCatStatusLabel(cat.current_status);
+                titleRow.append(title, statusValue);
+                header.appendChild(titleRow);
+                const location = document.createElement('div');
+                location.className = 'cat-popup-location';
+                location.textContent = `📍 ${formatCatLocation(cat).replace(/^Vị trí:\s*/, '')}`;
+                header.appendChild(location);
                 entry.appendChild(header);
 
                 if (cat.image) {
@@ -1326,31 +1399,11 @@
 
                 const status = document.createElement('div');
                 status.className = 'cat-status';
-                const statusHeading = document.createElement('div');
-                statusHeading.className = 'cat-status-heading';
-                const statusLabel = document.createElement('b');
-                statusLabel.className = 'cat-status-label';
-                statusLabel.textContent = 'Tình trạng';
-                const statusValue = document.createElement('span');
-                statusValue.className = 'cat-status-value';
-                statusValue.textContent = getCatStatusLabel(cat.current_status);
-                statusHeading.append(statusLabel, statusValue);
-                status.appendChild(statusHeading);
                 if (cat.current_status === 'other' && cat.status_note) {
                     const statusNote = document.createElement('p');
                     statusNote.className = 'cat-status-note';
                     statusNote.textContent = cat.status_note;
                     status.appendChild(statusNote);
-                }
-                const statusUpdatedAt = cat.status_updated_at ? new Date(cat.status_updated_at) : null;
-                if (statusUpdatedAt && Number.isFinite(statusUpdatedAt.getTime())) {
-                    const updatedTime = document.createElement('div');
-                    updatedTime.className = 'cat-status-updated';
-                    updatedTime.textContent = `Cập nhật ${statusUpdatedAt.toLocaleString('vi-VN', {
-                        dateStyle: 'short',
-                        timeStyle: 'short'
-                    })}`;
-                    status.appendChild(updatedTime);
                 }
                 if (!isCloudConfigured || currentUser) {
                     const statusActions = document.createElement('div');
@@ -1390,6 +1443,16 @@
                     loginNote.className = 'cat-status-login-note';
                     loginNote.textContent = 'Đăng nhập để cập nhật tình trạng.';
                     status.appendChild(loginNote);
+                }
+                const statusUpdatedAt = cat.status_updated_at ? new Date(cat.status_updated_at) : null;
+                if (statusUpdatedAt && Number.isFinite(statusUpdatedAt.getTime())) {
+                    const updatedTime = document.createElement('div');
+                    updatedTime.className = 'cat-status-updated';
+                    updatedTime.textContent = `Cập nhật ${statusUpdatedAt.toLocaleString('vi-VN', {
+                        dateStyle: 'short',
+                        timeStyle: 'short'
+                    })}`;
+                    status.appendChild(updatedTime);
                 }
                 entry.appendChild(status);
 
@@ -1924,7 +1987,7 @@
 
         function openNearbyCatPopup(groups, latlng) {
             const nearbyCats = groups.flatMap(group => group.cats);
-            showCatPopup(createCatPopupContent(nearbyCats, true), latlng, getCatPopupOptions());
+            showCatPopup(createCatPopupContent(nearbyCats), latlng, getCatPopupOptions());
         }
 
         function normalizeSearchText(value) {
