@@ -320,28 +320,138 @@
             box-shadow: none;
         }
 
-        .cat-status {
-            margin-top: 8px;
+        .leaflet-popup-content-wrapper {
+            padding: 0;
+            border-radius: 18px;
+            box-shadow: 0 8px 28px rgba(49, 32, 35, 0.2);
+        }
+
+        .leaflet-popup-content {
+            margin: 12px;
+        }
+
+        .cat-popup-list {
+            display: grid;
+            gap: 10px;
+            width: min(340px, calc(100vw - 88px));
+            max-height: min(65dvh, 520px);
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            padding: 2px;
+            scrollbar-width: thin;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .cat-popup-entry {
+            min-width: 0;
+            box-sizing: border-box;
+            padding: 14px;
+            border: 1px solid #f3e1e4;
+            border-radius: 15px;
+            background: linear-gradient(145deg, #fffafb, #fff4f6);
+            overflow-wrap: anywhere;
+        }
+
+        .cat-popup-header {
+            display: grid;
+            gap: 3px;
+        }
+
+        .cat-popup-title {
+            color: #49363a;
+            font-size: 17px;
+            font-weight: 900;
+            line-height: 1.25;
+        }
+
+        .cat-popup-location {
+            color: #806b6e;
+            font-size: 12px;
+        }
+
+        .cat-popup-note {
+            margin-top: 10px;
+            padding: 9px 10px;
+            border-radius: 10px;
+            background: white;
+            color: #645154;
             font-size: 13px;
+            line-height: 1.45;
+            white-space: pre-wrap;
+        }
+
+        .cat-popup-note-label {
+            display: block;
+            margin-bottom: 2px;
+            color: #806b6e;
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .cat-popup-approximate {
+            margin-top: 6px;
+            color: #806b6e;
+            font-size: 11px;
+        }
+
+        .cat-status {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #f1dfe2;
+            font-size: 12px;
             text-align: left;
+        }
+
+        .cat-status-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .cat-status-label {
+            color: #806b6e;
+            font-weight: 700;
+        }
+
+        .cat-status-value {
+            padding: 4px 9px;
+            border-radius: 999px;
+            background: #ffe5eb;
+            color: #8d4655;
+            font-weight: 900;
+        }
+
+        .cat-status-note {
+            margin: 7px 0 0;
+            line-height: 1.4;
+            white-space: pre-wrap;
+        }
+
+        .cat-status-updated {
+            margin-top: 5px;
+            color: #8b777a;
+            font-size: 11px;
         }
 
         .cat-status-actions {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 5px;
-            margin-top: 6px;
+            gap: 7px;
+            margin-top: 9px;
         }
 
         .cat-status-actions button {
-            min-height: 40px;
-            padding: 5px;
+            min-height: 38px;
+            padding: 7px 6px;
             border: 1px solid #f1cbd2;
-            border-radius: 9px;
+            border-radius: 10px;
             background: white;
             color: var(--text-color);
             font: inherit;
             font-size: 12px;
+            font-weight: 700;
             cursor: pointer;
         }
 
@@ -359,7 +469,7 @@
         .cat-status-other-form {
             display: grid;
             gap: 6px;
-            margin-top: 6px;
+            margin-top: 8px;
         }
 
         .cat-status-other-form[hidden] {
@@ -367,14 +477,25 @@
         }
 
         .cat-status-other-form textarea {
-            min-height: 64px;
+            min-height: 72px;
             padding: 8px;
             border: 1px solid #f1cbd2;
-            border-radius: 9px;
+            border-radius: 10px;
             box-sizing: border-box;
             font: inherit;
-            font-size: 13px;
+            font-size: 14px;
             resize: vertical;
+        }
+
+        .cat-status-other-form button {
+            min-height: 40px;
+            border: 0;
+            border-radius: 10px;
+            background: var(--primary);
+            color: white;
+            font: inherit;
+            font-weight: 900;
+            cursor: pointer;
         }
 
         .cat-status-login-note {
@@ -382,6 +503,32 @@
             margin-top: 5px;
             color: #806b6e;
             font-size: 12px;
+        }
+
+        .cat-record-actions {
+            margin-top: 10px;
+        }
+
+        .cat-record-actions button {
+            min-height: 40px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .cat-record-actions button[data-cat-action="delete"] {
+            color: #a64b5b;
+        }
+
+        .popup-img {
+            display: block;
+            width: 100%;
+            height: 170px;
+            margin-top: 10px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #fff;
+            cursor: zoom-in;
         }
 
         .location-lookup-note {
@@ -609,23 +756,6 @@
                 min-height: 44px;
             }
 
-            .cat-popup-list {
-                width: min(280px, calc(100vw - 150px));
-                gap: 8px;
-                padding: 2px 2px 8px;
-            }
-
-            .cat-popup-entry {
-                flex-basis: min(250px, calc(100vw - 180px));
-                padding: 8px;
-                border-radius: 12px;
-            }
-
-            .popup-img {
-                height: min(150px, 22vh);
-                margin-top: 8px;
-            }
-
             .cat-record-actions {
                 gap: 6px;
                 margin-top: 8px;
@@ -765,44 +895,6 @@
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
         }
 
-        .leaflet-popup-content-wrapper {
-            border-radius: 20px;
-            text-align: center;
-        }
-
-        .cat-popup-list {
-            display: flex;
-            gap: 10px;
-            width: min(460px, calc(100vw - 80px));
-            overflow-x: auto;
-            padding: 4px 2px 10px;
-            scroll-snap-type: x mandatory;
-            scrollbar-width: thin;
-            touch-action: pan-x;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .cat-popup-entry {
-            flex: 0 0 min(420px, calc(100vw - 112px));
-            box-sizing: border-box;
-            padding: 10px;
-            border-radius: 14px;
-            background: #fff7f8;
-            overflow-wrap: anywhere;
-            scroll-snap-align: start;
-        }
-
-        .popup-img {
-            display: block;
-            width: 100%;
-            height: 112px;
-            border-radius: 10px;
-            margin-top: 10px;
-            object-fit: contain;
-            background: white;
-            cursor: zoom-in;
-        }
-
         .image-viewer {
             display: none;
             position: fixed;
@@ -842,20 +934,16 @@
 
         @media (max-width: 600px) {
             .cat-popup-list {
-                width: min(260px, calc(100vw - 150px));
-                gap: 8px;
-                padding: 2px 2px 8px;
+                width: min(310px, calc(100vw - 76px));
+                max-height: min(68dvh, 560px);
             }
 
             .cat-popup-entry {
-                flex-basis: min(230px, calc(100vw - 180px));
-                padding: 8px;
-                border-radius: 12px;
+                padding: 12px;
             }
 
             .popup-img {
-                height: min(84px, 12vh);
-                margin-top: 8px;
+                height: min(190px, 26vh);
             }
 
             .cat-record-actions {
@@ -1186,44 +1274,79 @@
             const content = document.createElement('div');
             content.className = 'cat-popup-list';
             content.setAttribute('role', 'region');
-            content.setAttribute('aria-label', 'Ảnh và ghi chú mèo; vuốt ngang để xem thêm');
+            content.setAttribute('aria-label', 'Thông tin mèo trên bản đồ');
             groupCats.forEach(cat => {
                 const entry = document.createElement('div');
                 entry.className = 'cat-popup-entry';
+                const header = document.createElement('div');
+                header.className = 'cat-popup-header';
                 const title = document.createElement('b');
+                title.className = 'cat-popup-title';
                 title.textContent = cat.name || 'Mèo chưa đặt tên';
-                entry.appendChild(title);
+                header.appendChild(title);
                 if (showLocation) {
                     const location = document.createElement('div');
+                    location.className = 'cat-popup-location';
                     location.textContent = formatCatLocation(cat);
-                    entry.appendChild(location);
+                    header.appendChild(location);
                 }
+                entry.appendChild(header);
+
+                if (cat.image) {
+                    const image = document.createElement('img');
+                    image.src = getCatImageUrl(cat.image);
+                    image.className = 'popup-img';
+                    image.alt = `Ảnh mèo ${cat.name || 'chưa đặt tên'}; chạm để xem ảnh lớn`;
+                    image.tabIndex = 0;
+                    image.setAttribute('role', 'button');
+                    image.addEventListener('click', () => openImageViewer(image));
+                    image.addEventListener('keydown', event => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            openImageViewer(image);
+                        }
+                    });
+                    entry.appendChild(image);
+                }
+
                 const note = document.createElement('div');
+                note.className = 'cat-popup-note';
                 const label = document.createElement('b');
+                label.className = 'cat-popup-note-label';
                 label.textContent = 'Ghi chú: ';
                 note.append(label, document.createTextNode(cat.note));
                 entry.appendChild(note);
 
                 if (cat.approximate) {
                     const locationNote = document.createElement('div');
+                    locationNote.className = 'cat-popup-approximate';
                     locationNote.textContent = 'Vị trí ước lượng (tâm bản đồ, không phải GPS).';
                     entry.appendChild(locationNote);
                 }
 
                 const status = document.createElement('div');
                 status.className = 'cat-status';
+                const statusHeading = document.createElement('div');
+                statusHeading.className = 'cat-status-heading';
                 const statusLabel = document.createElement('b');
-                statusLabel.textContent = `Tình trạng: ${getCatStatusLabel(cat.current_status)}`;
-                status.appendChild(statusLabel);
+                statusLabel.className = 'cat-status-label';
+                statusLabel.textContent = 'Tình trạng';
+                const statusValue = document.createElement('span');
+                statusValue.className = 'cat-status-value';
+                statusValue.textContent = getCatStatusLabel(cat.current_status);
+                statusHeading.append(statusLabel, statusValue);
+                status.appendChild(statusHeading);
                 if (cat.current_status === 'other' && cat.status_note) {
-                    const statusNote = document.createElement('div');
+                    const statusNote = document.createElement('p');
+                    statusNote.className = 'cat-status-note';
                     statusNote.textContent = cat.status_note;
                     status.appendChild(statusNote);
                 }
                 const statusUpdatedAt = cat.status_updated_at ? new Date(cat.status_updated_at) : null;
                 if (statusUpdatedAt && Number.isFinite(statusUpdatedAt.getTime())) {
                     const updatedTime = document.createElement('div');
-                    updatedTime.textContent = `Cập nhật: ${statusUpdatedAt.toLocaleString('vi-VN', {
+                    updatedTime.className = 'cat-status-updated';
+                    updatedTime.textContent = `Cập nhật ${statusUpdatedAt.toLocaleString('vi-VN', {
                         dateStyle: 'short',
                         timeStyle: 'short'
                     })}`;
@@ -1270,22 +1393,6 @@
                 }
                 entry.appendChild(status);
 
-                if (cat.image) {
-                    const image = document.createElement('img');
-                    image.src = getCatImageUrl(cat.image);
-                    image.className = 'popup-img';
-                    image.alt = `Ảnh mèo ${cat.name || 'chưa đặt tên'}; chạm để xem ảnh lớn`;
-                    image.tabIndex = 0;
-                    image.setAttribute('role', 'button');
-                    image.addEventListener('click', () => openImageViewer(image));
-                    image.addEventListener('keydown', event => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                            event.preventDefault();
-                            openImageViewer(image);
-                        }
-                    });
-                    entry.appendChild(image);
-                }
                 if (!isCloudConfigured || canManageCat(cat)) {
                     const actions = document.createElement('div');
                     actions.className = 'cat-record-actions';
@@ -1773,30 +1880,29 @@
                 activeCatPopup = null;
             }
             map.closePopup();
+            L.DomEvent.disableScrollPropagation(content);
             activeCatPopup = L.popup(options).setLatLng(latlng).setContent(content);
             activeCatPopup.openOn(map);
         }
 
+        function getCatPopupOptions() {
+            return {
+                minWidth: Math.min(280, window.innerWidth - 64),
+                maxWidth: Math.max(200, Math.min(380, window.innerWidth - 48))
+            };
+        }
+
         function openSingleCatPopup(cat) {
-            showCatPopup(createCatPopupContent([cat]), [cat.lat, cat.lng], {
-                minWidth: Math.min(180, window.innerWidth - 130),
-                maxWidth: Math.max(160, window.innerWidth - 130)
-            });
+            showCatPopup(createCatPopupContent([cat]), [cat.lat, cat.lng], getCatPopupOptions());
         }
 
         function openCatGroupPopup(group) {
-            showCatPopup(createCatPopupContent(group.cats), group.marker.getLatLng(), {
-                minWidth: Math.min(180, window.innerWidth - 130),
-                maxWidth: Math.max(160, window.innerWidth - 130)
-            });
+            showCatPopup(createCatPopupContent(group.cats), group.marker.getLatLng(), getCatPopupOptions());
         }
 
         function openNearbyCatPopup(groups, latlng) {
             const nearbyCats = groups.flatMap(group => group.cats);
-            showCatPopup(createCatPopupContent(nearbyCats, true), latlng, {
-                minWidth: Math.min(180, window.innerWidth - 130),
-                maxWidth: Math.max(160, window.innerWidth - 130)
-            });
+            showCatPopup(createCatPopupContent(nearbyCats, true), latlng, getCatPopupOptions());
         }
 
         function normalizeSearchText(value) {
