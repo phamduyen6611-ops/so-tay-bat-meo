@@ -328,7 +328,7 @@
 
         .cat-status-actions {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 5px;
             margin-top: 6px;
         }
@@ -354,6 +354,27 @@
         .cat-status-actions button:disabled {
             opacity: 0.6;
             cursor: wait;
+        }
+
+        .cat-status-other-form {
+            display: grid;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .cat-status-other-form[hidden] {
+            display: none;
+        }
+
+        .cat-status-other-form textarea {
+            min-height: 64px;
+            padding: 8px;
+            border: 1px solid #f1cbd2;
+            border-radius: 9px;
+            box-sizing: border-box;
+            font: inherit;
+            font-size: 13px;
+            resize: vertical;
         }
 
         .cat-status-login-note {
@@ -1194,6 +1215,11 @@
                 const statusLabel = document.createElement('b');
                 statusLabel.textContent = `Tình trạng: ${getCatStatusLabel(cat.current_status)}`;
                 status.appendChild(statusLabel);
+                if (cat.current_status === 'other' && cat.status_note) {
+                    const statusNote = document.createElement('div');
+                    statusNote.textContent = cat.status_note;
+                    status.appendChild(statusNote);
+                }
                 const statusUpdatedAt = cat.status_updated_at ? new Date(cat.status_updated_at) : null;
                 if (statusUpdatedAt && Number.isFinite(statusUpdatedAt.getTime())) {
                     const updatedTime = document.createElement('div');
@@ -1209,7 +1235,8 @@
                     [
                         ['seen', 'Vẫn thấy'],
                         ['helped', 'Đã được giúp'],
-                        ['not_found', 'Không còn ở đây']
+                        ['not_found', 'Không còn ở đây'],
+                        ['other', 'Khác']
                     ].forEach(([value, labelText]) => {
                         const button = document.createElement('button');
                         button.type = 'button';
@@ -1220,6 +1247,21 @@
                         statusActions.appendChild(button);
                     });
                     status.appendChild(statusActions);
+                    const otherForm = document.createElement('div');
+                    otherForm.className = 'cat-status-other-form';
+                    otherForm.hidden = true;
+                    const otherInput = document.createElement('textarea');
+                    otherInput.maxLength = 200;
+                    otherInput.placeholder = 'Nhập tình trạng khác (tối đa 200 ký tự)';
+                    otherInput.setAttribute('aria-label', 'Nội dung tình trạng khác');
+                    otherInput.dataset.catStatusNote = cat.id;
+                    otherInput.value = cat.current_status === 'other' ? cat.status_note || '' : '';
+                    const saveOtherButton = document.createElement('button');
+                    saveOtherButton.type = 'button';
+                    saveOtherButton.textContent = 'Lưu tình trạng';
+                    saveOtherButton.dataset.catStatusSubmit = cat.id;
+                    otherForm.append(otherInput, saveOtherButton);
+                    status.appendChild(otherForm);
                 } else {
                     const loginNote = document.createElement('small');
                     loginNote.className = 'cat-status-login-note';
@@ -1311,7 +1353,8 @@
                     approximate: Boolean(cat.approximate),
                     current_status: ['seen', 'helped', 'not_found'].includes(cat.current_status)
                         ? cat.current_status
-                        : 'unknown',
+                        : cat.current_status === 'other' ? 'other' : 'unknown',
+                    status_note: typeof cat.status_note === 'string' ? cat.status_note.trim().slice(0, 200) : '',
                     status_updated_at: typeof cat.status_updated_at === 'string' ? cat.status_updated_at : null,
                     created_by: typeof cat.created_by === 'string' ? cat.created_by : null,
                     updated_by: typeof cat.updated_by === 'string' ? cat.updated_by : null,
@@ -1331,6 +1374,7 @@
                 image: row.image || null,
                 approximate: Boolean(row.approximate),
                 current_status: row.current_status || 'unknown',
+                status_note: row.status_note || '',
                 status_updated_at: row.status_updated_at || null,
                 created_by: row.created_by || null,
                 updated_by: row.updated_by || null,
@@ -1348,6 +1392,7 @@
                 seen: 'Vẫn thấy',
                 helped: 'Đã được giúp đỡ',
                 not_found: 'Không còn ở đây',
+                other: 'Khác',
                 unknown: 'Chưa cập nhật'
             })[status] || 'Chưa cập nhật';
         }
@@ -1453,6 +1498,7 @@
                 image: cat.image,
                 approximate: cat.approximate,
                 current_status: cat.current_status || 'unknown',
+                status_note: cat.status_note || '',
                 status_updated_at: cat.status_updated_at || null,
                 created_by: cat.created_by || currentUser?.id || null,
                 updated_by: currentUser?.id || cat.updated_by || null,
@@ -1464,7 +1510,8 @@
             return first.lat !== second.lat || first.lng !== second.lng || first.name !== second.name ||
                 first.location_name !== second.location_name || first.note !== second.note ||
                 first.image !== second.image || first.approximate !== second.approximate ||
-                first.current_status !== second.current_status || first.status_updated_at !== second.status_updated_at;
+                first.current_status !== second.current_status || first.status_note !== second.status_note ||
+                first.status_updated_at !== second.status_updated_at;
         }
 
         function canManageCat(cat) {
@@ -1590,7 +1637,7 @@
         async function refreshCloudCats() {
             const { data, error } = await supabaseClient
                 .from('cats')
-                .select('id, lat, lng, name, location_name, note, image, approximate, current_status, status_updated_at, created_by, updated_by, updated_at')
+                .select('id, lat, lng, name, location_name, note, image, approximate, current_status, status_note, status_updated_at, created_by, updated_by, updated_at')
                 .order('updated_at', { ascending: false });
             if (error) throw error;
             cats = validateCats(data.map(catFromCloudRow));
@@ -2296,9 +2343,13 @@
             await persistCats(cats.filter(item => item.id !== catId));
         }
 
-        async function updateCatStatus(catId, status) {
-            if (!['seen', 'helped', 'not_found'].includes(status)) {
+        async function updateCatStatus(catId, status, statusNote = '') {
+            if (!['seen', 'helped', 'not_found', 'other'].includes(status)) {
                 throw new Error('Tình trạng mèo không hợp lệ.');
+            }
+            const normalizedNote = status === 'other' ? statusNote.trim() : '';
+            if (status === 'other' && (!normalizedNote || normalizedNote.length > 200)) {
+                throw new Error('Nhập nội dung tình trạng khác, tối đa 200 ký tự.');
             }
             const cat = cats.find(item => item.id === catId);
             if (!cat) throw new Error('Không tìm thấy bản ghi mèo.');
@@ -2307,13 +2358,19 @@
                 if (!currentUser) throw new Error('Hãy đăng nhập để cập nhật tình trạng mèo.');
                 const { error } = await supabaseClient.rpc('report_cat_status', {
                     p_cat_id: catId,
-                    p_status: status
+                    p_status: status,
+                    p_status_note: normalizedNote
                 });
                 if (error) throw error;
                 await refreshCloudCats();
             } else {
                 await persistCats(cats.map(item => item.id === catId
-                    ? { ...item, current_status: status, status_updated_at: statusUpdatedAt }
+                    ? {
+                        ...item,
+                        current_status: status,
+                        status_note: normalizedNote,
+                        status_updated_at: statusUpdatedAt
+                    }
                     : item));
             }
             const updatedCat = cats.find(item => item.id === catId);
@@ -2326,10 +2383,34 @@
             if (statusButton) {
                 event.preventDefault();
                 event.stopPropagation();
-                const statusButtons = [...statusButton.closest('.cat-popup-entry').querySelectorAll('button[data-cat-status]')];
+                const popupEntry = statusButton.closest('.cat-popup-entry');
+                if (statusButton.dataset.catStatus === 'other') {
+                    const otherForm = popupEntry.querySelector('.cat-status-other-form');
+                    otherForm.hidden = false;
+                    otherForm.querySelector('textarea').focus();
+                    return;
+                }
+                const statusButtons = [...popupEntry.querySelectorAll('button[data-cat-status], button[data-cat-status-submit]')];
                 statusButtons.forEach(button => { button.disabled = true; });
                 try {
                     await updateCatStatus(statusButton.dataset.catId, statusButton.dataset.catStatus);
+                } catch (error) {
+                    console.error('Không thể cập nhật tình trạng mèo:', error);
+                    showAppStatus(`Không thể cập nhật tình trạng: ${error.message}`);
+                    statusButtons.forEach(button => { button.disabled = false; });
+                }
+                return;
+            }
+            const statusSubmitButton = event.target.closest('button[data-cat-status-submit]');
+            if (statusSubmitButton) {
+                event.preventDefault();
+                event.stopPropagation();
+                const popupEntry = statusSubmitButton.closest('.cat-popup-entry');
+                const statusButtons = [...popupEntry.querySelectorAll('button[data-cat-status], button[data-cat-status-submit]')];
+                const statusNote = popupEntry.querySelector(`textarea[data-cat-status-note="${statusSubmitButton.dataset.catStatusSubmit}"]`).value;
+                statusButtons.forEach(button => { button.disabled = true; });
+                try {
+                    await updateCatStatus(statusSubmitButton.dataset.catStatusSubmit, 'other', statusNote);
                 } catch (error) {
                     console.error('Không thể cập nhật tình trạng mèo:', error);
                     showAppStatus(`Không thể cập nhật tình trạng: ${error.message}`);
