@@ -857,6 +857,7 @@
             <button type="submit" id="collaborationSignInBtn">Đăng nhập</button>
             <button type="submit" id="collaborationCreateAccountBtn" hidden>Tạo tài khoản</button>
             <button type="button" id="collaborationSignUpBtn">Chưa có tài khoản? Tạo tài khoản</button>
+            <button type="button" id="collaborationResetPasswordBtn">Quên mật khẩu?</button>
             <button type="button" id="collaborationSetPasswordBtn" hidden>Đặt mật khẩu</button>
             <button type="button" id="moderationQueueToggle" hidden>Chờ duyệt (0)</button>
             <div class="moderation-queue" id="moderationQueue" hidden></div>
@@ -1068,6 +1069,7 @@
         const collaborationSignInButton = document.getElementById('collaborationSignInBtn');
         const collaborationCreateAccountButton = document.getElementById('collaborationCreateAccountBtn');
         const collaborationSignUpButton = document.getElementById('collaborationSignUpBtn');
+        const collaborationResetPasswordButton = document.getElementById('collaborationResetPasswordBtn');
         const collaborationSetPasswordButton = document.getElementById('collaborationSetPasswordBtn');
         const moderationQueueToggle = document.getElementById('moderationQueueToggle');
         const moderationQueue = document.getElementById('moderationQueue');
@@ -1304,6 +1306,8 @@
                 collaborationCreateAccountButton.disabled = true;
                 collaborationSignUpButton.disabled = true;
                 collaborationSignUpButton.hidden = true;
+                collaborationResetPasswordButton.disabled = true;
+                collaborationResetPasswordButton.hidden = true;
                 collaborationSetPasswordButton.disabled = true;
                 return;
             }
@@ -1313,6 +1317,7 @@
                 collaborationSignInButton.disabled = true;
                 collaborationCreateAccountButton.disabled = true;
                 collaborationSignUpButton.disabled = true;
+                collaborationResetPasswordButton.disabled = true;
                 collaborationSetPasswordButton.disabled = true;
                 openModalButton.disabled = true;
                 importBackupButton.disabled = true;
@@ -1336,6 +1341,7 @@
             collaborationSignInButton.hidden = Boolean(currentUser) || passwordRecoveryMode || isSignUpMode;
             collaborationCreateAccountButton.hidden = Boolean(currentUser) || passwordRecoveryMode || !isSignUpMode;
             collaborationSignUpButton.hidden = Boolean(currentUser) || passwordRecoveryMode;
+            collaborationResetPasswordButton.hidden = Boolean(currentUser) || passwordRecoveryMode || isSignUpMode;
             collaborationSignUpButton.textContent = isSignUpMode
                 ? 'Đã có tài khoản? Đăng nhập'
                 : 'Chưa có tài khoản? Tạo tài khoản';
@@ -1354,6 +1360,7 @@
             collaborationSignInButton.disabled = false;
             collaborationCreateAccountButton.disabled = false;
             collaborationSignUpButton.disabled = false;
+            collaborationResetPasswordButton.disabled = false;
             collaborationSetPasswordButton.disabled = false;
             openModalButton.disabled = isCloudConfigured ? !supabaseClient || !currentUser : false;
             importBackupButton.disabled = !isSignedIn;
@@ -2196,6 +2203,24 @@
                 ? 'Nhập email và mật khẩu mới để tạo tài khoản.'
                 : 'Nhập email và mật khẩu để đăng nhập.';
             collaborationPassword.focus();
+        };
+        collaborationResetPasswordButton.onclick = async () => {
+            if (!supabaseClient) return;
+            const email = validateCollaborationEmail();
+            if (!email) return;
+            collaborationResetPasswordButton.disabled = true;
+            try {
+                const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}${window.location.pathname}`
+                });
+                if (error) throw error;
+                collaborationMessage.textContent = 'Nếu email này có tài khoản, sẽ có thư đặt lại mật khẩu. Hãy kiểm tra hộp thư đến và thư rác.';
+            } catch (error) {
+                console.error('Không thể gửi email đặt lại mật khẩu:', error);
+                collaborationMessage.textContent = `Không thể gửi email đặt lại mật khẩu: ${error.message}`;
+            } finally {
+                collaborationResetPasswordButton.disabled = false;
+            }
         };
         collaborationSetPasswordButton.onclick = async () => {
             if (!supabaseClient) return;

@@ -12,6 +12,8 @@ The app is hosted on GitHub Pages at <https://phamduyen6611-ops.github.io/so-tay
 
 In Supabase **Authentication → Settings → User Signups**, enable user signups. Email confirmation can remain enabled; new users will need to confirm their email before signing in. The app requires passwords of at least 8 characters.
 
+On the login form, users can choose **Quên mật khẩu?**, enter their email, and follow the recovery link to set a new password in the app. Make sure the GitHub Pages URL is included in Supabase **Authentication → URL Configuration → Redirect URLs** so recovery links can return to the app.
+
 ## Apply database permissions
 
 Run the updated `supabase-setup.sql` in the Supabase SQL Editor. It updates row-level security so authenticated users can create cats and manage only their own records, while the existing administrator retains access to all records. It also keeps the administrator account marked as an admin.
