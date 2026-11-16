@@ -7,6 +7,9 @@ create table if not exists public.cats (
     note text not null default '' check (char_length(note) <= 2000),
     image text,
     approximate boolean not null default false,
+    current_status text not null default 'unknown'
+        check (current_status in ('unknown', 'seen', 'helped', 'not_found')),
+    status_updated_at timestamptz,
     created_by uuid references auth.users(id) on delete set null,
     updated_by uuid references auth.users(id) on delete set null,
     updated_at timestamptz not null default now()
@@ -14,6 +17,10 @@ create table if not exists public.cats (
 
 alter table public.cats
     add column if not exists location_name text not null default '' check (char_length(location_name) <= 120);
+
+alter table public.cats
+    add column if not exists current_status text not null default 'unknown',
+    add column if not exists status_updated_at timestamptz;
 
 do $$
 begin
@@ -35,6 +42,17 @@ begin
     ) then
         alter table public.cats
             add constraint cats_note_length_check check (char_length(note) <= 2000);
+    end if;
+
+    if not exists (
+        select 1
+        from pg_constraint
+        where conrelid = 'public.cats'::regclass
+          and conname = 'cats_current_status_check'
+    ) then
+        alter table public.cats
+            add constraint cats_current_status_check
+            check (current_status in ('unknown', 'seen', 'helped', 'not_found'));
     end if;
 end;
 $$;
@@ -90,6 +108,31 @@ as $$
         where user_id = (select auth.uid())
           and is_admin
     );
+$$;
+
+create or replace function public.report_cat_status(p_cat_id text, p_status text)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+    if (select auth.uid()) is null then
+        raise exception 'Sign in to update a cat status.';
+    end if;
+    if p_status is null or p_status not in ('seen', 'helped', 'not_found') then
+        raise exception 'Invalid cat status.';
+    end if;
+
+    update public.cats
+    set current_status = p_status,
+        status_updated_at = now()
+    where id = p_cat_id;
+
+    if not found then
+        raise exception 'Cat not found.';
+    end if;
+end;
 $$;
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -292,10 +335,12 @@ grant select on public.cat_editors to authenticated;
 grant select, update, delete on public.cat_submissions to authenticated;
 revoke insert on public.cat_submissions from public, anon, authenticated;
 revoke all on function public.is_cat_admin() from public, anon;
+revoke all on function public.report_cat_status(text, text) from public, anon;
 revoke all on function public.approve_cat_submission(text) from public, anon;
 revoke all on function public.reject_cat_submission(text) from public, anon;
 grant execute on function public.is_cat_editor() to authenticated;
 grant execute on function public.is_cat_admin() to authenticated;
+grant execute on function public.report_cat_status(text, text) to authenticated;
 grant execute on function public.approve_cat_submission(text) to authenticated;
 grant execute on function public.reject_cat_submission(text) to authenticated;
 

@@ -320,6 +320,49 @@
             box-shadow: none;
         }
 
+        .cat-status {
+            margin-top: 8px;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .cat-status-actions {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 5px;
+            margin-top: 6px;
+        }
+
+        .cat-status-actions button {
+            min-height: 40px;
+            padding: 5px;
+            border: 1px solid #f1cbd2;
+            border-radius: 9px;
+            background: white;
+            color: var(--text-color);
+            font: inherit;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .cat-status-actions button[aria-pressed="true"] {
+            border-color: var(--primary);
+            background: #ffe8ed;
+            font-weight: 800;
+        }
+
+        .cat-status-actions button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .cat-status-login-note {
+            display: block;
+            margin-top: 5px;
+            color: #806b6e;
+            font-size: 12px;
+        }
+
         .location-lookup-note {
             display: block;
             margin: -8px 0 12px;
@@ -1146,6 +1189,45 @@
                     entry.appendChild(locationNote);
                 }
 
+                const status = document.createElement('div');
+                status.className = 'cat-status';
+                const statusLabel = document.createElement('b');
+                statusLabel.textContent = `Tình trạng: ${getCatStatusLabel(cat.current_status)}`;
+                status.appendChild(statusLabel);
+                const statusUpdatedAt = cat.status_updated_at ? new Date(cat.status_updated_at) : null;
+                if (statusUpdatedAt && Number.isFinite(statusUpdatedAt.getTime())) {
+                    const updatedTime = document.createElement('div');
+                    updatedTime.textContent = `Cập nhật: ${statusUpdatedAt.toLocaleString('vi-VN', {
+                        dateStyle: 'short',
+                        timeStyle: 'short'
+                    })}`;
+                    status.appendChild(updatedTime);
+                }
+                if (!isCloudConfigured || currentUser) {
+                    const statusActions = document.createElement('div');
+                    statusActions.className = 'cat-status-actions';
+                    [
+                        ['seen', 'Vẫn thấy'],
+                        ['helped', 'Đã được giúp'],
+                        ['not_found', 'Không còn ở đây']
+                    ].forEach(([value, labelText]) => {
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.textContent = labelText;
+                        button.dataset.catStatus = value;
+                        button.dataset.catId = cat.id;
+                        button.setAttribute('aria-pressed', String(cat.current_status === value));
+                        statusActions.appendChild(button);
+                    });
+                    status.appendChild(statusActions);
+                } else {
+                    const loginNote = document.createElement('small');
+                    loginNote.className = 'cat-status-login-note';
+                    loginNote.textContent = 'Đăng nhập để cập nhật tình trạng.';
+                    status.appendChild(loginNote);
+                }
+                entry.appendChild(status);
+
                 if (cat.image) {
                     const image = document.createElement('img');
                     image.src = getCatImageUrl(cat.image);
@@ -1227,6 +1309,10 @@
                     note: cat.note,
                     image: cat.image || null,
                     approximate: Boolean(cat.approximate),
+                    current_status: ['seen', 'helped', 'not_found'].includes(cat.current_status)
+                        ? cat.current_status
+                        : 'unknown',
+                    status_updated_at: typeof cat.status_updated_at === 'string' ? cat.status_updated_at : null,
                     created_by: typeof cat.created_by === 'string' ? cat.created_by : null,
                     updated_by: typeof cat.updated_by === 'string' ? cat.updated_by : null,
                     updated_at: typeof cat.updated_at === 'string' ? cat.updated_at : null
@@ -1244,6 +1330,8 @@
                 note: row.note,
                 image: row.image || null,
                 approximate: Boolean(row.approximate),
+                current_status: row.current_status || 'unknown',
+                status_updated_at: row.status_updated_at || null,
                 created_by: row.created_by || null,
                 updated_by: row.updated_by || null,
                 updated_at: row.updated_at || null
@@ -1253,6 +1341,15 @@
         function getCatImageUrl(image) {
             if (!image || image.startsWith('data:') || /^https?:\/\//i.test(image)) return image || '';
             return supabaseClient.storage.from('cat-images').getPublicUrl(image).data.publicUrl;
+        }
+
+        function getCatStatusLabel(status) {
+            return ({
+                seen: 'Vẫn thấy',
+                helped: 'Đã được giúp đỡ',
+                not_found: 'Không còn ở đây',
+                unknown: 'Chưa cập nhật'
+            })[status] || 'Chưa cập nhật';
         }
 
         async function uploadCatImage(image, catId, collection = 'cats') {
@@ -1355,6 +1452,8 @@
                 note: cat.note,
                 image: cat.image,
                 approximate: cat.approximate,
+                current_status: cat.current_status || 'unknown',
+                status_updated_at: cat.status_updated_at || null,
                 created_by: cat.created_by || currentUser?.id || null,
                 updated_by: currentUser?.id || cat.updated_by || null,
                 updated_at: new Date().toISOString()
@@ -1364,7 +1463,8 @@
         function catContentChanged(first, second) {
             return first.lat !== second.lat || first.lng !== second.lng || first.name !== second.name ||
                 first.location_name !== second.location_name || first.note !== second.note ||
-                first.image !== second.image || first.approximate !== second.approximate;
+                first.image !== second.image || first.approximate !== second.approximate ||
+                first.current_status !== second.current_status || first.status_updated_at !== second.status_updated_at;
         }
 
         function canManageCat(cat) {
@@ -1490,7 +1590,7 @@
         async function refreshCloudCats() {
             const { data, error } = await supabaseClient
                 .from('cats')
-                .select('id, lat, lng, name, location_name, note, image, approximate, created_by, updated_by, updated_at')
+                .select('id, lat, lng, name, location_name, note, image, approximate, current_status, status_updated_at, created_by, updated_by, updated_at')
                 .order('updated_at', { ascending: false });
             if (error) throw error;
             cats = validateCats(data.map(catFromCloudRow));
@@ -1996,7 +2096,18 @@
                     locationLookupWarning = 'Không tra cứu được tên vị trí qua OpenStreetMap; mèo vẫn được lưu bằng tọa độ.';
                 }
             }
-            const cat = { id: createCatId(), lat, lng, name, location_name: locationName, note, image: image || null, approximate };
+            const cat = {
+                id: createCatId(),
+                lat,
+                lng,
+                name,
+                location_name: locationName,
+                note,
+                image: image || null,
+                approximate,
+                current_status: 'seen',
+                status_updated_at: new Date().toISOString()
+            };
             if (isCloudConfigured) {
                 await persistCats(cats.concat(cat));
                 showAppStatus(locationLookupWarning || 'Đã thêm mèo lên bản đồ chung.');
@@ -2185,7 +2296,47 @@
             await persistCats(cats.filter(item => item.id !== catId));
         }
 
+        async function updateCatStatus(catId, status) {
+            if (!['seen', 'helped', 'not_found'].includes(status)) {
+                throw new Error('Tình trạng mèo không hợp lệ.');
+            }
+            const cat = cats.find(item => item.id === catId);
+            if (!cat) throw new Error('Không tìm thấy bản ghi mèo.');
+            const statusUpdatedAt = new Date().toISOString();
+            if (isCloudConfigured) {
+                if (!currentUser) throw new Error('Hãy đăng nhập để cập nhật tình trạng mèo.');
+                const { error } = await supabaseClient.rpc('report_cat_status', {
+                    p_cat_id: catId,
+                    p_status: status
+                });
+                if (error) throw error;
+                await refreshCloudCats();
+            } else {
+                await persistCats(cats.map(item => item.id === catId
+                    ? { ...item, current_status: status, status_updated_at: statusUpdatedAt }
+                    : item));
+            }
+            const updatedCat = cats.find(item => item.id === catId);
+            if (updatedCat) openSingleCatPopup(updatedCat);
+            showAppStatus(`Đã cập nhật tình trạng: ${getCatStatusLabel(status)}.`);
+        }
+
         map.getContainer().addEventListener('click', async event => {
+            const statusButton = event.target.closest('button[data-cat-status]');
+            if (statusButton) {
+                event.preventDefault();
+                event.stopPropagation();
+                const statusButtons = [...statusButton.closest('.cat-popup-entry').querySelectorAll('button[data-cat-status]')];
+                statusButtons.forEach(button => { button.disabled = true; });
+                try {
+                    await updateCatStatus(statusButton.dataset.catId, statusButton.dataset.catStatus);
+                } catch (error) {
+                    console.error('Không thể cập nhật tình trạng mèo:', error);
+                    showAppStatus(`Không thể cập nhật tình trạng: ${error.message}`);
+                    statusButtons.forEach(button => { button.disabled = false; });
+                }
+                return;
+            }
             const button = event.target.closest('button[data-cat-action]');
             if (!button) return;
             event.preventDefault();
