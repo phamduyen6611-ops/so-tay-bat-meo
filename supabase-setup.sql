@@ -2,9 +2,9 @@ create table if not exists public.cats (
     id text primary key,
     lat double precision not null check (lat between -90 and 90),
     lng double precision not null check (lng between -180 and 180),
-    name text not null default '',
+    name text not null default '' check (char_length(name) <= 40),
     location_name text not null default '' check (char_length(location_name) <= 120),
-    note text not null default '',
+    note text not null default '' check (char_length(note) <= 2000),
     image text,
     approximate boolean not null default false,
     created_by uuid references auth.users(id) on delete set null,
@@ -14,6 +14,30 @@ create table if not exists public.cats (
 
 alter table public.cats
     add column if not exists location_name text not null default '' check (char_length(location_name) <= 120);
+
+do $$
+begin
+    if not exists (
+        select 1
+        from pg_constraint
+        where conrelid = 'public.cats'::regclass
+          and conname = 'cats_name_length_check'
+    ) then
+        alter table public.cats
+            add constraint cats_name_length_check check (char_length(name) <= 40);
+    end if;
+
+    if not exists (
+        select 1
+        from pg_constraint
+        where conrelid = 'public.cats'::regclass
+          and conname = 'cats_note_length_check'
+    ) then
+        alter table public.cats
+            add constraint cats_note_length_check check (char_length(note) <= 2000);
+    end if;
+end;
+$$;
 
 create table if not exists public.cat_editors (
     user_id uuid primary key references auth.users(id) on delete cascade,
@@ -67,6 +91,68 @@ as $$
           and is_admin
     );
 $$;
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+    'cat-images',
+    'cat-images',
+    true,
+    3145728,
+    array['image/jpeg', 'image/png', 'image/webp']
+)
+on conflict (id) do update
+set public = excluded.public,
+    file_size_limit = excluded.file_size_limit,
+    allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "Public can view cat images" on storage.objects;
+create policy "Public can view cat images"
+on storage.objects for select
+to public
+using (bucket_id = 'cat-images');
+
+drop policy if exists "Users can upload cat images" on storage.objects;
+create policy "Users can upload cat images"
+on storage.objects for insert
+to authenticated
+with check (
+    bucket_id = 'cat-images'
+    and (
+        (storage.foldername(name))[1] = (select auth.uid())::text
+        or public.is_cat_admin()
+    )
+);
+
+drop policy if exists "Users can update own cat images" on storage.objects;
+create policy "Users can update own cat images"
+on storage.objects for update
+to authenticated
+using (
+    bucket_id = 'cat-images'
+    and (
+        (storage.foldername(name))[1] = (select auth.uid())::text
+        or public.is_cat_admin()
+    )
+)
+with check (
+    bucket_id = 'cat-images'
+    and (
+        (storage.foldername(name))[1] = (select auth.uid())::text
+        or public.is_cat_admin()
+    )
+);
+
+drop policy if exists "Users can delete own cat images" on storage.objects;
+create policy "Users can delete own cat images"
+on storage.objects for delete
+to authenticated
+using (
+    bucket_id = 'cat-images'
+    and (
+        (storage.foldername(name))[1] = (select auth.uid())::text
+        or public.is_cat_admin()
+    )
+);
 
 create or replace function public.set_cat_audit_fields()
 returns trigger
@@ -124,16 +210,19 @@ to authenticated
 using (user_id = (select auth.uid()));
 
 drop policy if exists "Anyone can submit cats for review" on public.cat_submissions;
-create policy "Anyone can submit cats for review"
-on public.cat_submissions for insert
-to anon, authenticated
-with check (true);
 
 drop policy if exists "Admins can view submissions" on public.cat_submissions;
 create policy "Admins can view submissions"
 on public.cat_submissions for select
 to authenticated
 using (public.is_cat_admin());
+
+drop policy if exists "Admins can update submissions" on public.cat_submissions;
+create policy "Admins can update submissions"
+on public.cat_submissions for update
+to authenticated
+using (public.is_cat_admin())
+with check (public.is_cat_admin());
 
 drop policy if exists "Admins can delete submissions" on public.cat_submissions;
 create policy "Admins can delete submissions"
@@ -200,8 +289,8 @@ $$;
 grant select on public.cats to anon, authenticated;
 grant insert, update, delete on public.cats to authenticated;
 grant select on public.cat_editors to authenticated;
-grant insert on public.cat_submissions to anon, authenticated;
-grant select, delete on public.cat_submissions to authenticated;
+grant select, update, delete on public.cat_submissions to authenticated;
+revoke insert on public.cat_submissions from public, anon, authenticated;
 revoke all on function public.is_cat_admin() from public, anon;
 revoke all on function public.approve_cat_submission(text) from public, anon;
 revoke all on function public.reject_cat_submission(text) from public, anon;

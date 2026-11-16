@@ -861,6 +861,7 @@
             <button type="button" id="collaborationSetPasswordBtn" hidden>Đặt mật khẩu</button>
             <button type="button" id="moderationQueueToggle" hidden>Chờ duyệt (0)</button>
             <div class="moderation-queue" id="moderationQueue" hidden></div>
+            <button type="button" id="collaborationMigrateImagesBtn" hidden>Chuyển ảnh cũ lên Storage</button>
             <button type="button" id="collaborationMigrateLocalBtn" class="collaboration-migrate-button" hidden></button>
             <button type="button" id="collaborationSignOutBtn" hidden>Đăng xuất</button>
         </form>
@@ -1015,7 +1016,7 @@
 
             const image = document.createElement('img');
             image.className = 'cat-marker-photo';
-            image.src = cat.image;
+            image.src = getCatImageUrl(cat.image);
             image.alt = 'Ảnh xem trước mèo';
             return L.divIcon({
                 html: image,
@@ -1073,6 +1074,7 @@
         const collaborationSetPasswordButton = document.getElementById('collaborationSetPasswordBtn');
         const moderationQueueToggle = document.getElementById('moderationQueueToggle');
         const moderationQueue = document.getElementById('moderationQueue');
+        const collaborationMigrateImagesButton = document.getElementById('collaborationMigrateImagesBtn');
         const collaborationMigrateLocalButton = document.getElementById('collaborationMigrateLocalBtn');
         const collaborationSignOutButton = document.getElementById('collaborationSignOutBtn');
         const imageViewer = document.getElementById('imageViewer');
@@ -1146,7 +1148,7 @@
 
                 if (cat.image) {
                     const image = document.createElement('img');
-                    image.src = cat.image;
+                    image.src = getCatImageUrl(cat.image);
                     image.className = 'popup-img';
                     image.alt = `Ảnh mèo ${cat.name || 'chưa đặt tên'}; chạm để xem ảnh lớn`;
                     image.tabIndex = 0;
@@ -1246,6 +1248,101 @@
                 updated_by: row.updated_by || null,
                 updated_at: row.updated_at || null
             };
+        }
+
+        function getCatImageUrl(image) {
+            if (!image || image.startsWith('data:') || /^https?:\/\//i.test(image)) return image || '';
+            return supabaseClient.storage.from('cat-images').getPublicUrl(image).data.publicUrl;
+        }
+
+        async function uploadCatImage(image, catId, collection = 'cats') {
+            if (!currentUser) throw new Error('Hãy đăng nhập trước khi tải ảnh lên.');
+            const response = await fetch(image);
+            if (!response.ok) throw new Error(`Không thể đọc ảnh cần tải lên (${response.status}).`);
+            const blob = await response.blob();
+            const extensionByType = {
+                'image/jpeg': 'jpg',
+                'image/png': 'png',
+                'image/webp': 'webp'
+            };
+            const extension = extensionByType[blob.type];
+            if (!extension) throw new Error('Định dạng ảnh chưa được hỗ trợ; hãy chọn ảnh JPEG, PNG hoặc WebP.');
+            const path = `${currentUser.id}/${collection}/${catId}.${extension}`;
+            const { error } = await supabaseClient.storage.from('cat-images').upload(path, blob, {
+                cacheControl: '31536000',
+                contentType: blob.type,
+                upsert: true
+            });
+            if (error) throw error;
+            return path;
+        }
+
+        async function migrateLegacyCloudImages() {
+            if (!isCatAdmin) throw new Error('Chỉ admin mới có thể di chuyển ảnh cũ.');
+            const imagesToMigrate = cats.filter(cat => cat.image?.startsWith('data:'));
+            const { data: submissions, error: submissionsError } = await supabaseClient
+                .from('cat_submissions')
+                .select('id, name, image');
+            if (submissionsError) throw submissionsError;
+            const submissionsToMigrate = (submissions || []).filter(submission =>
+                submission.image?.startsWith('data:')
+            );
+            const totalImages = imagesToMigrate.length + submissionsToMigrate.length;
+            if (!totalImages) {
+                showAppStatus('Không còn ảnh dạng cũ trong dữ liệu mèo chung.');
+                return;
+            }
+            if (!confirm(`Chuyển ${totalImages} ảnh cũ (gồm ảnh trên bản đồ và hàng chờ cũ) sang Supabase Storage? Ảnh chỉ được thay bằng đường dẫn sau khi tải lên thành công.`)) return;
+
+            collaborationMigrateImagesButton.disabled = true;
+            let migratedCount = 0;
+            try {
+                for (const cat of imagesToMigrate) {
+                    const path = await uploadCatImage(cat.image, cat.id);
+                    const { data, error } = await supabaseClient
+                        .from('cats')
+                        .update({ image: path })
+                        .eq('id', cat.id)
+                        .select('id');
+                    if (error) throw error;
+                    if ((data || []).length !== 1) {
+                        throw new Error(`Không đủ quyền cập nhật ảnh của mèo ${cat.name || cat.id}.`);
+                    }
+                    cat.image = path;
+                    migratedCount += 1;
+                    showAppStatus(`Đã chuyển ${migratedCount}/${totalImages} ảnh lên Storage…`);
+                }
+                for (const submission of submissionsToMigrate) {
+                    const path = await uploadCatImage(submission.image, submission.id, 'submissions');
+                    const { data, error } = await supabaseClient
+                        .from('cat_submissions')
+                        .update({ image: path })
+                        .eq('id', submission.id)
+                        .select('id');
+                    if (error) throw error;
+                    if ((data || []).length !== 1) {
+                        throw new Error(`Không đủ quyền cập nhật ảnh bài chờ duyệt ${submission.name || submission.id}.`);
+                    }
+                    migratedCount += 1;
+                    showAppStatus(`Đã chuyển ${migratedCount}/${totalImages} ảnh lên Storage…`);
+                }
+                renderCatMarkers();
+                await refreshPendingSubmissions();
+                showAppStatus(`Đã chuyển ${migratedCount} ảnh sang Supabase Storage.`);
+            } catch (error) {
+                let refreshError = '';
+                try {
+                    await Promise.all([refreshCloudCats(), refreshPendingSubmissions()]);
+                } catch (reloadError) {
+                    refreshError = ` Không tải lại được danh sách mới nhất: ${reloadError.message}`;
+                }
+                throw new Error(
+                    `Đã chuyển ${migratedCount}/${totalImages} ảnh; ảnh còn lại vẫn được giữ nguyên. ` +
+                    `${error.message}${refreshError}`
+                );
+            } finally {
+                collaborationMigrateImagesButton.disabled = false;
+            }
         }
 
         function catToCloudRow(cat) {
@@ -1353,6 +1450,7 @@
             collaborationSetPasswordButton.hidden = !passwordRecoveryMode;
             moderationQueueToggle.hidden = !isCatAdmin;
             moderationQueueToggle.textContent = `Bài cũ chờ duyệt (${pendingCatSubmissions.length})`;
+            collaborationMigrateImagesButton.hidden = !isCatAdmin;
             collaborationMigrateLocalButton.hidden = !localCatsForMigration.length || localCatsMigrationComplete;
             collaborationMigrateLocalButton.disabled = !isSignedIn;
             collaborationMigrateLocalButton.textContent = `Đưa ${localCatsForMigration.length} mèo trên thiết bị lên dữ liệu chung`;
@@ -1423,7 +1521,7 @@
                 card.appendChild(note);
                 if (submission.image) {
                     const image = document.createElement('img');
-                    image.src = submission.image;
+                    image.src = getCatImageUrl(submission.image);
                     image.alt = `Ảnh đề xuất: ${submission.name || 'mèo chưa đặt tên'}`;
                     card.appendChild(image);
                 }
@@ -1772,6 +1870,7 @@
                 const rowsToUpdate = changedCats
                     .filter(cat => previousById.has(cat.id))
                     .map(catToCloudRow);
+                const persistedImages = new Map();
                 const nextById = new Map(validatedCats.map(cat => [cat.id, cat]));
                 const idsToDelete = cats.filter(cat => !nextById.has(cat.id)).map(cat => cat.id);
                 const catsToDelete = cats.filter(cat => idsToDelete.includes(cat.id));
@@ -1780,7 +1879,13 @@
                 }
 
                 if (rowsToInsert.length) {
-                    const { data, error } = await supabaseClient.from('cats').insert(rowsToInsert).select('id');
+                    const cloudRows = await Promise.all(rowsToInsert.map(async row => {
+                        const cat = changedCats.find(item => item.id === row.id);
+                        const image = cat.image ? await uploadCatImage(cat.image, cat.id) : null;
+                        persistedImages.set(cat.id, image);
+                        return { ...row, image };
+                    }));
+                    const { data, error } = await supabaseClient.from('cats').insert(cloudRows).select('id');
                     if (error) throw error;
                     if ((data || []).length !== rowsToInsert.length) {
                         throw new Error('Không thể thêm một hoặc nhiều bản ghi mèo.');
@@ -1789,10 +1894,18 @@
                 if (rowsToUpdate.length) {
                     try {
                         await Promise.all(rowsToUpdate.map(async row => {
+                            const cat = changedCats.find(item => item.id === row.id);
+                            const cloudRow = {
+                                ...row,
+                                image: cat.image && (cat.image.startsWith('data:') || /^https?:\/\//i.test(cat.image))
+                                    ? await uploadCatImage(cat.image, cat.id)
+                                    : cat.image
+                            };
+                            persistedImages.set(cat.id, cloudRow.image);
                             const { data, error } = await supabaseClient
                                 .from('cats')
-                                .update(row)
-                                .eq('id', row.id)
+                                .update(cloudRow)
+                                .eq('id', cloudRow.id)
                                 .select('id');
                             if (error) throw error;
                             if ((data || []).length !== 1) {
@@ -1822,6 +1935,7 @@
                     const previous = previousById.get(cat.id);
                     const savedCat = {
                         ...cat,
+                        image: persistedImages.has(cat.id) ? persistedImages.get(cat.id) : cat.image,
                         created_by: previous?.created_by || currentUser.id,
                         updated_by: currentUser.id,
                         updated_at: new Date().toISOString()
@@ -2028,7 +2142,7 @@
                 const image = new Image();
                 image.onload = () => resolve(image);
                 image.onerror = () => reject(new Error('Không thể mở ảnh đã lưu.'));
-                image.src = dataUrl;
+                image.src = getCatImageUrl(dataUrl);
             });
         }
 
@@ -2420,13 +2534,27 @@
             }
         };
 
+        collaborationMigrateImagesButton.onclick = async () => {
+            try {
+                await migrateLegacyCloudImages();
+            } catch (error) {
+                console.error('Không thể di chuyển ảnh cũ sang Storage:', error);
+                showAppStatus(`Không thể di chuyển ảnh: ${error.message}`);
+            }
+        };
+
         exportBackupButton.onclick = () => {
             try {
                 const backup = {
                     format: 'cat-map-backup',
                     version: 1,
                     exportedAt: new Date().toISOString(),
-                    cats
+                    cats: cats.map(cat => ({
+                        ...cat,
+                        image: cat.image && !cat.image.startsWith('data:') && !/^https?:\/\//i.test(cat.image)
+                            ? getCatImageUrl(cat.image)
+                            : cat.image
+                    }))
                 };
                 const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
