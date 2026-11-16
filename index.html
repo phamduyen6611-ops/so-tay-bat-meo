@@ -1031,6 +1031,7 @@
         let canEditSharedCats = false;
         let localCatsForMigration = [];
         let localCatsMigrationComplete = false;
+        let cloudRenderTimer = null;
         const authLinkType = new URLSearchParams(window.location.hash.slice(1)).get('type') ||
             new URLSearchParams(window.location.search).get('type');
         let passwordRecoveryMode = authLinkType === 'invite' || authLinkType === 'recovery';
@@ -1297,6 +1298,28 @@
             renderCatMarkers();
         }
 
+        function applyCloudCatChange(payload) {
+            if (payload.eventType === 'DELETE') {
+                const deletedId = payload.old?.id;
+                if (!deletedId || !cats.some(cat => cat.id === deletedId)) return;
+                cats = cats.filter(cat => cat.id !== deletedId);
+            } else if (payload.new?.id) {
+                const changedCat = catFromCloudRow(payload.new);
+                const existingIndex = cats.findIndex(cat => cat.id === changedCat.id);
+                if (existingIndex >= 0 && !catContentChanged(cats[existingIndex], changedCat)) return;
+                if (existingIndex >= 0) cats[existingIndex] = changedCat;
+                else cats.unshift(changedCat);
+                cats.sort((first, second) =>
+                    (second.updated_at || '').localeCompare(first.updated_at || '')
+                );
+            } else {
+                return;
+            }
+
+            clearTimeout(cloudRenderTimer);
+            cloudRenderTimer = setTimeout(renderCatMarkers, 75);
+        }
+
         async function readLocalCatsForMigration() {
             const storedCats = await readStoredCats();
             if (storedCats.length) return validateCats(storedCats);
@@ -1314,11 +1337,8 @@
             if (catsRealtimeChannel) supabaseClient.removeChannel(catsRealtimeChannel);
             catsRealtimeChannel = supabaseClient
                 .channel('shared-cats-changes')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'cats' }, () => {
-                    refreshCloudCats().catch(error => {
-                        console.error('Không thể đồng bộ cập nhật mèo:', error);
-                        showAppStatus(`Không thể đồng bộ dữ liệu mới: ${error.message}`);
-                    });
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'cats' }, payload => {
+                    applyCloudCatChange(payload);
                 })
                 .subscribe(status => {
                     if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
@@ -1511,7 +1531,6 @@
             const validatedCats = validateCats(updatedCats);
             if (supabaseClient) {
                 const previousById = new Map(cats.map(cat => [cat.id, cat]));
-                const nextById = new Map(validatedCats.map(cat => [cat.id, cat]));
                 const rowsToUpsert = validatedCats
                     .filter(cat => {
                         const previous = previousById.get(cat.id);
@@ -1531,7 +1550,21 @@
                         throw error;
                     }
                 }
-                await refreshCloudCats();
+                const changedCats = validatedCats.filter(cat => {
+                    const previous = previousById.get(cat.id);
+                    return !previous || catContentChanged(previous, cat);
+                });
+                const deletedIds = new Set(idsToDelete);
+                cats = cats.filter(cat => !deletedIds.has(cat.id));
+                changedCats.forEach(cat => {
+                    const existingIndex = cats.findIndex(existing => existing.id === cat.id);
+                    if (existingIndex >= 0) cats[existingIndex] = cat;
+                    else cats.unshift(cat);
+                });
+                cats.sort((first, second) =>
+                    (second.updated_at || '').localeCompare(first.updated_at || '')
+                );
+                renderCatMarkers();
                 return;
             }
             await replaceStoredCats(validatedCats);
@@ -2035,16 +2068,19 @@
         saveButton.onclick = async () => {
             const name = document.getElementById('catName').value.trim().slice(0, 40) || 'Mèo chưa đặt tên';
             const note = document.getElementById('catNote').value || "Một bé mèo cute ẩn danh 🐾";
+            saveButton.disabled = true;
+            saveButton.innerText = editingCatId ? 'Đang lưu...' : 'Đang lấy vị trí...';
+            await new Promise(resolve => requestAnimationFrame(resolve));
             try {
-                currentImageDataUrl = sourceImage ? photoPreviewCanvas.toDataURL('image/jpeg', 0.9) : '';
+                currentImageDataUrl = sourceImage ? photoPreviewCanvas.toDataURL('image/jpeg', 0.82) : '';
             } catch (error) {
                 console.error('Không thể xuất ảnh đã chỉnh sửa:', error);
                 appStatus.textContent = 'Không thể xử lý ảnh này. Vui lòng chọn ảnh khác.';
                 appStatus.style.display = 'block';
+                saveButton.disabled = false;
+                saveButton.innerText = editingCatId ? 'Lưu thay đổi' : 'Lưu vị trí';
                 return;
             }
-            saveButton.disabled = true;
-            saveButton.innerText = 'Đang lưu...';
             try {
                 if (editingCatId) {
                     const editedId = editingCatId;
@@ -2053,6 +2089,7 @@
                     if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lng) || lng < -180 || lng > 180) {
                         throw new Error('Vĩ độ hoặc kinh độ không hợp lệ.');
                     }
+                    saveButton.innerText = 'Đang đồng bộ...';
                     const updatedCats = cats.map(cat => cat.id === editingCatId
                         ? { ...cat, lat, lng, name, note, image: currentImageDataUrl || null }
                         : cat);
@@ -2068,9 +2105,10 @@
                         navigator.geolocation.getCurrentPosition(
                             resolve,
                             error => reject({ geolocationError: error }),
-                            { enableHighAccuracy: true, timeout: 10000 }
+                            { enableHighAccuracy: true, timeout: 7000, maximumAge: 15000 }
                         );
                     });
+                    saveButton.innerText = 'Đang đồng bộ...';
                     await saveCatAt(position.coords.latitude, position.coords.longitude, name, note, false);
                 }
                 clearAppStatus();
