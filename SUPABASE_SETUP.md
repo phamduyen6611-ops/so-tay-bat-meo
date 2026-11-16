@@ -6,7 +6,7 @@ Anyone can view the shared map. Users create an account or sign in before adding
 
 When the location name field is left blank, the app sends the coordinates to OpenStreetMap's Nominatim reverse-geocoding service and saves the nearest available road or area name. Users can enter a location name themselves to skip the lookup. If the lookup fails, the cat is still saved with its coordinates and the app reports the failure.
 
-Users can sign in to update a shared cat's status to **Vẫn thấy**, **Đã được giúp đỡ**, or **Không còn ở đây**. The map shows when a status was last reported. New cat records start as **Vẫn thấy**; existing records start as **Chưa cập nhật** until a user reports their status. Status updates go through a restricted database function and do not grant permission to edit another user's cat details.
+Users can sign in to update a shared cat's status to **Vẫn thấy**, **Đã được giúp đỡ**, **Không còn ở đây**, or **Khác** with a note of up to 200 characters. The map shows when a status was last reported. New cat records start as **Vẫn thấy**; existing records start as **Chưa cập nhật** until a user reports their status. Status updates go through a restricted database function and do not grant permission to edit another user's cat details.
 
 ## Deployment and account settings
 
