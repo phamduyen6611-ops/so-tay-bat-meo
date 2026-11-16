@@ -4,6 +4,8 @@ The Supabase project is `so-tay-bat-meo` (`sxeslpgevuzabvetfijl`). The project U
 
 Anyone can view the shared map. Users create an account or sign in before adding cats; new cats appear on the map immediately. A signed-in user can edit or delete only cats created by that account. The administrator can edit and delete every cat. These permissions are enforced by Supabase row-level security, not just by the app interface.
 
+When the location name field is left blank, the app sends the coordinates to OpenStreetMap's Nominatim reverse-geocoding service and saves the nearest available road or area name. Users can enter a location name themselves to skip the lookup. If the lookup fails, the cat is still saved with its coordinates and the app reports the failure.
+
 ## Deployment and account settings
 
 The app is hosted on GitHub Pages at <https://phamduyen6611-ops.github.io/so-tay-bat-meo/>. This URL is configured as the Supabase Auth Site URL and Redirect URL.

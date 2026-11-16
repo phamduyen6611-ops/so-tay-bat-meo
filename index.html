@@ -320,6 +320,14 @@
             box-shadow: none;
         }
 
+        .location-lookup-note {
+            display: block;
+            margin: -8px 0 12px;
+            color: #666;
+            font-size: 12px;
+            text-align: left;
+        }
+
         .edit-location {
             display: none;
             gap: 8px;
@@ -842,12 +850,13 @@
             aria-controls="collaborationContent">☁️ Đang lưu trên thiết bị</button>
         <form class="collaboration-content" id="collaborationContent">
             <p id="collaborationMessage" role="status" aria-live="polite"></p>
-            <input id="collaborationEmail" type="email" placeholder="Email" autocomplete="username">
+            <input id="collaborationEmail" type="email" placeholder="Email" autocomplete="email" required>
             <input id="collaborationPassword" type="password" placeholder="Mật khẩu" autocomplete="current-password">
             <input id="collaborationNewPassword" type="password" placeholder="Mật khẩu mới khi nhận lời mời"
                 autocomplete="new-password" hidden>
             <button type="submit" id="collaborationSignInBtn">Đăng nhập</button>
-            <button type="button" id="collaborationSignUpBtn">Tạo tài khoản</button>
+            <button type="submit" id="collaborationCreateAccountBtn" hidden>Tạo tài khoản</button>
+            <button type="button" id="collaborationSignUpBtn">Chưa có tài khoản? Tạo tài khoản</button>
             <button type="button" id="collaborationSetPasswordBtn" hidden>Đặt mật khẩu</button>
             <button type="button" id="moderationQueueToggle" hidden>Chờ duyệt (0)</button>
             <div class="moderation-queue" id="moderationQueue" hidden></div>
@@ -922,6 +931,9 @@
 
             <input id="catName" class="cat-name-input" type="text" maxlength="40"
                 placeholder="Tên bé mèo (ví dụ: Mimi)" autocomplete="off">
+            <input id="catLocationName" class="cat-name-input" type="text" maxlength="120"
+                placeholder="Tên vị trí nếu muốn tự đặt" autocomplete="off">
+            <small class="location-lookup-note">Để trống để tự tra cứu gần nhất qua OpenStreetMap. Tọa độ sẽ được gửi cho dịch vụ này.</small>
             <textarea id="catNote" maxlength="2000" placeholder="Mèo tam thể, đang ngủ gật..."></textarea>
 
             <button type="button" class="btn btn-location" id="chooseMapLocationBtn">
@@ -1054,6 +1066,7 @@
         const collaborationPassword = document.getElementById('collaborationPassword');
         const collaborationNewPassword = document.getElementById('collaborationNewPassword');
         const collaborationSignInButton = document.getElementById('collaborationSignInBtn');
+        const collaborationCreateAccountButton = document.getElementById('collaborationCreateAccountBtn');
         const collaborationSignUpButton = document.getElementById('collaborationSignUpBtn');
         const collaborationSetPasswordButton = document.getElementById('collaborationSetPasswordBtn');
         const moderationQueueToggle = document.getElementById('moderationQueueToggle');
@@ -1080,7 +1093,11 @@
         const authLinkType = new URLSearchParams(window.location.hash.slice(1)).get('type') ||
             new URLSearchParams(window.location.search).get('type');
         let passwordRecoveryMode = authLinkType === 'invite' || authLinkType === 'recovery';
+        let isSignUpMode = false;
         let catsRealtimeChannel = null;
+        const reverseGeocodeCache = new Map();
+        let reverseGeocodeQueue = Promise.resolve();
+        let lastReverseGeocodeAt = 0;
         saveButton.disabled = true;
         openModalButton.disabled = true;
         exportBackupButton.disabled = true;
@@ -1202,6 +1219,7 @@
                     lat: cat.lat,
                     lng: cat.lng,
                     name: typeof cat.name === 'string' ? cat.name.trim().slice(0, 40) : '',
+                    location_name: typeof cat.location_name === 'string' ? cat.location_name.trim().slice(0, 120) : '',
                     note: cat.note,
                     image: cat.image || null,
                     approximate: Boolean(cat.approximate),
@@ -1218,6 +1236,7 @@
                 lat: Number(row.lat),
                 lng: Number(row.lng),
                 name: row.name || '',
+                location_name: row.location_name || '',
                 note: row.note,
                 image: row.image || null,
                 approximate: Boolean(row.approximate),
@@ -1233,6 +1252,7 @@
                 lat: cat.lat,
                 lng: cat.lng,
                 name: cat.name,
+                location_name: cat.location_name || '',
                 note: cat.note,
                 image: cat.image,
                 approximate: cat.approximate,
@@ -1244,7 +1264,8 @@
 
         function catContentChanged(first, second) {
             return first.lat !== second.lat || first.lng !== second.lng || first.name !== second.name ||
-                first.note !== second.note || first.image !== second.image || first.approximate !== second.approximate;
+                first.location_name !== second.location_name || first.note !== second.note ||
+                first.image !== second.image || first.approximate !== second.approximate;
         }
 
         function canManageCat(cat) {
@@ -1280,6 +1301,7 @@
                 collaborationToggle.textContent = '☁️ Chưa cấu hình';
                 collaborationMessage.textContent = 'Ứng dụng đang lưu dữ liệu trên thiết bị này.';
                 collaborationSignInButton.disabled = true;
+                collaborationCreateAccountButton.disabled = true;
                 collaborationSignUpButton.disabled = true;
                 collaborationSignUpButton.hidden = true;
                 collaborationSetPasswordButton.disabled = true;
@@ -1289,6 +1311,7 @@
                 collaborationToggle.textContent = '☁️ Không kết nối được';
                 collaborationMessage.textContent = 'Không tải được thư viện Supabase. Kiểm tra kết nối Internet rồi tải lại trang.';
                 collaborationSignInButton.disabled = true;
+                collaborationCreateAccountButton.disabled = true;
                 collaborationSignUpButton.disabled = true;
                 collaborationSetPasswordButton.disabled = true;
                 openModalButton.disabled = true;
@@ -1302,7 +1325,7 @@
                     ? '☁️ Đang đồng bộ'
                 : '☁️ Đăng nhập để thêm mèo';
             collaborationMessage.textContent = !currentUser
-                ? 'Đăng nhập hoặc tạo tài khoản để thêm mèo và quản lý bản ghi do bạn tạo. Mèo mới sẽ hiện ngay trên bản đồ.'
+                ? 'Đăng nhập hoặc tạo tài khoản để thêm mèo và quản lý mèo do bạn tạo. Mèo mới sẽ hiện ngay trên bản đồ.'
                 : isCatAdmin
                     ? `Đã đăng nhập admin: ${currentUser.email || 'quản trị viên'}.`
                 : isSignedIn
@@ -1310,8 +1333,16 @@
                     : `Tài khoản ${currentUser.email || ''} chưa đăng nhập.`;
             collaborationEmail.hidden = Boolean(currentUser);
             collaborationPassword.hidden = Boolean(currentUser) || passwordRecoveryMode;
-            collaborationSignInButton.hidden = Boolean(currentUser) || passwordRecoveryMode;
+            collaborationSignInButton.hidden = Boolean(currentUser) || passwordRecoveryMode || isSignUpMode;
+            collaborationCreateAccountButton.hidden = Boolean(currentUser) || passwordRecoveryMode || !isSignUpMode;
             collaborationSignUpButton.hidden = Boolean(currentUser) || passwordRecoveryMode;
+            collaborationSignUpButton.textContent = isSignUpMode
+                ? 'Đã có tài khoản? Đăng nhập'
+                : 'Chưa có tài khoản? Tạo tài khoản';
+            collaborationPassword.autocomplete = isSignUpMode ? 'new-password' : 'current-password';
+            collaborationPassword.placeholder = isSignUpMode
+                ? 'Mật khẩu mới (ít nhất 8 ký tự)'
+                : 'Mật khẩu';
             collaborationNewPassword.hidden = !passwordRecoveryMode;
             collaborationSetPasswordButton.hidden = !passwordRecoveryMode;
             moderationQueueToggle.hidden = !isCatAdmin;
@@ -1321,6 +1352,7 @@
             collaborationMigrateLocalButton.textContent = `Đưa ${localCatsForMigration.length} mèo trên thiết bị lên dữ liệu chung`;
             collaborationSignOutButton.hidden = !currentUser;
             collaborationSignInButton.disabled = false;
+            collaborationCreateAccountButton.disabled = false;
             collaborationSignUpButton.disabled = false;
             collaborationSetPasswordButton.disabled = false;
             openModalButton.disabled = isCloudConfigured ? !supabaseClient || !currentUser : false;
@@ -1353,7 +1385,7 @@
         async function refreshCloudCats() {
             const { data, error } = await supabaseClient
                 .from('cats')
-                .select('id, lat, lng, name, note, image, approximate, created_by, updated_by, updated_at')
+                .select('id, lat, lng, name, location_name, note, image, approximate, created_by, updated_by, updated_at')
                 .order('updated_at', { ascending: false });
             if (error) throw error;
             cats = validateCats(data.map(catFromCloudRow));
@@ -1523,7 +1555,55 @@
         }
 
         function formatCatLocation(cat) {
+            if (cat.location_name?.trim()) return `Vị trí: ${cat.location_name.trim()}`;
             return `Vị trí: ${cat.lat.toFixed(5)}, ${cat.lng.toFixed(5)}`;
+        }
+
+        function lookupLocationName(lat, lng) {
+            const cacheKey = `${lat.toFixed(5)},${lng.toFixed(5)}`;
+            if (reverseGeocodeCache.has(cacheKey)) return Promise.resolve(reverseGeocodeCache.get(cacheKey));
+
+            const lookup = reverseGeocodeQueue.then(async () => {
+                const waitTime = Math.max(0, 1100 - (Date.now() - lastReverseGeocodeAt));
+                if (waitTime) await new Promise(resolve => setTimeout(resolve, waitTime));
+                lastReverseGeocodeAt = Date.now();
+
+                const url = new URL('https://nominatim.openstreetmap.org/reverse');
+                url.search = new URLSearchParams({
+                    format: 'jsonv2',
+                    lat: String(lat),
+                    lon: String(lng),
+                    zoom: '18',
+                    addressdetails: '1'
+                });
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                let response;
+                try {
+                    response = await fetch(url, {
+                        headers: { 'Accept-Language': 'vi' },
+                        signal: controller.signal
+                    });
+                } finally {
+                    clearTimeout(timeoutId);
+                }
+                if (!response.ok) throw new Error(`OpenStreetMap trả về lỗi ${response.status}.`);
+                const result = await response.json();
+                const address = result.address || {};
+                const locality = address.city || address.town || address.village ||
+                    address.municipality || address.county || address.state;
+                const area = address.suburb || address.neighbourhood || address.quarter ||
+                    address.city_district;
+                const road = address.road || address.pedestrian || address.footway;
+                const locationName = [...new Set([road, area, locality].filter(Boolean))]
+                    .join(', ') || result.name || result.display_name?.split(',').slice(0, 3).join(', ').trim();
+                if (!locationName) throw new Error('Không tìm thấy tên vị trí cho tọa độ này.');
+                const normalizedName = locationName.slice(0, 120);
+                reverseGeocodeCache.set(cacheKey, normalizedName);
+                return normalizedName;
+            });
+            reverseGeocodeQueue = lookup.catch(() => {});
+            return lookup;
         }
 
         function renderCatList() {
@@ -1785,20 +1865,30 @@
             showAppStatus(`Đã đưa ${importedCats.length} mèo lên dữ liệu chung. Bản gốc trên thiết bị vẫn được giữ.`);
         }
 
-        async function saveCatAt(lat, lng, name, note, approximate, image = currentImageDataUrl) {
-            const cat = { id: createCatId(), lat, lng, name, note, image: image || null, approximate };
+        async function saveCatAt(lat, lng, name, note, approximate, image = currentImageDataUrl, locationName = '') {
+            let locationLookupWarning = '';
+            if (!locationName.trim()) {
+                try {
+                    locationName = await lookupLocationName(lat, lng);
+                } catch (error) {
+                    console.warn('Không thể tra cứu tên vị trí từ OpenStreetMap:', error);
+                    locationLookupWarning = 'Không tra cứu được tên vị trí qua OpenStreetMap; mèo vẫn được lưu bằng tọa độ.';
+                }
+            }
+            const cat = { id: createCatId(), lat, lng, name, location_name: locationName, note, image: image || null, approximate };
             if (isCloudConfigured) {
                 await persistCats(cats.concat(cat));
-                showAppStatus('Đã thêm mèo lên bản đồ chung.');
+                showAppStatus(locationLookupWarning || 'Đã thêm mèo lên bản đồ chung.');
                 map.setView([lat, lng], 17);
                 resetAndCloseModal();
-                return;
+                return locationLookupWarning;
             }
             await persistCats(cats.concat(cat));
             const group = markerGroups.get(`${lat},${lng}`);
             if (group) openCatGroupPopup(group);
             map.setView([lat, lng], 17);
             resetAndCloseModal();
+            return locationLookupWarning;
         }
 
         map.on('click', async event => {
@@ -1806,11 +1896,20 @@
 
             const selectedCat = pendingMapCat;
             try {
-                await saveCatAt(event.latlng.lat, event.latlng.lng, selectedCat.name, selectedCat.note, false, selectedCat.image);
+                const locationLookupWarning = await saveCatAt(
+                    event.latlng.lat,
+                    event.latlng.lng,
+                    selectedCat.name,
+                    selectedCat.note,
+                    false,
+                    selectedCat.image,
+                    selectedCat.location_name
+                );
                 pendingMapCat = null;
                 mapSelectionPrompt.classList.remove('active');
                 openModalButton.disabled = isCloudConfigured ? !supabaseClient || !currentUser : false;
-                if (!isCloudConfigured) clearAppStatus();
+                if (locationLookupWarning) showAppStatus(locationLookupWarning);
+                else if (!isCloudConfigured) clearAppStatus();
             } catch (error) {
                 console.error('Không thể lưu mèo tại vị trí đã chọn:', error);
                 showAppStatus(`Không thể lưu vị trí: ${error.message}`);
@@ -1936,6 +2035,7 @@
             saveButton.textContent = 'Lưu thay đổi';
             chooseMapLocationButton.style.display = 'none';
             document.getElementById('catName').value = cat.name || '';
+            document.getElementById('catLocationName').value = cat.location_name || '';
             document.getElementById('catNote').value = cat.note;
             editLatitude.value = String(cat.lat);
             editLongitude.value = String(cat.lng);
@@ -1988,6 +2088,7 @@
             chooseMapLocationButton.style.display = 'block';
             editLocationFields.classList.remove('active');
             document.getElementById('catName').value = '';
+            document.getElementById('catLocationName').value = '';
             document.getElementById('catNote').value = '';
             sourceImage = null;
             currentImageDataUrl = '';
@@ -2000,6 +2101,7 @@
                 currentImageDataUrl = sourceImage ? photoPreviewCanvas.toDataURL('image/jpeg', 0.9) : '';
                 pendingMapCat = {
                     name: document.getElementById('catName').value.trim() || 'Mèo chưa đặt tên',
+                    location_name: document.getElementById('catLocationName').value.trim(),
                     note: document.getElementById('catNote').value || 'Một bé mèo cute ẩn danh 🐾',
                     image: currentImageDataUrl
                 };
@@ -2022,58 +2124,78 @@
             const expanded = collaborationPanel.classList.toggle('expanded');
             collaborationToggle.setAttribute('aria-expanded', String(expanded));
         };
+        function validateCollaborationEmail() {
+            collaborationEmail.value = collaborationEmail.value.trim();
+            collaborationEmail.setCustomValidity(!collaborationEmail.value
+                ? 'Vui lòng nhập email.'
+                : collaborationEmail.validity.typeMismatch
+                    ? 'Vui lòng nhập email đúng định dạng.'
+                    : '');
+            if (!collaborationEmail.reportValidity()) {
+                collaborationEmail.focus();
+                return null;
+            }
+            return collaborationEmail.value;
+        }
+        collaborationEmail.addEventListener('input', () => collaborationEmail.setCustomValidity(''));
         collaborationContent.onsubmit = async event => {
             event.preventDefault();
             if (!supabaseClient) return;
+            const email = validateCollaborationEmail();
+            if (!email) return;
             collaborationSignInButton.disabled = true;
+            collaborationCreateAccountButton.disabled = true;
             try {
-                const { error } = await supabaseClient.auth.signInWithPassword({
-                    email: collaborationEmail.value.trim(),
-                    password: collaborationPassword.value
-                });
-                if (error) throw error;
-                await refreshEditorAccess();
-                await refreshCloudCats();
-                if (isCatAdmin) await refreshPendingSubmissions();
-                collaborationPassword.value = '';
-            } catch (error) {
-                console.error('Không thể đăng nhập cộng tác:', error);
-                collaborationMessage.textContent = `Đăng nhập thất bại: ${error.message}`;
-            } finally {
-                collaborationSignInButton.disabled = false;
-            }
-        };
-        collaborationSignUpButton.onclick = async () => {
-            if (!supabaseClient) return;
-            const email = collaborationEmail.value.trim();
-            const password = collaborationPassword.value;
-            if (password.length < 8) {
-                collaborationMessage.textContent = 'Mật khẩu cần có ít nhất 8 ký tự.';
-                return;
-            }
-            collaborationSignUpButton.disabled = true;
-            collaborationSignInButton.disabled = true;
-            try {
-                const { data, error } = await supabaseClient.auth.signUp({
-                    email,
-                    password,
-                    options: { emailRedirectTo: `${window.location.origin}${window.location.pathname}` }
-                });
-                if (error) throw error;
-                if (data.session) {
+                if (isSignUpMode) {
+                    const password = collaborationPassword.value;
+                    if (password.length < 8) {
+                        collaborationMessage.textContent = 'Mật khẩu cần có ít nhất 8 ký tự.';
+                        return;
+                    }
+                    const { data, error } = await supabaseClient.auth.signUp({
+                        email,
+                        password,
+                        options: { emailRedirectTo: `${window.location.origin}${window.location.pathname}` }
+                    });
+                    if (error) throw error;
+                    if (data.session) {
+                        await refreshEditorAccess();
+                        await refreshCloudCats();
+                        collaborationMessage.textContent = 'Đã tạo tài khoản và đăng nhập. Bạn có thể thêm mèo lên bản đồ.';
+                    } else {
+                        isSignUpMode = false;
+                        updateCollaborationControls();
+                        collaborationMessage.textContent = 'Đã tạo tài khoản. Hãy kiểm tra email để xác nhận, sau đó đăng nhập.';
+                    }
+                } else {
+                    const { error } = await supabaseClient.auth.signInWithPassword({
+                        email,
+                        password: collaborationPassword.value
+                    });
+                    if (error) throw error;
                     await refreshEditorAccess();
                     await refreshCloudCats();
-                    collaborationMessage.textContent = 'Đã tạo tài khoản và đăng nhập. Bạn có thể thêm mèo lên bản đồ.';
-                } else {
-                    collaborationMessage.textContent = 'Đã tạo tài khoản. Hãy kiểm tra email để xác nhận, sau đó đăng nhập.';
+                    if (isCatAdmin) await refreshPendingSubmissions();
+                    collaborationPassword.value = '';
                 }
             } catch (error) {
-                console.error('Không thể tạo tài khoản:', error);
-                collaborationMessage.textContent = `Tạo tài khoản thất bại: ${error.message}`;
+                console.error(isSignUpMode ? 'Không thể tạo tài khoản:' : 'Không thể đăng nhập cộng tác:', error);
+                collaborationMessage.textContent = isSignUpMode
+                    ? `Tạo tài khoản thất bại: ${error.message}`
+                    : `Đăng nhập thất bại: ${error.message}`;
             } finally {
-                collaborationSignUpButton.disabled = false;
                 collaborationSignInButton.disabled = false;
+                collaborationCreateAccountButton.disabled = false;
             }
+        };
+        collaborationSignUpButton.onclick = () => {
+            isSignUpMode = !isSignUpMode;
+            collaborationPassword.value = '';
+            updateCollaborationControls();
+            collaborationMessage.textContent = isSignUpMode
+                ? 'Nhập email và mật khẩu mới để tạo tài khoản.'
+                : 'Nhập email và mật khẩu để đăng nhập.';
+            collaborationPassword.focus();
         };
         collaborationSetPasswordButton.onclick = async () => {
             if (!supabaseClient) return;
@@ -2346,6 +2468,7 @@
                     isCloudConfigured ? 'Thêm lên bản đồ' : 'Lưu vị trí';
                 return;
             }
+            let locationLookupWarning = '';
             try {
                 if (editingCatId) {
                     const editedId = editingCatId;
@@ -2355,8 +2478,25 @@
                         throw new Error('Vĩ độ hoặc kinh độ không hợp lệ.');
                     }
                     saveButton.innerText = 'Đang đồng bộ...';
+                    let locationName = document.getElementById('catLocationName').value.trim();
+                    if (!locationName) {
+                        try {
+                            locationName = await lookupLocationName(lat, lng);
+                        } catch (error) {
+                            console.warn('Không thể tra cứu tên vị trí từ OpenStreetMap:', error);
+                            locationLookupWarning = 'Không tra cứu được tên vị trí qua OpenStreetMap; mèo vẫn được lưu bằng tọa độ.';
+                        }
+                    }
                     const updatedCats = cats.map(cat => cat.id === editingCatId
-                        ? { ...cat, lat, lng, name, note, image: currentImageDataUrl || null }
+                        ? {
+                            ...cat,
+                            lat,
+                            lng,
+                            name,
+                            location_name: locationName,
+                            note,
+                            image: currentImageDataUrl || null
+                        }
                         : cat);
                     await persistCats(updatedCats);
                     resetAndCloseModal();
@@ -2374,9 +2514,18 @@
                         );
                     });
                     saveButton.innerText = 'Đang đồng bộ...';
-                    await saveCatAt(position.coords.latitude, position.coords.longitude, name, note, false);
+                    locationLookupWarning = await saveCatAt(
+                        position.coords.latitude,
+                        position.coords.longitude,
+                        name,
+                        note,
+                        false,
+                        currentImageDataUrl,
+                        document.getElementById('catLocationName').value.trim()
+                    );
                 }
-                if (!isCloudConfigured || isEditing) clearAppStatus();
+                if (locationLookupWarning) showAppStatus(locationLookupWarning);
+                else if (!isCloudConfigured || isEditing) clearAppStatus();
             } catch (error) {
                 if (!editingCatId && error?.geolocationError) {
                     const locationError = error.geolocationError;
@@ -2388,7 +2537,16 @@
                     if (confirm(`${reason}\n\nBạn có muốn đặt dấu mèo tại tâm bản đồ hiện tại không? Đây chỉ là vị trí ước lượng, không phải vị trí GPS.`)) {
                         const center = map.getCenter();
                         try {
-                            await saveCatAt(center.lat, center.lng, name, note, true);
+                            locationLookupWarning = await saveCatAt(
+                                center.lat,
+                                center.lng,
+                                name,
+                                note,
+                                true,
+                                currentImageDataUrl,
+                                document.getElementById('catLocationName').value.trim()
+                            );
+                            if (locationLookupWarning) showAppStatus(locationLookupWarning);
                         } catch (saveError) {
                             console.error('Không thể lưu vị trí mèo:', saveError);
                             showAppStatus(`Không thể lưu vị trí: ${saveError.message}`);
@@ -2409,6 +2567,7 @@
             modal.classList.remove('active');
             photoInput.value = "";
             document.getElementById('catName').value = "";
+            document.getElementById('catLocationName').value = "";
             document.getElementById('catNote').value = "";
             previewContainer.style.display = "none";
             editingCatId = null;

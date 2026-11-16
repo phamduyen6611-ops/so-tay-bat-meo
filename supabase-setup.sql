@@ -3,6 +3,7 @@ create table if not exists public.cats (
     lat double precision not null check (lat between -90 and 90),
     lng double precision not null check (lng between -180 and 180),
     name text not null default '',
+    location_name text not null default '' check (char_length(location_name) <= 120),
     note text not null default '',
     image text,
     approximate boolean not null default false,
@@ -10,6 +11,9 @@ create table if not exists public.cats (
     updated_by uuid references auth.users(id) on delete set null,
     updated_at timestamptz not null default now()
 );
+
+alter table public.cats
+    add column if not exists location_name text not null default '' check (char_length(location_name) <= 120);
 
 create table if not exists public.cat_editors (
     user_id uuid primary key references auth.users(id) on delete cascade,
