@@ -1464,7 +1464,7 @@
         let passwordRecoveryMode = authLinkType === 'invite' || authLinkType === 'recovery';
         let isSignUpMode = false;
         let catsRealtimeChannel = null;
-        const locationNameCacheKey = 'catMapLocationNamesV1';
+        const locationNameCacheKey = 'catMapLocationNamesV2';
         const reverseGeocodeCache = readLocationNameCache();
         const reverseGeocodePending = new Map();
         const reverseGeocodeFailures = new Map();
@@ -2154,7 +2154,8 @@
                 const entries = JSON.parse(localStorage.getItem(locationNameCacheKey) || '[]');
                 return new Map(Array.isArray(entries) ? entries.filter(entry =>
                     Array.isArray(entry) && typeof entry[0] === 'string' &&
-                    typeof entry[1] === 'string' && entry[1].trim() && entry[1].length <= 120
+                    entry[1] && typeof entry[1].name === 'string' && entry[1].name.trim() && entry[1].name.length <= 120 &&
+                    typeof entry[1].baseName === 'string' && entry[1].baseName.trim() && entry[1].baseName.length <= 120
                 ).slice(-200) : []);
             } catch (error) {
                 return new Map();
@@ -2166,7 +2167,9 @@
         }
 
         function getCatLocationName(cat) {
-            return cat.location_name?.trim() || reverseGeocodeCache.get(getLocationCacheKey(cat.lat, cat.lng)) || '';
+            const savedName = cat.location_name?.trim() || '';
+            const cached = reverseGeocodeCache.get(getLocationCacheKey(cat.lat, cat.lng));
+            return cached && (!savedName || savedName === cached.baseName) ? cached.name : savedName;
         }
 
         function formatCatLocation(cat) {
@@ -2176,25 +2179,26 @@
         function setCatLocationLabel(element, cat, prefix = 'Vị trí: ') {
             const name = getCatLocationName(cat);
             element.textContent = prefix + (name || 'Đang tìm tên địa điểm…');
-            if (name) {
-                element.title = name;
-                return;
-            }
-            element.dataset.locationKey = getLocationCacheKey(cat.lat, cat.lng);
+            if (name) element.title = name;
+            const cacheKey = getLocationCacheKey(cat.lat, cat.lng);
+            if (reverseGeocodeCache.has(cacheKey)) return;
+            element.dataset.locationKey = cacheKey;
             element.dataset.locationLat = cat.lat;
             element.dataset.locationLng = cat.lng;
             element.dataset.locationPrefix = prefix;
+            element.dataset.locationSavedName = cat.location_name?.trim() || '';
         }
 
         async function resolveCatLocationLabel(element) {
-            const { locationLat, locationLng, locationPrefix } = element.dataset;
+            const { locationLat, locationLng, locationPrefix, locationSavedName } = element.dataset;
             try {
-                const name = await lookupLocationName(Number(locationLat), Number(locationLng));
+                await lookupLocationName(Number(locationLat), Number(locationLng));
                 if (!element.isConnected) return;
+                const name = getCatLocationName({ lat: locationLat, lng: locationLng, location_name: locationSavedName });
                 element.textContent = locationPrefix + name;
                 element.title = name;
             } catch (error) {
-                if (element.isConnected) element.textContent = locationPrefix + 'Chưa xác định địa điểm';
+                if (element.isConnected) element.textContent = locationPrefix + (locationSavedName || 'Chưa xác định địa điểm');
             }
         }
 
@@ -2225,7 +2229,7 @@
 
         function lookupLocationName(lat, lng) {
             const cacheKey = getLocationCacheKey(lat, lng);
-            if (reverseGeocodeCache.has(cacheKey)) return Promise.resolve(reverseGeocodeCache.get(cacheKey));
+            if (reverseGeocodeCache.has(cacheKey)) return Promise.resolve(reverseGeocodeCache.get(cacheKey).name);
             if (reverseGeocodePending.has(cacheKey)) return reverseGeocodePending.get(cacheKey);
             if ((reverseGeocodeFailures.get(cacheKey) || 0) > Date.now()) {
                 return Promise.reject(new Error('Chưa thể tra cứu lại tên địa điểm.'));
@@ -2263,11 +2267,13 @@
                 const area = address.suburb || address.neighbourhood || address.quarter ||
                     address.city_district;
                 const road = address.road || address.pedestrian || address.footway;
-                const locationName = [...new Set([road, area, locality].filter(Boolean))]
-                    .join(', ') || result.name?.trim() || result.display_name?.split(',').slice(0, 3).map(part => part.trim()).join(', ').trim();
+                const fallbackName = result.name?.trim() || result.display_name?.split(',').slice(0, 3).map(part => part.trim()).join(', ').trim();
+                const baseName = [...new Set([road, area, locality].filter(Boolean))].join(', ') || fallbackName;
+                const streetAddress = [String(address.house_number ?? '').trim(), road].filter(Boolean).join(' ');
+                const locationName = [...new Set([streetAddress, area, locality].filter(Boolean))].join(', ') || fallbackName;
                 if (!locationName) throw new Error('Không tìm thấy tên vị trí cho tọa độ này.');
                 const normalizedName = locationName.slice(0, 120);
-                reverseGeocodeCache.set(cacheKey, normalizedName);
+                reverseGeocodeCache.set(cacheKey, { name: normalizedName, baseName: (baseName || locationName).slice(0, 120) });
                 reverseGeocodeFailures.delete(cacheKey);
                 while (reverseGeocodeCache.size > 200) reverseGeocodeCache.delete(reverseGeocodeCache.keys().next().value);
                 try {
