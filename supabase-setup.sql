@@ -92,23 +92,26 @@ to anon, authenticated
 using (true);
 
 drop policy if exists "Invited editors can add cats" on public.cats;
-create policy "Invited editors can add cats"
+drop policy if exists "Authenticated users can add cats" on public.cats;
+create policy "Authenticated users can add cats"
 on public.cats for insert
 to authenticated
-with check (public.is_cat_editor());
+with check (created_by = (select auth.uid()));
 
 drop policy if exists "Invited editors can update cats" on public.cats;
-create policy "Invited editors can update cats"
+drop policy if exists "Owners and admins can update cats" on public.cats;
+create policy "Owners and admins can update cats"
 on public.cats for update
 to authenticated
-using (public.is_cat_editor())
-with check (public.is_cat_editor());
+using (created_by = (select auth.uid()) or public.is_cat_admin())
+with check (created_by = (select auth.uid()) or public.is_cat_admin());
 
 drop policy if exists "Invited editors can delete cats" on public.cats;
-create policy "Invited editors can delete cats"
+drop policy if exists "Owners and admins can delete cats" on public.cats;
+create policy "Owners and admins can delete cats"
 on public.cats for delete
 to authenticated
-using (public.is_cat_editor());
+using (created_by = (select auth.uid()) or public.is_cat_admin());
 
 drop policy if exists "Editors can view own membership" on public.cat_editors;
 create policy "Editors can view own membership"

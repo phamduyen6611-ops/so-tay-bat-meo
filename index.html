@@ -842,11 +842,12 @@
             aria-controls="collaborationContent">☁️ Đang lưu trên thiết bị</button>
         <form class="collaboration-content" id="collaborationContent">
             <p id="collaborationMessage" role="status" aria-live="polite"></p>
-            <input id="collaborationEmail" type="email" placeholder="Email được mời" autocomplete="username">
+            <input id="collaborationEmail" type="email" placeholder="Email" autocomplete="username">
             <input id="collaborationPassword" type="password" placeholder="Mật khẩu" autocomplete="current-password">
             <input id="collaborationNewPassword" type="password" placeholder="Mật khẩu mới khi nhận lời mời"
                 autocomplete="new-password" hidden>
             <button type="submit" id="collaborationSignInBtn">Đăng nhập</button>
+            <button type="button" id="collaborationSignUpBtn">Tạo tài khoản</button>
             <button type="button" id="collaborationSetPasswordBtn" hidden>Đặt mật khẩu</button>
             <button type="button" id="moderationQueueToggle" hidden>Chờ duyệt (0)</button>
             <div class="moderation-queue" id="moderationQueue" hidden></div>
@@ -1053,6 +1054,7 @@
         const collaborationPassword = document.getElementById('collaborationPassword');
         const collaborationNewPassword = document.getElementById('collaborationNewPassword');
         const collaborationSignInButton = document.getElementById('collaborationSignInBtn');
+        const collaborationSignUpButton = document.getElementById('collaborationSignUpBtn');
         const collaborationSetPasswordButton = document.getElementById('collaborationSetPasswordBtn');
         const moderationQueueToggle = document.getElementById('moderationQueueToggle');
         const moderationQueue = document.getElementById('moderationQueue');
@@ -1069,7 +1071,7 @@
         let currentImageDataUrl = "";
         let pendingMapCat = null;
         let currentUser = null;
-        let canEditSharedCats = false;
+        let isSignedIn = false;
         let isCatAdmin = false;
         let pendingCatSubmissions = [];
         let localCatsForMigration = [];
@@ -1139,7 +1141,7 @@
                     });
                     entry.appendChild(image);
                 }
-                if (!isCloudConfigured || canEditSharedCats) {
+                if (!isCloudConfigured || canManageCat(cat)) {
                     const actions = document.createElement('div');
                     actions.className = 'cat-record-actions';
                     const editButton = document.createElement('button');
@@ -1245,6 +1247,10 @@
                 first.note !== second.note || first.image !== second.image || first.approximate !== second.approximate;
         }
 
+        function canManageCat(cat) {
+            return !isCloudConfigured || isCatAdmin || Boolean(currentUser && cat.created_by === currentUser.id);
+        }
+
         function readStoredCats() {
             return databasePromise.then(db => new Promise((resolve, reject) => {
                 const transaction = db.transaction('cats', 'readonly');
@@ -1274,6 +1280,8 @@
                 collaborationToggle.textContent = '☁️ Chưa cấu hình';
                 collaborationMessage.textContent = 'Ứng dụng đang lưu dữ liệu trên thiết bị này.';
                 collaborationSignInButton.disabled = true;
+                collaborationSignUpButton.disabled = true;
+                collaborationSignUpButton.hidden = true;
                 collaborationSetPasswordButton.disabled = true;
                 return;
             }
@@ -1281,6 +1289,7 @@
                 collaborationToggle.textContent = '☁️ Không kết nối được';
                 collaborationMessage.textContent = 'Không tải được thư viện Supabase. Kiểm tra kết nối Internet rồi tải lại trang.';
                 collaborationSignInButton.disabled = true;
+                collaborationSignUpButton.disabled = true;
                 collaborationSetPasswordButton.disabled = true;
                 openModalButton.disabled = true;
                 importBackupButton.disabled = true;
@@ -1288,38 +1297,40 @@
             }
 
             collaborationToggle.textContent = isCatAdmin
-                ? '☁️ Admin duyệt'
-                : canEditSharedCats
-                    ? '☁️ Đang đồng bộ · Có quyền sửa'
-                : '☁️ Gửi mèo chờ duyệt';
+                ? '☁️ Admin toàn quyền'
+                : isSignedIn
+                    ? '☁️ Đang đồng bộ'
+                : '☁️ Đăng nhập để thêm mèo';
             collaborationMessage.textContent = !currentUser
-                ? 'Bạn có thể gửi mèo để admin duyệt. Mèo chỉ hiện trên bản đồ sau khi được duyệt.'
+                ? 'Đăng nhập hoặc tạo tài khoản để thêm mèo và quản lý bản ghi do bạn tạo. Mèo mới sẽ hiện ngay trên bản đồ.'
                 : isCatAdmin
                     ? `Đã đăng nhập admin: ${currentUser.email || 'quản trị viên'}.`
-                : canEditSharedCats
-                    ? `Đã đăng nhập: ${currentUser.email || 'thành viên được mời'}.`
-                    : `Tài khoản ${currentUser.email || ''} có thể gửi mèo chờ duyệt nhưng chưa được cấp quyền sửa.`;
+                : isSignedIn
+                    ? `Đã đăng nhập: ${currentUser.email || 'người dùng'}. Bạn có thể thêm mèo và sửa/xóa mèo do mình tạo.`
+                    : `Tài khoản ${currentUser.email || ''} chưa đăng nhập.`;
             collaborationEmail.hidden = Boolean(currentUser);
             collaborationPassword.hidden = Boolean(currentUser) || passwordRecoveryMode;
             collaborationSignInButton.hidden = Boolean(currentUser) || passwordRecoveryMode;
+            collaborationSignUpButton.hidden = Boolean(currentUser) || passwordRecoveryMode;
             collaborationNewPassword.hidden = !passwordRecoveryMode;
             collaborationSetPasswordButton.hidden = !passwordRecoveryMode;
             moderationQueueToggle.hidden = !isCatAdmin;
-            moderationQueueToggle.textContent = `Chờ duyệt (${pendingCatSubmissions.length})`;
+            moderationQueueToggle.textContent = `Bài cũ chờ duyệt (${pendingCatSubmissions.length})`;
             collaborationMigrateLocalButton.hidden = !localCatsForMigration.length || localCatsMigrationComplete;
-            collaborationMigrateLocalButton.disabled = !canEditSharedCats;
+            collaborationMigrateLocalButton.disabled = !isSignedIn;
             collaborationMigrateLocalButton.textContent = `Đưa ${localCatsForMigration.length} mèo trên thiết bị lên dữ liệu chung`;
             collaborationSignOutButton.hidden = !currentUser;
             collaborationSignInButton.disabled = false;
+            collaborationSignUpButton.disabled = false;
             collaborationSetPasswordButton.disabled = false;
-            openModalButton.disabled = isCloudConfigured ? !supabaseClient : false;
-            importBackupButton.disabled = !canEditSharedCats;
+            openModalButton.disabled = isCloudConfigured ? !supabaseClient || !currentUser : false;
+            importBackupButton.disabled = !isSignedIn;
             renderCatMarkers();
         }
 
         async function refreshEditorAccess() {
             currentUser = null;
-            canEditSharedCats = false;
+            isSignedIn = false;
             isCatAdmin = false;
             if (supabaseClient) {
                 const { data: sessionResult, error: sessionError } = await supabaseClient.auth.getSession();
@@ -1332,7 +1343,7 @@
                         .eq('user_id', currentUser.id)
                         .maybeSingle();
                     if (error) throw error;
-                    canEditSharedCats = Boolean(data);
+                    isSignedIn = true;
                     isCatAdmin = Boolean(data?.is_admin);
                 }
             }
@@ -1351,7 +1362,7 @@
 
         function renderModerationQueue() {
             moderationQueue.replaceChildren();
-            moderationQueueToggle.textContent = `Chờ duyệt (${pendingCatSubmissions.length})`;
+            moderationQueueToggle.textContent = `Bài cũ chờ duyệt (${pendingCatSubmissions.length})`;
             if (!pendingCatSubmissions.length) {
                 const emptyMessage = document.createElement('p');
                 emptyMessage.textContent = 'Chưa có mèo nào chờ duyệt.';
@@ -1651,42 +1662,85 @@
 
         async function persistCats(updatedCats) {
             if (!storageReady) throw new Error('Kho dữ liệu chưa sẵn sàng.');
-            if (isCloudConfigured && !canEditSharedCats) {
-                throw new Error('Chỉ tài khoản được mời mới có quyền sửa dữ liệu chung.');
+            if (isCloudConfigured && !currentUser) {
+                throw new Error('Hãy đăng nhập để thêm hoặc quản lý mèo.');
             }
             const validatedCats = validateCats(updatedCats);
             if (supabaseClient) {
                 const previousById = new Map(cats.map(cat => [cat.id, cat]));
-                const rowsToUpsert = validatedCats
+                const changedCats = validatedCats
                     .filter(cat => {
                         const previous = previousById.get(cat.id);
                         return !previous || catContentChanged(previous, cat);
-                    })
+                    });
+                changedCats.forEach(cat => {
+                    const previous = previousById.get(cat.id);
+                    if (previous && !canManageCat(previous)) {
+                        throw new Error('Bạn chỉ có thể sửa mèo do chính mình tạo.');
+                    }
+                });
+                const rowsToInsert = changedCats
+                    .filter(cat => !previousById.has(cat.id))
+                    .map(catToCloudRow);
+                const rowsToUpdate = changedCats
+                    .filter(cat => previousById.has(cat.id))
                     .map(catToCloudRow);
                 const nextById = new Map(validatedCats.map(cat => [cat.id, cat]));
                 const idsToDelete = cats.filter(cat => !nextById.has(cat.id)).map(cat => cat.id);
-
-                if (rowsToUpsert.length) {
-                    const { error } = await supabaseClient.from('cats').upsert(rowsToUpsert);
-                    if (error) throw error;
+                const catsToDelete = cats.filter(cat => idsToDelete.includes(cat.id));
+                if (catsToDelete.some(cat => !canManageCat(cat))) {
+                    throw new Error('Bạn chỉ có thể xóa mèo do chính mình tạo.');
                 }
-                if (idsToDelete.length) {
-                    const { error } = await supabaseClient.from('cats').delete().in('id', idsToDelete);
-                    if (error) {
+
+                if (rowsToInsert.length) {
+                    const { data, error } = await supabaseClient.from('cats').insert(rowsToInsert).select('id');
+                    if (error) throw error;
+                    if ((data || []).length !== rowsToInsert.length) {
+                        throw new Error('Không thể thêm một hoặc nhiều bản ghi mèo.');
+                    }
+                }
+                if (rowsToUpdate.length) {
+                    try {
+                        await Promise.all(rowsToUpdate.map(async row => {
+                            const { data, error } = await supabaseClient
+                                .from('cats')
+                                .update(row)
+                                .eq('id', row.id)
+                                .select('id');
+                            if (error) throw error;
+                            if ((data || []).length !== 1) {
+                                throw new Error('Không đủ quyền cập nhật một hoặc nhiều bản ghi mèo.');
+                            }
+                        }));
+                    } catch (error) {
                         await refreshCloudCats();
                         throw error;
                     }
                 }
-                const changedCats = validatedCats.filter(cat => {
-                    const previous = previousById.get(cat.id);
-                    return !previous || catContentChanged(previous, cat);
-                });
+                if (idsToDelete.length) {
+                    const { data, error } = await supabaseClient.from('cats').delete().in('id', idsToDelete).select('id');
+                    if (error) {
+                        await refreshCloudCats();
+                        throw error;
+                    }
+                    if ((data || []).length !== idsToDelete.length) {
+                        await refreshCloudCats();
+                        throw new Error('Không đủ quyền xóa một hoặc nhiều bản ghi mèo.');
+                    }
+                }
                 const deletedIds = new Set(idsToDelete);
                 cats = cats.filter(cat => !deletedIds.has(cat.id));
                 changedCats.forEach(cat => {
                     const existingIndex = cats.findIndex(existing => existing.id === cat.id);
-                    if (existingIndex >= 0) cats[existingIndex] = cat;
-                    else cats.unshift(cat);
+                    const previous = previousById.get(cat.id);
+                    const savedCat = {
+                        ...cat,
+                        created_by: previous?.created_by || currentUser.id,
+                        updated_by: currentUser.id,
+                        updated_at: new Date().toISOString()
+                    };
+                    if (existingIndex >= 0) cats[existingIndex] = savedCat;
+                    else cats.unshift(savedCat);
                 });
                 cats.sort((first, second) =>
                     (second.updated_at || '').localeCompare(first.updated_at || '')
@@ -1699,25 +1753,9 @@
             renderCatMarkers();
         }
 
-        async function submitCatForReview(cat) {
-            const { error } = await supabaseClient
-                .from('cat_submissions')
-                .insert({
-                    id: cat.id,
-                    lat: cat.lat,
-                    lng: cat.lng,
-                    name: cat.name,
-                    note: cat.note,
-                    image: cat.image,
-                    approximate: cat.approximate
-                });
-            if (error) throw error;
-            showAppStatus('Đã gửi mèo cho admin duyệt. Mèo sẽ xuất hiện trên bản đồ sau khi được duyệt.');
-        }
-
         async function migrateLocalCatsToCloud() {
-            if (!supabaseClient || !canEditSharedCats) {
-                throw new Error('Bạn cần đăng nhập bằng tài khoản được cấp quyền sửa.');
+            if (!supabaseClient || !isSignedIn) {
+                throw new Error('Bạn cần đăng nhập để đưa mèo lên dữ liệu chung.');
             }
             if (!localCatsForMigration.length || localCatsMigrationComplete) return;
             const confirmed = confirm(
@@ -1750,7 +1788,8 @@
         async function saveCatAt(lat, lng, name, note, approximate, image = currentImageDataUrl) {
             const cat = { id: createCatId(), lat, lng, name, note, image: image || null, approximate };
             if (isCloudConfigured) {
-                await submitCatForReview(cat);
+                await persistCats(cats.concat(cat));
+                showAppStatus('Đã thêm mèo lên bản đồ chung.');
                 map.setView([lat, lng], 17);
                 resetAndCloseModal();
                 return;
@@ -1770,7 +1809,7 @@
                 await saveCatAt(event.latlng.lat, event.latlng.lng, selectedCat.name, selectedCat.note, false, selectedCat.image);
                 pendingMapCat = null;
                 mapSelectionPrompt.classList.remove('active');
-                openModalButton.disabled = isCloudConfigured ? !supabaseClient : false;
+                openModalButton.disabled = isCloudConfigured ? !supabaseClient || !currentUser : false;
                 if (!isCloudConfigured) clearAppStatus();
             } catch (error) {
                 console.error('Không thể lưu mèo tại vị trí đã chọn:', error);
@@ -1890,6 +1929,7 @@
         async function openEditModal(catId) {
             const cat = cats.find(item => item.id === catId);
             if (!cat) return;
+            if (!canManageCat(cat)) throw new Error('Bạn chỉ có thể sửa mèo do chính mình tạo.');
 
             editingCatId = cat.id;
             modalTitle.textContent = 'Sửa thông tin mèo';
@@ -1919,6 +1959,7 @@
 
         async function deleteCat(catId) {
             const cat = cats.find(item => item.id === catId);
+            if (cat && !canManageCat(cat)) throw new Error('Bạn chỉ có thể xóa mèo do chính mình tạo.');
             if (!cat || !confirm('Bạn có chắc muốn xóa dấu mèo này?')) return;
             await persistCats(cats.filter(item => item.id !== catId));
         }
@@ -1943,7 +1984,7 @@
         openModalButton.onclick = () => {
             editingCatId = null;
             modalTitle.textContent = 'Bắt được một bé! 🐾';
-            saveButton.textContent = isCloudConfigured ? 'Gửi admin duyệt' : 'Lưu vị trí';
+            saveButton.textContent = isCloudConfigured ? 'Thêm lên bản đồ' : 'Lưu vị trí';
             chooseMapLocationButton.style.display = 'block';
             editLocationFields.classList.remove('active');
             document.getElementById('catName').value = '';
@@ -1974,7 +2015,7 @@
         document.getElementById('cancelMapSelectionBtn').onclick = () => {
             pendingMapCat = null;
             mapSelectionPrompt.classList.remove('active');
-            openModalButton.disabled = isCloudConfigured ? !supabaseClient : false;
+            openModalButton.disabled = isCloudConfigured ? !supabaseClient || !currentUser : false;
         };
         L.DomEvent.disableClickPropagation(collaborationPanel);
         collaborationToggle.onclick = () => {
@@ -1999,6 +2040,38 @@
                 console.error('Không thể đăng nhập cộng tác:', error);
                 collaborationMessage.textContent = `Đăng nhập thất bại: ${error.message}`;
             } finally {
+                collaborationSignInButton.disabled = false;
+            }
+        };
+        collaborationSignUpButton.onclick = async () => {
+            if (!supabaseClient) return;
+            const email = collaborationEmail.value.trim();
+            const password = collaborationPassword.value;
+            if (password.length < 8) {
+                collaborationMessage.textContent = 'Mật khẩu cần có ít nhất 8 ký tự.';
+                return;
+            }
+            collaborationSignUpButton.disabled = true;
+            collaborationSignInButton.disabled = true;
+            try {
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email,
+                    password,
+                    options: { emailRedirectTo: `${window.location.origin}${window.location.pathname}` }
+                });
+                if (error) throw error;
+                if (data.session) {
+                    await refreshEditorAccess();
+                    await refreshCloudCats();
+                    collaborationMessage.textContent = 'Đã tạo tài khoản và đăng nhập. Bạn có thể thêm mèo lên bản đồ.';
+                } else {
+                    collaborationMessage.textContent = 'Đã tạo tài khoản. Hãy kiểm tra email để xác nhận, sau đó đăng nhập.';
+                }
+            } catch (error) {
+                console.error('Không thể tạo tài khoản:', error);
+                collaborationMessage.textContent = `Tạo tài khoản thất bại: ${error.message}`;
+            } finally {
+                collaborationSignUpButton.disabled = false;
                 collaborationSignInButton.disabled = false;
             }
         };
@@ -2032,7 +2105,7 @@
                 console.error('Không thể di chuyển mèo lên dữ liệu chung:', error);
                 collaborationMessage.textContent = `Không thể đưa dữ liệu lên: ${error.message}`;
             } finally {
-                collaborationMigrateLocalButton.disabled = !canEditSharedCats;
+                collaborationMigrateLocalButton.disabled = !isSignedIn;
             }
         };
         collaborationSignOutButton.onclick = async () => {
@@ -2041,7 +2114,7 @@
                 const { error } = await supabaseClient.auth.signOut();
                 if (error) throw error;
                 currentUser = null;
-                canEditSharedCats = false;
+                isSignedIn = false;
                 isCatAdmin = false;
                 pendingCatSubmissions = [];
                 updateCollaborationControls();
@@ -2089,7 +2162,7 @@
                 if (event === 'PASSWORD_RECOVERY') passwordRecoveryMode = true;
                 if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
                     currentUser = null;
-                    canEditSharedCats = false;
+                    isSignedIn = false;
                     isCatAdmin = false;
                     pendingCatSubmissions = [];
                     setTimeout(updateCollaborationControls, 0);
@@ -2270,7 +2343,7 @@
                 appStatus.style.display = 'block';
                 saveButton.disabled = false;
                 saveButton.innerText = isEditing ? 'Lưu thay đổi' :
-                    isCloudConfigured ? 'Gửi admin duyệt' : 'Lưu vị trí';
+                    isCloudConfigured ? 'Thêm lên bản đồ' : 'Lưu vị trí';
                 return;
             }
             try {
@@ -2328,7 +2401,7 @@
             } finally {
                 saveButton.disabled = false;
                 saveButton.innerText = editingCatId ? 'Lưu thay đổi' :
-                    isCloudConfigured ? 'Gửi admin duyệt' : 'Lưu vị trí';
+                    isCloudConfigured ? 'Thêm lên bản đồ' : 'Lưu vị trí';
             }
         };
 
@@ -2340,20 +2413,20 @@
             previewContainer.style.display = "none";
             editingCatId = null;
             modalTitle.textContent = 'Bắt được một bé! 🐾';
-            saveButton.innerText = isCloudConfigured ? 'Gửi admin duyệt' : 'Lưu vị trí';
+            saveButton.innerText = isCloudConfigured ? 'Thêm lên bản đồ' : 'Lưu vị trí';
             editLocationFields.classList.remove('active');
             sourceImage = null;
             currentImageDataUrl = "";
             resetImageEditor();
             saveButton.disabled = false;
-            saveButton.innerText = isCloudConfigured ? 'Gửi admin duyệt' : 'Lưu vị trí';
+            saveButton.innerText = isCloudConfigured ? 'Thêm lên bản đồ' : 'Lưu vị trí';
         }
 
         initializeStorage().then(() => {
             saveButton.disabled = false;
-            openModalButton.disabled = isCloudConfigured ? !supabaseClient : false;
+            openModalButton.disabled = isCloudConfigured ? !supabaseClient || !currentUser : false;
             exportBackupButton.disabled = false;
-            importBackupButton.disabled = isCloudConfigured && !canEditSharedCats;
+            importBackupButton.disabled = isCloudConfigured && !currentUser;
         }).catch(error => {
             console.error('Không thể khởi tạo kho dữ liệu:', error);
             showAppStatus(`Không thể mở kho dữ liệu trên trình duyệt: ${error.message}`);
