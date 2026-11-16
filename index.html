@@ -935,7 +935,7 @@
         @media (max-width: 600px) {
             .cat-popup-list {
                 width: min(310px, calc(100vw - 76px));
-                max-height: min(68dvh, 560px);
+                max-height: min(42dvh, 360px);
             }
 
             .cat-popup-entry {
@@ -943,7 +943,7 @@
             }
 
             .popup-img {
-                height: min(190px, 26vh);
+                height: min(150px, 18vh);
             }
 
             .cat-record-actions {
@@ -1883,6 +1883,28 @@
             L.DomEvent.disableScrollPropagation(content);
             activeCatPopup = L.popup(options).setLatLng(latlng).setContent(content);
             activeCatPopup.openOn(map);
+            const popup = activeCatPopup;
+            setTimeout(() => {
+                if (activeCatPopup !== popup) return;
+                const popupElement = popup.getElement();
+                if (!popupElement) return;
+                const popupBounds = popupElement.getBoundingClientRect();
+                const mapBounds = map.getContainer().getBoundingClientRect();
+                const edgePadding = 8;
+                const horizontalOverflow = popupBounds.right > mapBounds.right - edgePadding
+                    ? popupBounds.right - (mapBounds.right - edgePadding)
+                    : popupBounds.left < mapBounds.left + edgePadding
+                        ? popupBounds.left - (mapBounds.left + edgePadding)
+                        : 0;
+                const verticalOverflow = popupBounds.bottom > mapBounds.bottom - edgePadding
+                    ? popupBounds.bottom - (mapBounds.bottom - edgePadding)
+                    : popupBounds.top < mapBounds.top + edgePadding
+                        ? popupBounds.top - (mapBounds.top + edgePadding)
+                        : 0;
+                if (horizontalOverflow || verticalOverflow) {
+                    map.panBy([horizontalOverflow, verticalOverflow], { animate: false });
+                }
+            }, 0);
         }
 
         function getCatPopupOptions() {
