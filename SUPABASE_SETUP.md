@@ -2,7 +2,7 @@
 
 The Supabase project is `so-tay-bat-meo` (`sxeslpgevuzabvetfijl`). Its `cats` and `cat_editors` tables, row-level security policies, audit trigger, and Realtime publication have been created. The project URL and publishable key are configured in `index.html`.
 
-In shared mode, anyone can read the cat map, but only accounts listed in `public.cat_editors` can add, edit, or delete records. The browser UI is not the security boundary; the database policies enforce access.
+Anyone can view the shared map and submit a cat without signing in. New submissions are private until an administrator approves them. Only invited editors can change approved map records; the administrator can review submissions in the app's account panel. Database row-level security and approval functions enforce these permissions.
 
 ## Deployment status
 
@@ -10,7 +10,7 @@ The app is hosted on GitHub Pages at <https://phamduyen6611-ops.github.io/so-tay
 
 ## Invite editors
 
-The first editor has been invited and added to `public.cat_editors`. They need to open the invitation email and set a password on the hosted app before signing in.
+The invited account has admin access in `public.cat_editors`. Open the invitation email and set a password on the hosted app before signing in. Use **Chờ duyệt** in the account panel to approve or reject public submissions.
 
 To invite another editor:
 
@@ -23,7 +23,11 @@ To invite another editor:
    values ('00000000-0000-0000-0000-000000000000');
    ```
 
-4. The invited person opens the invitation link, sets a password in the deployed app, and signs in. Only invited users with a matching `cat_editors` row can change shared data.
+4. The invited person opens the invitation link, sets a password in the deployed app, and signs in. Only invited users with a matching `cat_editors` row can change approved shared data.
+
+## Enable public submissions and moderation
+
+Run the updated `supabase-setup.sql` in the Supabase SQL Editor. It adds the private `cat_submissions` queue, lets anonymous visitors submit pending cats, and installs admin-only approval/rejection functions. It also marks the existing administrator account as an admin. Pending submissions are not readable by the public and do not appear on the map until approved.
 
 ## Existing local data
 

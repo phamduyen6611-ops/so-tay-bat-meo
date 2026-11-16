@@ -160,6 +160,43 @@
             background: var(--bg-color);
         }
 
+        .moderation-queue {
+            display: grid;
+            gap: 8px;
+            max-height: min(45dvh, 360px);
+            overflow-y: auto;
+        }
+
+        .moderation-queue[hidden] {
+            display: none;
+        }
+
+        .submission-card {
+            display: grid;
+            gap: 6px;
+            padding: 10px;
+            border: 1px solid #f1cbd2;
+            border-radius: 12px;
+            overflow-wrap: anywhere;
+        }
+
+        .submission-card img {
+            width: 100%;
+            max-height: 150px;
+            border-radius: 8px;
+            object-fit: contain;
+            background: #fff7f8;
+        }
+
+        .submission-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .submission-actions button {
+            flex: 1;
+        }
+
         .cat-search-input {
             width: 100%;
             min-height: 44px;
@@ -811,6 +848,8 @@
                 autocomplete="new-password" hidden>
             <button type="submit" id="collaborationSignInBtn">Đăng nhập</button>
             <button type="button" id="collaborationSetPasswordBtn" hidden>Đặt mật khẩu</button>
+            <button type="button" id="moderationQueueToggle" hidden>Chờ duyệt (0)</button>
+            <div class="moderation-queue" id="moderationQueue" hidden></div>
             <button type="button" id="collaborationMigrateLocalBtn" class="collaboration-migrate-button" hidden></button>
             <button type="button" id="collaborationSignOutBtn" hidden>Đăng xuất</button>
         </form>
@@ -882,7 +921,7 @@
 
             <input id="catName" class="cat-name-input" type="text" maxlength="40"
                 placeholder="Tên bé mèo (ví dụ: Mimi)" autocomplete="off">
-            <textarea id="catNote" placeholder="Mèo tam thể, đang ngủ gật..."></textarea>
+            <textarea id="catNote" maxlength="2000" placeholder="Mèo tam thể, đang ngủ gật..."></textarea>
 
             <button type="button" class="btn btn-location" id="chooseMapLocationBtn">
                 📍 Chọn vị trí trên bản đồ
@@ -1015,6 +1054,8 @@
         const collaborationNewPassword = document.getElementById('collaborationNewPassword');
         const collaborationSignInButton = document.getElementById('collaborationSignInBtn');
         const collaborationSetPasswordButton = document.getElementById('collaborationSetPasswordBtn');
+        const moderationQueueToggle = document.getElementById('moderationQueueToggle');
+        const moderationQueue = document.getElementById('moderationQueue');
         const collaborationMigrateLocalButton = document.getElementById('collaborationMigrateLocalBtn');
         const collaborationSignOutButton = document.getElementById('collaborationSignOutBtn');
         const imageViewer = document.getElementById('imageViewer');
@@ -1029,6 +1070,8 @@
         let pendingMapCat = null;
         let currentUser = null;
         let canEditSharedCats = false;
+        let isCatAdmin = false;
+        let pendingCatSubmissions = [];
         let localCatsForMigration = [];
         let localCatsMigrationComplete = false;
         let cloudRenderTimer = null;
@@ -1244,26 +1287,32 @@
                 return;
             }
 
-            collaborationToggle.textContent = canEditSharedCats
-                ? '☁️ Đang đồng bộ · Có quyền sửa'
-                : '☁️ Dữ liệu chung · Chỉ xem';
+            collaborationToggle.textContent = isCatAdmin
+                ? '☁️ Admin duyệt'
+                : canEditSharedCats
+                    ? '☁️ Đang đồng bộ · Có quyền sửa'
+                : '☁️ Gửi mèo chờ duyệt';
             collaborationMessage.textContent = !currentUser
-                ? 'Bạn có thể xem dữ liệu chung. Chỉ tài khoản được mời mới có quyền sửa.'
+                ? 'Bạn có thể gửi mèo để admin duyệt. Mèo chỉ hiện trên bản đồ sau khi được duyệt.'
+                : isCatAdmin
+                    ? `Đã đăng nhập admin: ${currentUser.email || 'quản trị viên'}.`
                 : canEditSharedCats
                     ? `Đã đăng nhập: ${currentUser.email || 'thành viên được mời'}.`
-                    : `Tài khoản ${currentUser.email || ''} chưa được cấp quyền sửa.`;
+                    : `Tài khoản ${currentUser.email || ''} có thể gửi mèo chờ duyệt nhưng chưa được cấp quyền sửa.`;
             collaborationEmail.hidden = Boolean(currentUser);
             collaborationPassword.hidden = Boolean(currentUser) || passwordRecoveryMode;
             collaborationSignInButton.hidden = Boolean(currentUser) || passwordRecoveryMode;
             collaborationNewPassword.hidden = !passwordRecoveryMode;
             collaborationSetPasswordButton.hidden = !passwordRecoveryMode;
+            moderationQueueToggle.hidden = !isCatAdmin;
+            moderationQueueToggle.textContent = `Chờ duyệt (${pendingCatSubmissions.length})`;
             collaborationMigrateLocalButton.hidden = !localCatsForMigration.length || localCatsMigrationComplete;
             collaborationMigrateLocalButton.disabled = !canEditSharedCats;
             collaborationMigrateLocalButton.textContent = `Đưa ${localCatsForMigration.length} mèo trên thiết bị lên dữ liệu chung`;
             collaborationSignOutButton.hidden = !currentUser;
             collaborationSignInButton.disabled = false;
             collaborationSetPasswordButton.disabled = false;
-            openModalButton.disabled = !canEditSharedCats;
+            openModalButton.disabled = isCloudConfigured ? !supabaseClient : false;
             importBackupButton.disabled = !canEditSharedCats;
             renderCatMarkers();
         }
@@ -1271,6 +1320,7 @@
         async function refreshEditorAccess() {
             currentUser = null;
             canEditSharedCats = false;
+            isCatAdmin = false;
             if (supabaseClient) {
                 const { data: sessionResult, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError) throw sessionError;
@@ -1278,11 +1328,12 @@
                 if (currentUser) {
                     const { data, error } = await supabaseClient
                         .from('cat_editors')
-                        .select('user_id')
+                        .select('user_id, is_admin')
                         .eq('user_id', currentUser.id)
                         .maybeSingle();
                     if (error) throw error;
                     canEditSharedCats = Boolean(data);
+                    isCatAdmin = Boolean(data?.is_admin);
                 }
             }
             updateCollaborationControls();
@@ -1296,6 +1347,72 @@
             if (error) throw error;
             cats = validateCats(data.map(catFromCloudRow));
             renderCatMarkers();
+        }
+
+        function renderModerationQueue() {
+            moderationQueue.replaceChildren();
+            moderationQueueToggle.textContent = `Chờ duyệt (${pendingCatSubmissions.length})`;
+            if (!pendingCatSubmissions.length) {
+                const emptyMessage = document.createElement('p');
+                emptyMessage.textContent = 'Chưa có mèo nào chờ duyệt.';
+                moderationQueue.appendChild(emptyMessage);
+                return;
+            }
+
+            pendingCatSubmissions.forEach(submission => {
+                const card = document.createElement('article');
+                card.className = 'submission-card';
+                const title = document.createElement('b');
+                title.textContent = submission.name || 'Mèo chưa đặt tên';
+                card.appendChild(title);
+                const location = document.createElement('small');
+                location.textContent = formatCatLocation(submission);
+                card.appendChild(location);
+                const note = document.createElement('span');
+                note.textContent = submission.note || '';
+                card.appendChild(note);
+                if (submission.image) {
+                    const image = document.createElement('img');
+                    image.src = submission.image;
+                    image.alt = `Ảnh đề xuất: ${submission.name || 'mèo chưa đặt tên'}`;
+                    card.appendChild(image);
+                }
+
+                const actions = document.createElement('div');
+                actions.className = 'submission-actions';
+                ['approve', 'reject'].forEach(action => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.dataset.submissionAction = action;
+                    button.dataset.submissionId = submission.id;
+                    button.textContent = action === 'approve' ? 'Duyệt' : 'Từ chối';
+                    actions.appendChild(button);
+                });
+                card.appendChild(actions);
+                moderationQueue.appendChild(card);
+            });
+        }
+
+        async function refreshPendingSubmissions() {
+            if (!isCatAdmin) return;
+            const { data, error } = await supabaseClient
+                .from('cat_submissions')
+                .select('id, lat, lng, name, note, image, approximate, submitted_at')
+                .order('submitted_at', { ascending: true });
+            if (error) throw error;
+            pendingCatSubmissions = data || [];
+            renderModerationQueue();
+        }
+
+        async function moderateCatSubmission(action, submissionId) {
+            if (!isCatAdmin) throw new Error('Chỉ admin mới được duyệt bài gửi.');
+            const functionName = action === 'approve'
+                ? 'approve_cat_submission'
+                : 'reject_cat_submission';
+            const { error } = await supabaseClient.rpc(functionName, { p_submission_id: submissionId });
+            if (error) throw error;
+            await Promise.all([refreshPendingSubmissions(), refreshCloudCats()]);
+            showAppStatus(action === 'approve' ? 'Đã duyệt mèo và đưa lên bản đồ chung.' : 'Đã từ chối bài gửi.');
         }
 
         function applyCloudCatChange(payload) {
@@ -1339,6 +1456,14 @@
                 .channel('shared-cats-changes')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'cats' }, payload => {
                     applyCloudCatChange(payload);
+                })
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'cat_submissions' }, () => {
+                    if (isCatAdmin) {
+                        refreshPendingSubmissions().catch(error => {
+                            console.error('Không thể tải danh sách mèo chờ duyệt:', error);
+                            showAppStatus(`Không thể tải danh sách chờ duyệt: ${error.message}`);
+                        });
+                    }
                 })
                 .subscribe(status => {
                     if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
@@ -1486,6 +1611,7 @@
                 localCatsForMigration = await readLocalCatsForMigration();
                 await refreshEditorAccess();
                 await refreshCloudCats();
+                if (isCatAdmin) await refreshPendingSubmissions();
                 subscribeToCloudCats();
                 storageReady = true;
                 updateCollaborationControls();
@@ -1537,6 +1663,7 @@
                         return !previous || catContentChanged(previous, cat);
                     })
                     .map(catToCloudRow);
+                const nextById = new Map(validatedCats.map(cat => [cat.id, cat]));
                 const idsToDelete = cats.filter(cat => !nextById.has(cat.id)).map(cat => cat.id);
 
                 if (rowsToUpsert.length) {
@@ -1570,6 +1697,22 @@
             await replaceStoredCats(validatedCats);
             cats = validatedCats;
             renderCatMarkers();
+        }
+
+        async function submitCatForReview(cat) {
+            const { error } = await supabaseClient
+                .from('cat_submissions')
+                .insert({
+                    id: cat.id,
+                    lat: cat.lat,
+                    lng: cat.lng,
+                    name: cat.name,
+                    note: cat.note,
+                    image: cat.image,
+                    approximate: cat.approximate
+                });
+            if (error) throw error;
+            showAppStatus('Đã gửi mèo cho admin duyệt. Mèo sẽ xuất hiện trên bản đồ sau khi được duyệt.');
         }
 
         async function migrateLocalCatsToCloud() {
@@ -1606,6 +1749,12 @@
 
         async function saveCatAt(lat, lng, name, note, approximate, image = currentImageDataUrl) {
             const cat = { id: createCatId(), lat, lng, name, note, image: image || null, approximate };
+            if (isCloudConfigured) {
+                await submitCatForReview(cat);
+                map.setView([lat, lng], 17);
+                resetAndCloseModal();
+                return;
+            }
             await persistCats(cats.concat(cat));
             const group = markerGroups.get(`${lat},${lng}`);
             if (group) openCatGroupPopup(group);
@@ -1621,8 +1770,8 @@
                 await saveCatAt(event.latlng.lat, event.latlng.lng, selectedCat.name, selectedCat.note, false, selectedCat.image);
                 pendingMapCat = null;
                 mapSelectionPrompt.classList.remove('active');
-                openModalButton.disabled = false;
-                clearAppStatus();
+                openModalButton.disabled = isCloudConfigured ? !supabaseClient : false;
+                if (!isCloudConfigured) clearAppStatus();
             } catch (error) {
                 console.error('Không thể lưu mèo tại vị trí đã chọn:', error);
                 showAppStatus(`Không thể lưu vị trí: ${error.message}`);
@@ -1794,7 +1943,7 @@
         openModalButton.onclick = () => {
             editingCatId = null;
             modalTitle.textContent = 'Bắt được một bé! 🐾';
-            saveButton.textContent = 'Lưu vị trí';
+            saveButton.textContent = isCloudConfigured ? 'Gửi admin duyệt' : 'Lưu vị trí';
             chooseMapLocationButton.style.display = 'block';
             editLocationFields.classList.remove('active');
             document.getElementById('catName').value = '';
@@ -1825,7 +1974,7 @@
         document.getElementById('cancelMapSelectionBtn').onclick = () => {
             pendingMapCat = null;
             mapSelectionPrompt.classList.remove('active');
-            openModalButton.disabled = isCloudConfigured && !canEditSharedCats;
+            openModalButton.disabled = isCloudConfigured ? !supabaseClient : false;
         };
         L.DomEvent.disableClickPropagation(collaborationPanel);
         collaborationToggle.onclick = () => {
@@ -1844,6 +1993,7 @@
                 if (error) throw error;
                 await refreshEditorAccess();
                 await refreshCloudCats();
+                if (isCatAdmin) await refreshPendingSubmissions();
                 collaborationPassword.value = '';
             } catch (error) {
                 console.error('Không thể đăng nhập cộng tác:', error);
@@ -1892,12 +2042,47 @@
                 if (error) throw error;
                 currentUser = null;
                 canEditSharedCats = false;
+                isCatAdmin = false;
+                pendingCatSubmissions = [];
                 updateCollaborationControls();
             } catch (error) {
                 console.error('Không thể đăng xuất:', error);
                 collaborationMessage.textContent = `Không thể đăng xuất: ${error.message}`;
             }
         };
+        moderationQueueToggle.onclick = async () => {
+            if (!isCatAdmin) return;
+            moderationQueue.hidden = !moderationQueue.hidden;
+            moderationQueueToggle.setAttribute('aria-expanded', String(!moderationQueue.hidden));
+            if (!moderationQueue.hidden) {
+                moderationQueueToggle.disabled = true;
+                try {
+                    await refreshPendingSubmissions();
+                } catch (error) {
+                    console.error('Không thể tải danh sách mèo chờ duyệt:', error);
+                    showAppStatus(`Không thể tải danh sách chờ duyệt: ${error.message}`);
+                } finally {
+                    moderationQueueToggle.disabled = false;
+                }
+            }
+        };
+        moderationQueue.addEventListener('click', async event => {
+            const button = event.target.closest('button[data-submission-action]');
+            if (!button) return;
+            if (button.dataset.submissionAction === 'reject' &&
+                !confirm('Từ chối và xóa bài gửi mèo này?')) return;
+            const submissionId = button.dataset.submissionId;
+            const actionButtons = [...moderationQueue.querySelectorAll('button[data-submission-id]')]
+                .filter(actionButton => actionButton.dataset.submissionId === submissionId);
+            actionButtons.forEach(actionButton => { actionButton.disabled = true; });
+            try {
+                await moderateCatSubmission(button.dataset.submissionAction, submissionId);
+            } catch (error) {
+                console.error('Không thể duyệt bài gửi mèo:', error);
+                showAppStatus(`Không thể xử lý bài gửi: ${error.message}`);
+                actionButtons.forEach(actionButton => { actionButton.disabled = false; });
+            }
+        });
         if (supabaseClient) {
             collaborationToggle.textContent = '☁️ Đang kết nối dữ liệu chung…';
             supabaseClient.auth.onAuthStateChange(event => {
@@ -1905,12 +2090,17 @@
                 if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
                     currentUser = null;
                     canEditSharedCats = false;
+                    isCatAdmin = false;
+                    pendingCatSubmissions = [];
                     setTimeout(updateCollaborationControls, 0);
                 } else if (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY' || event === 'USER_UPDATED') {
                     setTimeout(async () => {
                         try {
                             await refreshEditorAccess();
-                            if (storageReady) await refreshCloudCats();
+                            if (storageReady) {
+                                await refreshCloudCats();
+                                if (isCatAdmin) await refreshPendingSubmissions();
+                            }
                         } catch (error) {
                             console.error('Không thể cập nhật quyền cộng tác:', error);
                             showAppStatus(`Không thể xác nhận quyền tài khoản: ${error.message}`);
@@ -2068,8 +2258,9 @@
         saveButton.onclick = async () => {
             const name = document.getElementById('catName').value.trim().slice(0, 40) || 'Mèo chưa đặt tên';
             const note = document.getElementById('catNote').value || "Một bé mèo cute ẩn danh 🐾";
+            const isEditing = Boolean(editingCatId);
             saveButton.disabled = true;
-            saveButton.innerText = editingCatId ? 'Đang lưu...' : 'Đang lấy vị trí...';
+            saveButton.innerText = isEditing ? 'Đang lưu...' : 'Đang lấy vị trí...';
             await new Promise(resolve => requestAnimationFrame(resolve));
             try {
                 currentImageDataUrl = sourceImage ? photoPreviewCanvas.toDataURL('image/jpeg', 0.82) : '';
@@ -2078,7 +2269,8 @@
                 appStatus.textContent = 'Không thể xử lý ảnh này. Vui lòng chọn ảnh khác.';
                 appStatus.style.display = 'block';
                 saveButton.disabled = false;
-                saveButton.innerText = editingCatId ? 'Lưu thay đổi' : 'Lưu vị trí';
+                saveButton.innerText = isEditing ? 'Lưu thay đổi' :
+                    isCloudConfigured ? 'Gửi admin duyệt' : 'Lưu vị trí';
                 return;
             }
             try {
@@ -2111,7 +2303,7 @@
                     saveButton.innerText = 'Đang đồng bộ...';
                     await saveCatAt(position.coords.latitude, position.coords.longitude, name, note, false);
                 }
-                clearAppStatus();
+                if (!isCloudConfigured || isEditing) clearAppStatus();
             } catch (error) {
                 if (!editingCatId && error?.geolocationError) {
                     const locationError = error.geolocationError;
@@ -2135,7 +2327,8 @@
                 }
             } finally {
                 saveButton.disabled = false;
-                saveButton.innerText = editingCatId ? 'Lưu thay đổi' : 'Lưu vị trí';
+                saveButton.innerText = editingCatId ? 'Lưu thay đổi' :
+                    isCloudConfigured ? 'Gửi admin duyệt' : 'Lưu vị trí';
             }
         };
 
@@ -2147,18 +2340,18 @@
             previewContainer.style.display = "none";
             editingCatId = null;
             modalTitle.textContent = 'Bắt được một bé! 🐾';
-            saveButton.innerText = 'Lưu vị trí';
+            saveButton.innerText = isCloudConfigured ? 'Gửi admin duyệt' : 'Lưu vị trí';
             editLocationFields.classList.remove('active');
             sourceImage = null;
             currentImageDataUrl = "";
             resetImageEditor();
             saveButton.disabled = false;
-            saveButton.innerText = 'Lưu vị trí';
+            saveButton.innerText = isCloudConfigured ? 'Gửi admin duyệt' : 'Lưu vị trí';
         }
 
         initializeStorage().then(() => {
             saveButton.disabled = false;
-            openModalButton.disabled = isCloudConfigured && !canEditSharedCats;
+            openModalButton.disabled = isCloudConfigured ? !supabaseClient : false;
             exportBackupButton.disabled = false;
             importBackupButton.disabled = isCloudConfigured && !canEditSharedCats;
         }).catch(error => {
