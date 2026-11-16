@@ -81,13 +81,26 @@
             display: none;
             margin-top: 8px;
             padding: 12px;
+            max-height: calc(100dvh - 160px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+            box-sizing: border-box;
+            overflow-y: auto;
+            overscroll-behavior: contain;
             border-radius: 16px;
             background: white;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
         }
 
         .cat-list-panel.expanded .cat-list-content {
-            display: block;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cat-list-panel.expanded {
+            z-index: 1001;
+        }
+
+        .cat-list-content > :not(.cat-search-results) {
+            flex-shrink: 0;
         }
 
         .collaboration-panel {
@@ -209,9 +222,81 @@
             font-size: 16px;
         }
 
+        .cat-filters {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .cat-filters label {
+            min-width: 0;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .cat-filters select {
+            width: 100%;
+            min-height: 44px;
+            margin-top: 4px;
+            padding: 8px 4px;
+            box-sizing: border-box;
+            border: 1px solid #f1cbd2;
+            border-radius: 10px;
+            background: white;
+            color: var(--text-color);
+            font: inherit;
+            font-size: 16px;
+        }
+
+        .cat-filter-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .cat-filter-actions button {
+            min-height: 44px;
+            padding: 8px 10px;
+            border: 1px solid #f1cbd2;
+            border-radius: 10px;
+            background: #fff0f3;
+            color: var(--text-color);
+            font: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .cat-filter-actions button:first-child {
+            flex: 1;
+        }
+
+        .cat-filter-actions button:disabled {
+            opacity: 0.6;
+            cursor: default;
+        }
+
+        .cat-location-note,
+        .cat-filter-summary {
+            margin: 8px 0 0;
+            color: #806b6e;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .cat-filter-summary {
+            color: var(--text-color);
+            font-weight: 700;
+        }
+
         .cat-search-results {
             display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-auto-rows: max-content;
+            align-content: start;
             gap: 6px;
+            min-height: 0;
             max-height: min(45dvh, 360px);
             margin-top: 8px;
             overflow-y: auto;
@@ -219,6 +304,7 @@
         }
 
         .cat-search-result {
+            min-width: 0;
             min-height: 48px;
             padding: 8px 10px;
             border: 1px solid #f4dce1;
@@ -796,6 +882,10 @@
                 width: min(300px, calc(100vw - 76px));
             }
 
+            .cat-list-panel.expanded {
+                width: min(360px, calc(100vw - 20px));
+            }
+
             .backup-actions.popup-active {
                 display: none;
             }
@@ -1079,7 +1169,35 @@
             aria-controls="catListContent">🐾 Danh sách mèo (0)</button>
         <div class="cat-list-content" id="catListContent">
             <input type="search" class="cat-search-input" id="catSearchInput"
-                placeholder="Tìm theo tên hoặc ghi chú" autocomplete="off" aria-label="Tìm mèo theo tên hoặc ghi chú">
+                placeholder="Tìm tên, ghi chú, vị trí" autocomplete="off" aria-label="Tìm mèo theo tên, ghi chú hoặc vị trí">
+            <div class="cat-filters">
+                <label for="catStatusFilter">Tình trạng
+                    <select id="catStatusFilter">
+                        <option value="">Tất cả</option>
+                        <option value="seen">Vẫn thấy</option>
+                        <option value="helped">Đã được giúp đỡ</option>
+                        <option value="not_found">Không còn ở đây</option>
+                        <option value="other">Khác</option>
+                        <option value="unknown">Chưa cập nhật</option>
+                    </select>
+                </label>
+                <label for="catDistanceFilter">Khoảng cách
+                    <select id="catDistanceFilter" aria-describedby="catLocationNote">
+                        <option value="">Tất cả</option>
+                        <option value="500">Trong 500 m</option>
+                        <option value="1000">Trong 1 km</option>
+                        <option value="3000">Trong 3 km</option>
+                        <option value="5000">Trong 5 km</option>
+                        <option value="10000">Trong 10 km</option>
+                    </select>
+                </label>
+            </div>
+            <div class="cat-filter-actions">
+                <button type="button" id="catLocationBtn">Dùng vị trí của tôi</button>
+                <button type="button" id="catClearFiltersBtn" disabled>Xóa bộ lọc</button>
+            </div>
+            <p class="cat-location-note" id="catLocationNote" role="status" aria-live="polite">Dùng vị trí của bạn để tìm mèo gần nhất.</p>
+            <p class="cat-filter-summary" id="catFilterSummary" role="status" aria-live="polite"></p>
             <div class="cat-search-results" id="catSearchResults" role="list"></div>
         </div>
     </section>
@@ -1265,14 +1383,6 @@
             });
         }
 
-        map.locate({setView: true, maxZoom: 16, timeout: 5000});
-        map.on('locationfound', (e) => {
-            L.circleMarker(e.latlng, { radius: 8, color: '#ff8da1', fillColor: '#ff8da1', fillOpacity: 0.5 }).addTo(map);
-        });
-        map.on('locationerror', (e) => {
-            console.warn('Không lấy được GPS:', e.message);
-        });
-
         const modal = document.getElementById('addCatModal');
         const photoInput = document.getElementById('catPhoto');
         const photoPreviewCanvas = document.getElementById('photoPreviewCanvas');
@@ -1298,6 +1408,16 @@
         const catListToggle = document.getElementById('catListToggle');
         const catSearchInput = document.getElementById('catSearchInput');
         const catSearchResults = document.getElementById('catSearchResults');
+        const catStatusFilter = document.getElementById('catStatusFilter');
+        const catDistanceFilter = document.getElementById('catDistanceFilter');
+        const catLocationButton = document.getElementById('catLocationBtn');
+        const catClearFiltersButton = document.getElementById('catClearFiltersBtn');
+        const catLocationNote = document.getElementById('catLocationNote');
+        const catFilterSummary = document.getElementById('catFilterSummary');
+        let catFilterLocation = null;
+        let catLocationMarker = null;
+        let catLocationLoading = false;
+        let catLocationError = '';
         const collaborationPanel = document.getElementById('collaborationPanel');
         const collaborationToggle = document.getElementById('collaborationToggle');
         const collaborationContent = document.getElementById('collaborationContent');
@@ -2067,22 +2187,62 @@
             return lookup;
         }
 
-        function renderCatList() {
-            catListToggle.textContent = `🐾 Danh sách mèo (${cats.length})`;
+        function getFilteredCatResults() {
             const query = normalizeSearchText(catSearchInput.value.trim());
-            const filteredCats = cats.filter(cat =>
-                normalizeSearchText(`${cat.name || 'Mèo chưa đặt tên'} ${cat.note} ${formatCatLocation(cat)}`).includes(query)
+            const selectedStatus = catStatusFilter.value;
+            const radius = catDistanceFilter.value ? Number(catDistanceFilter.value) : null;
+            const results = cats.map(cat => ({
+                cat,
+                distance: catFilterLocation ? L.latLng(cat.lat, cat.lng).distanceTo(catFilterLocation) : null
+            })).filter(({ cat, distance }) =>
+                (!selectedStatus || (cat.current_status || 'unknown') === selectedStatus) &&
+                (!radius || (distance !== null && distance <= radius)) &&
+                normalizeSearchText(`${cat.name || 'Mèo chưa đặt tên'} ${cat.note || ''} ${formatCatLocation(cat)}`).includes(query)
             );
+            if (catFilterLocation) results.sort((a, b) => a.distance - b.distance);
+            return results;
+        }
+
+        function updateCatLocationControls() {
+            catLocationButton.disabled = catLocationLoading;
+            catLocationButton.textContent = catLocationLoading ? 'Đang lấy vị trí…' :
+                catFilterLocation ? 'Cập nhật vị trí' : 'Dùng vị trí của tôi';
+            catLocationNote.textContent = catLocationLoading ? 'Đang xác định vị trí của bạn…' :
+                catLocationError || (catFilterLocation
+                    ? 'Xếp gần nhất trước. Khoảng cách tính theo đường thẳng từ vị trí của bạn.'
+                    : 'Dùng vị trí của bạn để tìm mèo gần nhất.');
+        }
+
+        function requestCatFilterLocation(setView = false) {
+            if (catLocationLoading) return;
+            catLocationLoading = true;
+            catLocationError = '';
+            updateCatLocationControls();
+            renderCatList();
+            map.locate({ setView, maxZoom: 16, timeout: 10000, maximumAge: 60000, enableHighAccuracy: true });
+        }
+
+        function renderCatList(results = getFilteredCatResults()) {
+            const hasFilters = Boolean(catSearchInput.value.trim() || catStatusFilter.value || catDistanceFilter.value);
+            catListToggle.textContent = hasFilters
+                ? `🐾 Danh sách mèo (${results.length}/${cats.length})`
+                : `🐾 Danh sách mèo (${cats.length})`;
+            catClearFiltersButton.disabled = !hasFilters;
+            catFilterSummary.textContent = catDistanceFilter.value && !catFilterLocation
+                ? 'Cần vị trí của bạn để lọc theo khoảng cách.'
+                : `Hiển thị ${results.length}/${cats.length} mèo trên bản đồ.`;
             catSearchResults.replaceChildren();
-            if (!filteredCats.length) {
+            if (!results.length) {
                 const emptyMessage = document.createElement('p');
                 emptyMessage.className = 'cat-search-empty';
-                emptyMessage.textContent = cats.length ? 'Không tìm thấy bé mèo phù hợp.' : 'Chưa có mèo nào được lưu.';
+                emptyMessage.textContent = catDistanceFilter.value && !catFilterLocation
+                    ? catLocationLoading ? 'Đang chờ vị trí GPS…' : 'Bấm “Dùng vị trí của tôi” hoặc chọn “Tất cả” trong Khoảng cách để xem mèo.'
+                    : cats.length ? 'Không tìm thấy bé mèo phù hợp. Hãy thử mở rộng khoảng cách hoặc xóa bộ lọc.' : 'Chưa có mèo nào được lưu.';
                 catSearchResults.appendChild(emptyMessage);
                 return;
             }
 
-            filteredCats.forEach(cat => {
+            results.forEach(({ cat, distance }) => {
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'cat-search-result';
@@ -2093,6 +2253,12 @@
                 const location = document.createElement('small');
                 location.textContent = formatCatLocation(cat);
                 button.appendChild(location);
+                const details = document.createElement('small');
+                const distanceLabel = distance === null ? '' : distance < 1000
+                    ? `${Math.round(distance)} m`
+                    : `${(distance / 1000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} km`;
+                details.textContent = [getCatStatusLabel(cat.current_status), distanceLabel].filter(Boolean).join(' · ');
+                button.appendChild(details);
                 if (cat.note) {
                     const note = document.createElement('small');
                     note.textContent = cat.note;
@@ -2147,8 +2313,9 @@
             map.closePopup();
             markerGroups.forEach(group => group.marker.remove());
             markerGroups.clear();
-            cats.forEach(cat => addCatMarker(cat));
-            renderCatList();
+            const results = getFilteredCatResults();
+            results.forEach(({ cat }) => addCatMarker(cat));
+            renderCatList(results);
         }
 
         async function initializeStorage() {
@@ -2583,7 +2750,7 @@
                     : item));
             }
             const updatedCat = cats.find(item => item.id === catId);
-            if (updatedCat) openSingleCatPopup(updatedCat);
+            if (updatedCat && getFilteredCatResults().some(({ cat }) => cat.id === catId)) openSingleCatPopup(updatedCat);
             showAppStatus(`Đã cập nhật tình trạng: ${getCatStatusLabel(status)}.`);
         }
 
@@ -2887,6 +3054,7 @@
             updateCollaborationControls();
         }
         L.DomEvent.disableClickPropagation(catListPanel);
+        L.DomEvent.disableScrollPropagation(catListPanel);
         catListToggle.onclick = () => {
             const expanded = catListPanel.classList.toggle('expanded');
             catListToggle.setAttribute('aria-expanded', String(expanded));
@@ -2895,7 +3063,40 @@
                 catSearchInput.focus();
             }
         };
-        catSearchInput.addEventListener('input', renderCatList);
+        catSearchInput.addEventListener('input', () => renderCatMarkers());
+        catStatusFilter.addEventListener('change', () => renderCatMarkers());
+        catDistanceFilter.addEventListener('change', () => {
+            renderCatMarkers();
+            if (catDistanceFilter.value && !catFilterLocation) requestCatFilterLocation();
+        });
+        catLocationButton.addEventListener('click', () => requestCatFilterLocation());
+        catClearFiltersButton.addEventListener('click', () => {
+            catSearchInput.value = '';
+            catStatusFilter.value = '';
+            catDistanceFilter.value = '';
+            renderCatMarkers();
+        });
+        map.on('locationfound', event => {
+            catFilterLocation = event.latlng;
+            catLocationLoading = false;
+            catLocationError = '';
+            if (catLocationMarker) catLocationMarker.setLatLng(event.latlng);
+            else catLocationMarker = L.circleMarker(event.latlng, {
+                radius: 8, color: '#ff8da1', fillColor: '#ff8da1', fillOpacity: 0.5
+            }).addTo(map);
+            updateCatLocationControls();
+            renderCatMarkers();
+        });
+        map.on('locationerror', event => {
+            catLocationLoading = false;
+            catLocationError = event.code === 1
+                ? 'Chưa được cấp quyền vị trí. Hãy cho phép truy cập vị trí trong trình duyệt hoặc chọn “Tất cả” trong Khoảng cách.'
+                : 'Không lấy được vị trí. Hãy thử lại hoặc chọn “Tất cả” trong Khoảng cách.';
+            if (catFilterLocation) catLocationError += ' Khoảng cách vẫn dùng vị trí đã lấy trước đó.';
+            updateCatLocationControls();
+            renderCatList();
+        });
+        requestCatFilterLocation(true);
         document.addEventListener('click', event => {
             if (!catListPanel.contains(event.target)) {
                 catListPanel.classList.remove('expanded');
