@@ -333,6 +333,12 @@
             color: #806b6e;
         }
 
+        .cat-search-result .cat-search-location {
+            white-space: normal;
+            overflow-wrap: anywhere;
+            line-height: 1.4;
+        }
+
         .cat-search-empty {
             margin: 8px 2px 2px;
             color: #806b6e;
@@ -1356,6 +1362,7 @@
         map.on('popupopen', () => backupActions.classList.add('popup-active'));
         map.on('popupclose', event => {
             backupActions.classList.remove('popup-active');
+            stopObservingCatLocations(event.popup.getContent());
             if (activeCatPopup === event.popup) activeCatPopup = null;
         });
 
@@ -1457,7 +1464,11 @@
         let passwordRecoveryMode = authLinkType === 'invite' || authLinkType === 'recovery';
         let isSignUpMode = false;
         let catsRealtimeChannel = null;
-        const reverseGeocodeCache = new Map();
+        const locationNameCacheKey = 'catMapLocationNamesV1';
+        const reverseGeocodeCache = readLocationNameCache();
+        const reverseGeocodePending = new Map();
+        const reverseGeocodeFailures = new Map();
+        const catLocationObservers = new WeakMap();
         let reverseGeocodeQueue = Promise.resolve();
         let lastReverseGeocodeAt = 0;
         saveButton.disabled = true;
@@ -1499,7 +1510,7 @@
                 header.appendChild(titleRow);
                 const location = document.createElement('div');
                 location.className = 'cat-popup-location';
-                location.textContent = `📍 ${formatCatLocation(cat).replace(/^Vị trí:\s*/, '')}`;
+                setCatLocationLabel(location, cat, '📍 ');
                 header.appendChild(location);
                 entry.appendChild(header);
 
@@ -1612,6 +1623,7 @@
                 }
                 content.appendChild(entry);
             });
+            observeCatLocations(content);
             return content;
         }
 
@@ -1953,6 +1965,7 @@
         }
 
         function renderModerationQueue() {
+            stopObservingCatLocations(moderationQueue);
             moderationQueue.replaceChildren();
             moderationQueueToggle.textContent = `Bài cũ chờ duyệt (${pendingCatSubmissions.length})`;
             if (!pendingCatSubmissions.length) {
@@ -1969,7 +1982,7 @@
                 title.textContent = submission.name || 'Mèo chưa đặt tên';
                 card.appendChild(title);
                 const location = document.createElement('small');
-                location.textContent = formatCatLocation(submission);
+                setCatLocationLabel(location, submission);
                 card.appendChild(location);
                 const note = document.createElement('span');
                 note.textContent = submission.note || '';
@@ -1994,6 +2007,7 @@
                 card.appendChild(actions);
                 moderationQueue.appendChild(card);
             });
+            observeCatLocations(moderationQueue);
         }
 
         async function refreshPendingSubmissions() {
@@ -2135,14 +2149,87 @@
                 .replace(/đ/g, 'd');
         }
 
+        function readLocationNameCache() {
+            try {
+                const entries = JSON.parse(localStorage.getItem(locationNameCacheKey) || '[]');
+                return new Map(Array.isArray(entries) ? entries.filter(entry =>
+                    Array.isArray(entry) && typeof entry[0] === 'string' &&
+                    typeof entry[1] === 'string' && entry[1].trim() && entry[1].length <= 120
+                ).slice(-200) : []);
+            } catch (error) {
+                return new Map();
+            }
+        }
+
+        function getLocationCacheKey(lat, lng) {
+            return `${Number(lat).toFixed(5)},${Number(lng).toFixed(5)}`;
+        }
+
+        function getCatLocationName(cat) {
+            return cat.location_name?.trim() || reverseGeocodeCache.get(getLocationCacheKey(cat.lat, cat.lng)) || '';
+        }
+
         function formatCatLocation(cat) {
-            if (cat.location_name?.trim()) return `Vị trí: ${cat.location_name.trim()}`;
-            return `Vị trí: ${cat.lat.toFixed(5)}, ${cat.lng.toFixed(5)}`;
+            return `Vị trí: ${getCatLocationName(cat) || 'Chưa xác định địa điểm'}`;
+        }
+
+        function setCatLocationLabel(element, cat, prefix = 'Vị trí: ') {
+            const name = getCatLocationName(cat);
+            element.textContent = prefix + (name || 'Đang tìm tên địa điểm…');
+            if (name) {
+                element.title = name;
+                return;
+            }
+            element.dataset.locationKey = getLocationCacheKey(cat.lat, cat.lng);
+            element.dataset.locationLat = cat.lat;
+            element.dataset.locationLng = cat.lng;
+            element.dataset.locationPrefix = prefix;
+        }
+
+        async function resolveCatLocationLabel(element) {
+            const { locationLat, locationLng, locationPrefix } = element.dataset;
+            try {
+                const name = await lookupLocationName(Number(locationLat), Number(locationLng));
+                if (!element.isConnected) return;
+                element.textContent = locationPrefix + name;
+                element.title = name;
+            } catch (error) {
+                if (element.isConnected) element.textContent = locationPrefix + 'Chưa xác định địa điểm';
+            }
+        }
+
+        function stopObservingCatLocations(container) {
+            if (!container || typeof container !== 'object') return;
+            catLocationObservers.get(container)?.disconnect();
+            catLocationObservers.delete(container);
+        }
+
+        function observeCatLocations(container) {
+            stopObservingCatLocations(container);
+            const labels = container.querySelectorAll('[data-location-key]');
+            if (!labels.length) return;
+            if (!window.IntersectionObserver) {
+                labels.forEach(resolveCatLocationLabel);
+                return;
+            }
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (!entry.isIntersecting) return;
+                    observer.unobserve(entry.target);
+                    resolveCatLocationLabel(entry.target);
+                });
+            });
+            catLocationObservers.set(container, observer);
+            labels.forEach(label => observer.observe(label));
         }
 
         function lookupLocationName(lat, lng) {
-            const cacheKey = `${lat.toFixed(5)},${lng.toFixed(5)}`;
+            const cacheKey = getLocationCacheKey(lat, lng);
             if (reverseGeocodeCache.has(cacheKey)) return Promise.resolve(reverseGeocodeCache.get(cacheKey));
+            if (reverseGeocodePending.has(cacheKey)) return reverseGeocodePending.get(cacheKey);
+            if ((reverseGeocodeFailures.get(cacheKey) || 0) > Date.now()) {
+                return Promise.reject(new Error('Chưa thể tra cứu lại tên địa điểm.'));
+            }
 
             const lookup = reverseGeocodeQueue.then(async () => {
                 const waitTime = Math.max(0, 1100 - (Date.now() - lastReverseGeocodeAt));
@@ -2159,17 +2246,17 @@
                 });
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 10000);
-                let response;
+                let result;
                 try {
-                    response = await fetch(url, {
+                    const response = await fetch(url, {
                         headers: { 'Accept-Language': 'vi' },
                         signal: controller.signal
                     });
+                    if (!response.ok) throw new Error(`OpenStreetMap trả về lỗi ${response.status}.`);
+                    result = await response.json();
                 } finally {
                     clearTimeout(timeoutId);
                 }
-                if (!response.ok) throw new Error(`OpenStreetMap trả về lỗi ${response.status}.`);
-                const result = await response.json();
                 const address = result.address || {};
                 const locality = address.city || address.town || address.village ||
                     address.municipality || address.county || address.state;
@@ -2177,14 +2264,26 @@
                     address.city_district;
                 const road = address.road || address.pedestrian || address.footway;
                 const locationName = [...new Set([road, area, locality].filter(Boolean))]
-                    .join(', ') || result.name || result.display_name?.split(',').slice(0, 3).join(', ').trim();
+                    .join(', ') || result.name?.trim() || result.display_name?.split(',').slice(0, 3).map(part => part.trim()).join(', ').trim();
                 if (!locationName) throw new Error('Không tìm thấy tên vị trí cho tọa độ này.');
                 const normalizedName = locationName.slice(0, 120);
                 reverseGeocodeCache.set(cacheKey, normalizedName);
+                reverseGeocodeFailures.delete(cacheKey);
+                while (reverseGeocodeCache.size > 200) reverseGeocodeCache.delete(reverseGeocodeCache.keys().next().value);
+                try {
+                    localStorage.setItem(locationNameCacheKey, JSON.stringify([...reverseGeocodeCache]));
+                } catch (error) {
+                    // The in-memory cache still works when browser storage is unavailable.
+                }
                 return normalizedName;
             });
-            reverseGeocodeQueue = lookup.catch(() => {});
-            return lookup;
+            const pending = lookup.catch(error => {
+                reverseGeocodeFailures.set(cacheKey, Date.now() + 60000);
+                throw error;
+            }).finally(() => reverseGeocodePending.delete(cacheKey));
+            reverseGeocodePending.set(cacheKey, pending);
+            reverseGeocodeQueue = pending.catch(() => {});
+            return pending;
         }
 
         function getFilteredCatResults() {
@@ -2231,6 +2330,7 @@
             catFilterSummary.textContent = catDistanceFilter.value && !catFilterLocation
                 ? 'Cần vị trí của bạn để lọc theo khoảng cách.'
                 : `Hiển thị ${results.length}/${cats.length} mèo trên bản đồ.`;
+            stopObservingCatLocations(catSearchResults);
             catSearchResults.replaceChildren();
             if (!results.length) {
                 const emptyMessage = document.createElement('p');
@@ -2251,7 +2351,8 @@
                 name.textContent = cat.name || 'Mèo chưa đặt tên';
                 button.appendChild(name);
                 const location = document.createElement('small');
-                location.textContent = formatCatLocation(cat);
+                location.className = 'cat-search-location';
+                setCatLocationLabel(location, cat);
                 button.appendChild(location);
                 const details = document.createElement('small');
                 const distanceLabel = distance === null ? '' : distance < 1000
@@ -2272,6 +2373,7 @@
                 });
                 catSearchResults.appendChild(button);
             });
+            observeCatLocations(catSearchResults);
         }
 
         function openNearbyCatPopupIfNeeded(clickedGroup) {
@@ -2690,7 +2792,7 @@
             saveButton.textContent = 'Lưu thay đổi';
             chooseMapLocationButton.style.display = 'none';
             document.getElementById('catName').value = cat.name || '';
-            document.getElementById('catLocationName').value = cat.location_name || '';
+            document.getElementById('catLocationName').value = getCatLocationName(cat);
             document.getElementById('catNote').value = cat.note;
             editLatitude.value = String(cat.lat);
             editLongitude.value = String(cat.lng);
