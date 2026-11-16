@@ -8,7 +8,8 @@ create table if not exists public.cats (
     image text,
     approximate boolean not null default false,
     current_status text not null default 'unknown'
-        check (current_status in ('unknown', 'seen', 'helped', 'not_found')),
+        check (current_status in ('unknown', 'seen', 'helped', 'not_found', 'other')),
+    status_note text not null default '' check (char_length(status_note) <= 200),
     status_updated_at timestamptz,
     created_by uuid references auth.users(id) on delete set null,
     updated_by uuid references auth.users(id) on delete set null,
@@ -20,6 +21,7 @@ alter table public.cats
 
 alter table public.cats
     add column if not exists current_status text not null default 'unknown',
+    add column if not exists status_note text not null default '',
     add column if not exists status_updated_at timestamptz;
 
 do $$
@@ -48,14 +50,18 @@ begin
         select 1
         from pg_constraint
         where conrelid = 'public.cats'::regclass
-          and conname = 'cats_current_status_check'
+          and conname = 'cats_status_note_length_check'
     ) then
         alter table public.cats
-            add constraint cats_current_status_check
-            check (current_status in ('unknown', 'seen', 'helped', 'not_found'));
+            add constraint cats_status_note_length_check check (char_length(status_note) <= 200);
     end if;
 end;
 $$;
+
+alter table public.cats drop constraint if exists cats_current_status_check;
+alter table public.cats
+    add constraint cats_current_status_check
+    check (current_status in ('unknown', 'seen', 'helped', 'not_found', 'other'));
 
 create table if not exists public.cat_editors (
     user_id uuid primary key references auth.users(id) on delete cascade,
@@ -110,7 +116,7 @@ as $$
     );
 $$;
 
-create or replace function public.report_cat_status(p_cat_id text, p_status text)
+create or replace function public.report_cat_status(p_cat_id text, p_status text, p_status_note text)
 returns void
 language plpgsql
 security definer
@@ -120,12 +126,20 @@ begin
     if (select auth.uid()) is null then
         raise exception 'Sign in to update a cat status.';
     end if;
-    if p_status is null or p_status not in ('seen', 'helped', 'not_found') then
+    if p_status is null or p_status not in ('seen', 'helped', 'not_found', 'other') then
         raise exception 'Invalid cat status.';
+    end if;
+    if p_status = 'other' then
+        if p_status_note is null or char_length(trim(p_status_note)) = 0 or char_length(p_status_note) > 200 then
+            raise exception 'Other cat status must include a note of at most 200 characters.';
+        end if;
+    else
+        p_status_note := '';
     end if;
 
     update public.cats
     set current_status = p_status,
+        status_note = p_status_note,
         status_updated_at = now()
     where id = p_cat_id;
 
@@ -133,6 +147,15 @@ begin
         raise exception 'Cat not found.';
     end if;
 end;
+$$;
+
+create or replace function public.report_cat_status(p_cat_id text, p_status text)
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+    select public.report_cat_status(p_cat_id, p_status, '');
 $$;
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -335,11 +358,13 @@ grant select on public.cat_editors to authenticated;
 grant select, update, delete on public.cat_submissions to authenticated;
 revoke insert on public.cat_submissions from public, anon, authenticated;
 revoke all on function public.is_cat_admin() from public, anon;
+revoke all on function public.report_cat_status(text, text, text) from public, anon;
 revoke all on function public.report_cat_status(text, text) from public, anon;
 revoke all on function public.approve_cat_submission(text) from public, anon;
 revoke all on function public.reject_cat_submission(text) from public, anon;
 grant execute on function public.is_cat_editor() to authenticated;
 grant execute on function public.is_cat_admin() to authenticated;
+grant execute on function public.report_cat_status(text, text, text) to authenticated;
 grant execute on function public.report_cat_status(text, text) to authenticated;
 grant execute on function public.approve_cat_submission(text) to authenticated;
 grant execute on function public.reject_cat_submission(text) to authenticated;
