@@ -2286,7 +2286,7 @@
             collaborationSignUpButton.disabled = false;
             collaborationResetPasswordButton.disabled = false;
             collaborationSetPasswordButton.disabled = false;
-            openModalButton.disabled = isCloudConfigured ? !supabaseClient || !currentUser : false;
+            openModalButton.disabled = !storageReady || Boolean(pendingMapCat) || (isCloudConfigured && !supabaseClient);
             importBackupButton.disabled = !isSignedIn;
             renderCatMarkers();
         }
@@ -3056,7 +3056,7 @@
                 );
                 pendingMapCat = null;
                 mapSelectionPrompt.classList.remove('active');
-                openModalButton.disabled = isCloudConfigured ? !supabaseClient || !currentUser : false;
+                openModalButton.disabled = !storageReady || Boolean(pendingMapCat) || (isCloudConfigured && !supabaseClient);
                 if (locationLookupWarning) showAppStatus(locationLookupWarning);
                 else if (!isCloudConfigured) clearAppStatus();
             } catch (error) {
@@ -3305,6 +3305,18 @@
         });
 
         openModalButton.onclick = () => {
+            if (isCloudConfigured && !currentUser) {
+                map.closePopup();
+                catListPanel.classList.remove('expanded');
+                catListToggle.setAttribute('aria-expanded', 'false');
+                isSignUpMode = false;
+                updateCollaborationControls();
+                collaborationPanel.classList.add('expanded');
+                collaborationToggle.setAttribute('aria-expanded', 'true');
+                collaborationMessage.textContent = 'Bạn cần đăng nhập để thêm mèo. Nếu chưa có tài khoản, hãy chọn Tạo tài khoản bên dưới.';
+                collaborationEmail.focus();
+                return;
+            }
             editingCatId = null;
             modalTitle.textContent = 'Bắt được một bé! 🐾';
             saveButton.textContent = isCloudConfigured ? 'Thêm lên bản đồ' : 'Lưu vị trí';
@@ -3340,7 +3352,7 @@
         document.getElementById('cancelMapSelectionBtn').onclick = () => {
             pendingMapCat = null;
             mapSelectionPrompt.classList.remove('active');
-            openModalButton.disabled = isCloudConfigured ? !supabaseClient || !currentUser : false;
+            openModalButton.disabled = !storageReady || Boolean(pendingMapCat) || (isCloudConfigured && !supabaseClient);
         };
         L.DomEvent.disableClickPropagation(collaborationPanel);
         collaborationToggle.onclick = () => {
@@ -3892,7 +3904,7 @@
 
         initializeStorage().then(() => {
             saveButton.disabled = false;
-            openModalButton.disabled = isCloudConfigured ? !supabaseClient || !currentUser : false;
+            openModalButton.disabled = !storageReady || Boolean(pendingMapCat) || (isCloudConfigured && !supabaseClient);
             exportBackupButton.disabled = false;
             importBackupButton.disabled = isCloudConfigured && !currentUser;
         }).catch(error => {
