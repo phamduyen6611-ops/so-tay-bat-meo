@@ -509,6 +509,10 @@
             z-index: 1000;
         }
 
+        .backup-actions[hidden] {
+            display: none;
+        }
+
         .backup-menu-toggle {
             display: none;
         }
@@ -1370,7 +1374,7 @@
             <button type="button" id="collaborationSignOutBtn" hidden>Đăng xuất</button>
         </form>
     </section>
-    <div class="backup-actions">
+    <div class="backup-actions" hidden>
         <button type="button" class="backup-menu-toggle" id="backupMenuToggle" aria-label="Mở menu sao lưu"
             aria-expanded="false">•••</button>
         <button type="button" id="exportBackupBtn">Sao lưu</button>
@@ -2221,7 +2225,25 @@
             }));
         }
 
+        function canManageBackups() {
+            return Boolean(supabaseClient && currentUser && isSignedIn && isCatAdmin);
+        }
+
+        function updateBackupControls() {
+            const allowed = canManageBackups();
+            backupActions.hidden = !allowed;
+            exportBackupButton.disabled = !allowed || !storageReady;
+            importBackupButton.disabled = !allowed || !storageReady;
+            if (!allowed) {
+                backupActions.classList.remove('expanded');
+                backupMenuToggle.setAttribute('aria-expanded', 'false');
+                backupMenuToggle.setAttribute('aria-label', 'Mở menu sao lưu');
+                backupFileInput.value = '';
+            }
+        }
+
         function updateCollaborationControls() {
+            updateBackupControls();
             if (!isCloudConfigured) {
                 collaborationToggle.textContent = '☁️ Chưa cấu hình';
                 collaborationMessage.textContent = 'Ứng dụng đang lưu dữ liệu trên thiết bị này.';
@@ -2243,7 +2265,6 @@
                 collaborationResetPasswordButton.disabled = true;
                 collaborationSetPasswordButton.disabled = true;
                 openModalButton.disabled = true;
-                importBackupButton.disabled = true;
                 return;
             }
 
@@ -2287,7 +2308,6 @@
             collaborationResetPasswordButton.disabled = false;
             collaborationSetPasswordButton.disabled = false;
             openModalButton.disabled = !storageReady || Boolean(pendingMapCat) || (isCloudConfigured && !supabaseClient);
-            importBackupButton.disabled = !isSignedIn;
             renderCatMarkers();
         }
 
@@ -2296,6 +2316,7 @@
             resetCatFavoriteState();
             isSignedIn = false;
             isCatAdmin = false;
+            updateBackupControls();
             if (supabaseClient) {
                 const { data: sessionResult, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError) throw sessionError;
@@ -3541,6 +3562,7 @@
                     isSignedIn = false;
                     isCatAdmin = false;
                     pendingCatSubmissions = [];
+                    updateBackupControls();
                     setTimeout(updateCollaborationControls, 0);
                 } else if (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY' || event === 'USER_UPDATED') {
                     setTimeout(async () => {
@@ -3639,6 +3661,7 @@
             }
         });
         backupMenuToggle.onclick = () => {
+            if (!canManageBackups()) return;
             const expanded = backupActions.classList.toggle('expanded');
             backupMenuToggle.setAttribute('aria-expanded', String(expanded));
             backupMenuToggle.setAttribute('aria-label', expanded ? 'Đóng menu sao lưu' : 'Mở menu sao lưu');
@@ -3712,6 +3735,7 @@
         };
 
         exportBackupButton.onclick = () => {
+            if (!canManageBackups() || !storageReady) return;
             try {
                 const backup = {
                     format: 'cat-map-backup',
@@ -3738,12 +3762,23 @@
             }
         };
 
-        importBackupButton.onclick = () => backupFileInput.click();
+        importBackupButton.onclick = () => {
+            if (!canManageBackups() || !storageReady) return;
+            backupFileInput.click();
+        };
         backupFileInput.onchange = async () => {
             const file = backupFileInput.files[0];
             if (!file) return;
+            if (!canManageBackups() || !storageReady) {
+                backupFileInput.value = '';
+                return;
+            }
+            const importingUserId = currentUser.id;
             try {
                 const backup = JSON.parse(await file.text());
+                if (!canManageBackups() || currentUser.id !== importingUserId) {
+                    throw new Error('Tài khoản hoặc quyền admin đã thay đổi. Hãy đăng nhập lại để khôi phục.');
+                }
                 let backupCats;
                 if (Array.isArray(backup)) {
                     backupCats = backup;
@@ -3905,8 +3940,7 @@
         initializeStorage().then(() => {
             saveButton.disabled = false;
             openModalButton.disabled = !storageReady || Boolean(pendingMapCat) || (isCloudConfigured && !supabaseClient);
-            exportBackupButton.disabled = false;
-            importBackupButton.disabled = isCloudConfigured && !currentUser;
+            updateBackupControls();
         }).catch(error => {
             console.error('Không thể khởi tạo kho dữ liệu:', error);
             showAppStatus(`Không thể mở kho dữ liệu trên trình duyệt: ${error.message}`);
