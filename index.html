@@ -349,7 +349,7 @@
             grid-auto-rows: max-content;
             align-content: start;
             gap: 6px;
-            min-height: 100px;
+            min-height: min(220px, 40dvh);
             max-height: min(45dvh, 360px);
             margin-top: 8px;
             overflow-y: auto;
@@ -382,6 +382,7 @@
 
         .cat-quick-actions {
             display: flex;
+            flex-wrap: wrap;
             gap: 8px;
             margin-top: 10px;
         }
@@ -407,6 +408,29 @@
             text-align: center;
             cursor: pointer;
         }
+
+        .cat-quick-actions .cat-report-link {
+            flex-basis: 100%;
+            justify-content: flex-start;
+            min-height: 36px;
+            padding: 4px 0;
+            border: 0;
+            background: transparent;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
+        .app-info-links {
+            display: flex;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+            gap: 8px 14px;
+            padding-top: 8px;
+            border-top: 1px solid #f1cbd2;
+            font-size: 11px;
+        }
+
+        .app-info-links a { color: var(--text-color); padding: 4px 0; }
 
         .cat-quick-actions button[aria-pressed="true"] {
             background: #ffe5eb;
@@ -1318,6 +1342,11 @@
             <p class="cat-filter-summary" id="catFilterSummary" role="status" aria-live="polite"></p>
             <p class="cat-favorites-note" id="catFavoritesNote" hidden>Đăng nhập để lưu và đồng bộ yêu thích theo tài khoản.</p>
             <div class="cat-search-results" id="catSearchResults" role="list"></div>
+            <nav class="app-info-links" aria-label="Thông tin dự án">
+                <a href="https://phamduyen6611-ops.github.io/huong-dan.html" target="_blank" rel="noopener noreferrer">Hướng dẫn ↗</a>
+                <a href="https://phamduyen6611-ops.github.io/quyen-rieng-tu.html" target="_blank" rel="noopener noreferrer">Quyền riêng tư ↗</a>
+                <a href="https://phamduyen6611-ops.github.io/lien-he.html" target="_blank" rel="noopener noreferrer">Liên hệ / báo nội dung ↗</a>
+            </nav>
         </div>
     </section>
     <section class="collaboration-panel" id="collaborationPanel" aria-label="Tài khoản cộng tác">
@@ -1802,6 +1831,17 @@
                 directions.addEventListener('click', event => event.stopPropagation());
                 actions.appendChild(directions);
             }
+            const report = document.createElement('a');
+            const reportUrl = new URL('https://phamduyen6611-ops.github.io/lien-he.html');
+            reportUrl.search = new URLSearchParams({ cat: String(cat.id), ten: cat.name || 'Mèo chưa đặt tên' });
+            report.className = 'cat-report-link';
+            report.href = reportUrl.href;
+            report.target = '_blank';
+            report.rel = 'noopener noreferrer';
+            report.textContent = 'Báo thông tin sai';
+            report.setAttribute('aria-label', `Báo thông tin sai về ${cat.name || 'mèo'} (mở trong thẻ mới)`);
+            report.addEventListener('click', event => event.stopPropagation());
+            actions.appendChild(report);
             return actions;
         }
 
