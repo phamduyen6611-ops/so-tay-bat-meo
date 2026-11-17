@@ -1313,7 +1313,7 @@
             <p class="cat-location-note" id="catLocationNote" role="status" aria-live="polite">Dùng vị trí của bạn để tìm mèo gần nhất.</p>
             </details>
             <p class="cat-filter-summary" id="catFilterSummary" role="status" aria-live="polite"></p>
-            <p class="cat-favorites-note" id="catFavoritesNote" hidden>Yêu thích được lưu trên thiết bị này.</p>
+            <p class="cat-favorites-note" id="catFavoritesNote" hidden>Đăng nhập để lưu và đồng bộ yêu thích theo tài khoản.</p>
             <div class="cat-search-results" id="catSearchResults" role="list"></div>
         </div>
     </section>
@@ -1538,8 +1538,14 @@
         const catFiltersSummary = document.getElementById('catFiltersSummary');
         catListFilters.open = window.innerWidth > 600;
         const favoriteCatsStorageKey = 'catMapFavoritesV1';
-        let favoriteStorageAvailable = true;
-        let favoriteCatIds = readFavoriteCatIds();
+        const favoriteMigrationOwnerKey = 'catMapFavoritesMigrationOwnerV1';
+        let legacyFavoriteMigrationOwner = null;
+        let favoriteCatIds = new Set();
+        let favoriteAccountId = null;
+        let favoriteRequestVersion = 0;
+        let favoriteLoading = false;
+        let favoriteSaving = false;
+        let favoriteSyncError = '';
         let favoritesOnly = false;
         let catFilterLocation = null;
         let catLocationMarker = null;
@@ -1613,13 +1619,92 @@
                 const values = stored ? JSON.parse(stored) : [];
                 return new Set(Array.isArray(values) ? values.filter(id => typeof id === 'string' && id.trim() && id.length <= 200) : []);
             } catch (error) {
-                if (!(error instanceof SyntaxError)) favoriteStorageAvailable = false;
                 return new Set();
+            }
+        }
+
+        function resetCatFavoriteState() {
+            favoriteRequestVersion += 1;
+            favoriteAccountId = null;
+            favoriteCatIds = new Set();
+            favoriteLoading = false;
+            favoriteSaving = false;
+            favoriteSyncError = '';
+            refreshCatFavoriteViews();
+        }
+
+        function claimLegacyFavoriteMigration(userId) {
+            if (legacyFavoriteMigrationOwner && legacyFavoriteMigrationOwner !== userId) return false;
+            try {
+                const storedOwner = localStorage.getItem(favoriteMigrationOwnerKey);
+                if (storedOwner && storedOwner !== userId) return false;
+                if (!storedOwner) localStorage.setItem(favoriteMigrationOwnerKey, userId);
+                if (localStorage.getItem(favoriteMigrationOwnerKey) !== userId) return false;
+                legacyFavoriteMigrationOwner = userId;
+                return true;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        async function refreshCloudCatFavorites({ migrateLocal = false } = {}) {
+            const userId = currentUser?.id;
+            if (!userId || !supabaseClient) {
+                resetCatFavoriteState();
+                return false;
+            }
+            if ((favoriteLoading || favoriteSaving) && favoriteAccountId === userId) return false;
+            const requestVersion = ++favoriteRequestVersion;
+            if (favoriteAccountId !== userId) {
+                favoriteCatIds = new Set();
+                favoriteSaving = false;
+            }
+            favoriteAccountId = userId;
+            favoriteLoading = true;
+            favoriteSyncError = '';
+            refreshCatFavoriteViews();
+            try {
+                const knownCatIds = new Set(cats.map(cat => cat.id));
+                const legacyIds = migrateLocal ? [...readFavoriteCatIds()].filter(id => knownCatIds.has(id)) : [];
+                const importedIds = legacyIds.length && claimLegacyFavoriteMigration(userId) ? legacyIds : [];
+                if (importedIds.length) {
+                    const { error } = await supabaseClient.from('cat_favorites').upsert(
+                        importedIds.map(cat_id => ({ user_id: userId, cat_id })),
+                        { onConflict: 'user_id,cat_id', ignoreDuplicates: true }
+                    );
+                    if (error) throw error;
+                }
+                const { data, error } = await supabaseClient.from('cat_favorites').select('cat_id').eq('user_id', userId);
+                if (error) throw error;
+                if (currentUser?.id !== userId || requestVersion !== favoriteRequestVersion) return false;
+                favoriteCatIds = new Set((data || []).map(row => row.cat_id));
+                if (importedIds.length) {
+                    const imported = new Set(importedIds);
+                    const remaining = [...readFavoriteCatIds()].filter(id => !imported.has(id));
+                    try {
+                        if (remaining.length) localStorage.setItem(favoriteCatsStorageKey, JSON.stringify(remaining));
+                        else localStorage.removeItem(favoriteCatsStorageKey);
+                    } catch (error) {}
+                }
+                return true;
+            } catch (error) {
+                if (currentUser?.id === userId && requestVersion === favoriteRequestVersion) {
+                    favoriteSyncError = 'Không thể đồng bộ yêu thích. Bấm mục Yêu thích để thử lại.';
+                    console.error('Không thể đồng bộ yêu thích:', error);
+                }
+                return false;
+            } finally {
+                if (currentUser?.id === userId && requestVersion === favoriteRequestVersion) {
+                    favoriteLoading = false;
+                    refreshCatFavoriteViews();
+                }
             }
         }
 
         function updateCatFavoriteButton(button) {
             const selected = favoriteCatIds.has(button.dataset.catFavorite);
+            button.disabled = favoriteLoading || favoriteSaving || Boolean(currentUser && favoriteSyncError);
+            button.setAttribute('aria-busy', String(favoriteLoading || favoriteSaving));
             button.textContent = selected ? '♥ Yêu thích' : '♡ Yêu thích';
             button.setAttribute('aria-pressed', String(selected));
             button.setAttribute('aria-label', `${selected ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}: ${button.dataset.catName}`);
@@ -1640,17 +1725,41 @@
             }
         }
 
-        function toggleCatFavorite(catId) {
+        async function toggleCatFavorite(catId) {
             if (!cats.some(cat => cat.id === catId)) return;
-            if (favoriteCatIds.has(catId)) favoriteCatIds.delete(catId);
-            else favoriteCatIds.add(catId);
-            try {
-                localStorage.setItem(favoriteCatsStorageKey, JSON.stringify([...favoriteCatIds]));
-                favoriteStorageAvailable = true;
-            } catch (error) {
-                favoriteStorageAvailable = false;
+            if (!currentUser || !supabaseClient) {
+                collaborationPanel.classList.add('expanded');
+                collaborationToggle.setAttribute('aria-expanded', 'true');
+                collaborationMessage.textContent = 'Đăng nhập để lưu yêu thích và đồng bộ giữa các thiết bị.';
+                collaborationEmail.focus();
+                return;
             }
+            if (favoriteLoading || favoriteSaving || favoriteSyncError || favoriteAccountId !== currentUser.id) return;
+            const userId = currentUser.id;
+            const adding = !favoriteCatIds.has(catId);
+            const requestVersion = ++favoriteRequestVersion;
+            favoriteSaving = true;
             refreshCatFavoriteViews();
+            try {
+                const result = adding
+                    ? await supabaseClient.from('cat_favorites').upsert({ user_id: userId, cat_id: catId },
+                        { onConflict: 'user_id,cat_id', ignoreDuplicates: true })
+                    : await supabaseClient.from('cat_favorites').delete().eq('user_id', userId).eq('cat_id', catId);
+                if (result.error) throw result.error;
+                if (currentUser?.id !== userId || requestVersion !== favoriteRequestVersion) return;
+                if (adding) favoriteCatIds.add(catId);
+                else favoriteCatIds.delete(catId);
+            } catch (error) {
+                if (currentUser?.id === userId && requestVersion === favoriteRequestVersion) {
+                    favoriteSyncError = 'Chưa lưu được yêu thích. Bấm mục Yêu thích để thử đồng bộ lại.';
+                    console.error('Không thể lưu yêu thích:', error);
+                }
+            } finally {
+                if (currentUser?.id === userId && requestVersion === favoriteRequestVersion) {
+                    favoriteSaving = false;
+                    refreshCatFavoriteViews();
+                }
+            }
         }
 
         function getCatDirectionsUrl(cat) {
@@ -2141,6 +2250,7 @@
 
         async function refreshEditorAccess() {
             currentUser = null;
+            resetCatFavoriteState();
             isSignedIn = false;
             isCatAdmin = false;
             if (supabaseClient) {
@@ -2169,6 +2279,7 @@
             if (error) throw error;
             cats = validateCats(data.map(catFromCloudRow));
             renderCatMarkers();
+            await refreshCloudCatFavorites({ migrateLocal: true });
         }
 
         function renderModerationQueue() {
@@ -2544,9 +2655,11 @@
             catFavoritesTab.textContent = `♥ Yêu thích (${favoriteCount})`;
             catAllTab.setAttribute('aria-pressed', String(!favoritesOnly));
             catFavoritesTab.setAttribute('aria-pressed', String(favoritesOnly));
-            catFavoritesNote.hidden = !favoritesOnly && favoriteStorageAvailable;
-            catFavoritesNote.textContent = favoriteStorageAvailable ? 'Yêu thích được lưu trên thiết bị này.'
-                : 'Trình duyệt không cho lưu. Yêu thích chỉ được giữ trong lần mở này.';
+            catFavoritesNote.hidden = !favoritesOnly && !favoriteSyncError;
+            catFavoritesNote.textContent = !currentUser ? 'Đăng nhập để lưu và đồng bộ yêu thích theo tài khoản.'
+                : favoriteLoading ? 'Đang tải yêu thích từ tài khoản…'
+                    : favoriteSaving ? 'Đang lưu yêu thích vào tài khoản…'
+                        : favoriteSyncError || 'Yêu thích được lưu theo tài khoản và đồng bộ giữa các thiết bị.';
             catListToggle.textContent = favoritesOnly ? `♥ Yêu thích (${results.length}/${favoriteCount})` : hasFilters
                 ? `🐾 Danh sách mèo (${results.length}/${cats.length})`
                 : `🐾 Danh sách mèo (${cats.length})`;
@@ -2560,7 +2673,11 @@
             if (!results.length) {
                 const emptyMessage = document.createElement('p');
                 emptyMessage.className = 'cat-search-empty';
-                emptyMessage.textContent = favoritesOnly && !favoriteCount
+                emptyMessage.textContent = favoritesOnly && !currentUser
+                    ? 'Đăng nhập tài khoản để xem danh sách yêu thích của bạn.'
+                    : favoritesOnly && favoriteLoading ? 'Đang tải danh sách yêu thích…'
+                    : favoritesOnly && favoriteSyncError ? 'Chưa tải được yêu thích. Bấm mục Yêu thích để thử lại.'
+                    : favoritesOnly && !favoriteCount
                     ? 'Chưa có mèo yêu thích. Bấm ♡ Yêu thích ở một bé mèo để thêm vào danh sách.'
                     : catDistanceFilter.value && !catFilterLocation
                     ? catLocationLoading ? 'Đang chờ vị trí GPS…' : 'Bấm “Dùng vị trí của tôi” hoặc chọn “Tất cả” trong Khoảng cách để xem mèo.'
@@ -3365,6 +3482,7 @@
                 if (event === 'PASSWORD_RECOVERY') passwordRecoveryMode = true;
                 if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
                     currentUser = null;
+                    resetCatFavoriteState();
                     isSignedIn = false;
                     isCatAdmin = false;
                     pendingCatSubmissions = [];
@@ -3405,11 +3523,17 @@
         catFavoritesTab.addEventListener('click', () => {
             favoritesOnly = true;
             renderCatMarkers();
+            refreshCloudCatFavorites({ migrateLocal: true });
         });
         window.addEventListener('storage', event => {
             if (event.key !== favoriteCatsStorageKey && event.key !== null) return;
-            favoriteCatIds = readFavoriteCatIds();
-            refreshCatFavoriteViews();
+            if (currentUser) refreshCloudCatFavorites({ migrateLocal: true });
+        });
+        window.addEventListener('focus', () => {
+            if (currentUser && storageReady) refreshCloudCatFavorites();
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && currentUser && storageReady) refreshCloudCatFavorites();
         });
         catStatusFilter.addEventListener('change', () => renderCatMarkers());
         catDistanceFilter.addEventListener('change', () => {

@@ -47,3 +47,9 @@ To grant another account administrator access:
 Shared mode does not automatically upload or replace IndexedDB data. Local copies remain on the device. After signing in, use **Đưa ... mèo trên thiết bị lên dữ liệu chung** to upload them. The account performing the upload becomes the owner of those new shared records. The app asks for confirmation and keeps the originals on the device. Use **Sao lưu** to download a JSON backup.
 
 Browser backups include public image URLs for photos stored in Supabase Storage, so the photos can still be imported while the Storage bucket remains available.
+
+## Account favorites
+
+Apply `migrations/20261117_cat_favorites.sql` in the cat project `sxeslpgevuzabvetfijl` before deploying the database-backed favorites client. The full setup SQL also includes this migration. Each signed-in account can read, add, and remove only its own `cat_favorites` rows; deleting a cat or account removes its favorites through foreign keys.
+
+The updated client loads favorites after signing in and refreshes them when returning to the app. Saves are confirmed by the database before the UI changes. Signed-out visitors sign in to use favorites. Legacy device favorites are imported into the first account that claims them, and removed from device storage only after a successful database read. Failed saves are shown as errors rather than stored as local favorites.
