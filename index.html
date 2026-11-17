@@ -222,6 +222,56 @@
             font-size: 16px;
         }
 
+        .cat-list-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .cat-list-tabs button {
+            flex: 1;
+            min-width: 0;
+            min-height: 44px;
+            padding: 8px 6px;
+            border: 1px solid #f1cbd2;
+            border-radius: 10px;
+            background: white;
+            color: var(--text-color);
+            font: inherit;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .cat-list-tabs button[aria-pressed="true"] {
+            border-color: var(--primary);
+            background: #ffe5eb;
+            color: #9d2850;
+        }
+
+        .cat-favorites-note {
+            margin: 8px 0 0;
+            color: #806b6e;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .cat-list-filters {
+            margin-top: 10px;
+        }
+
+        .cat-list-filters summary {
+            min-height: 44px;
+            box-sizing: border-box;
+            padding: 12px 10px;
+            border: 1px solid #f1cbd2;
+            border-radius: 10px;
+            background: #fff9fa;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
         .cat-filters {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -296,7 +346,7 @@
             grid-auto-rows: max-content;
             align-content: start;
             gap: 6px;
-            min-height: 0;
+            min-height: 100px;
             max-height: min(45dvh, 360px);
             margin-top: 8px;
             overflow-y: auto;
@@ -313,7 +363,59 @@
             color: var(--text-color);
             text-align: left;
             font: inherit;
+        }
+
+        .cat-search-open {
+            display: block;
+            width: 100%;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            color: inherit;
+            text-align: left;
+            font: inherit;
             cursor: pointer;
+        }
+
+        .cat-quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .cat-quick-actions button,
+        .cat-quick-actions a {
+            display: inline-flex;
+            flex: 1;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+            min-height: 44px;
+            box-sizing: border-box;
+            padding: 8px 6px;
+            border: 1px solid #f1cbd2;
+            border-radius: 10px;
+            background: white;
+            color: var(--text-color);
+            text-decoration: none;
+            font: inherit;
+            font-size: 12px;
+            font-weight: 800;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .cat-quick-actions button[aria-pressed="true"] {
+            background: #ffe5eb;
+            border-color: var(--primary);
+            color: #9d2850;
+        }
+
+        .cat-search-open:focus-visible,
+        .cat-quick-actions button:focus-visible,
+        .cat-quick-actions a:focus-visible {
+            outline: 2px solid #9d2850;
+            outline-offset: 2px;
         }
 
         .cat-search-result span,
@@ -1174,8 +1276,14 @@
         <button type="button" class="cat-list-toggle" id="catListToggle" aria-expanded="false"
             aria-controls="catListContent">🐾 Danh sách mèo (0)</button>
         <div class="cat-list-content" id="catListContent">
+            <div class="cat-list-tabs" role="group" aria-label="Chọn danh sách mèo">
+                <button type="button" id="catAllTab" aria-pressed="true" aria-controls="catSearchResults">Tất cả (0)</button>
+                <button type="button" id="catFavoritesTab" aria-pressed="false" aria-controls="catSearchResults">♥ Yêu thích (0)</button>
+            </div>
             <input type="search" class="cat-search-input" id="catSearchInput"
                 placeholder="Tìm tên, ghi chú, vị trí" autocomplete="off" aria-label="Tìm mèo theo tên, ghi chú hoặc vị trí">
+            <details class="cat-list-filters" id="catListFilters" open>
+                <summary id="catFiltersSummary">Bộ lọc</summary>
             <div class="cat-filters">
                 <label for="catStatusFilter">Tình trạng
                     <select id="catStatusFilter">
@@ -1203,7 +1311,9 @@
                 <button type="button" id="catClearFiltersBtn" disabled>Xóa bộ lọc</button>
             </div>
             <p class="cat-location-note" id="catLocationNote" role="status" aria-live="polite">Dùng vị trí của bạn để tìm mèo gần nhất.</p>
+            </details>
             <p class="cat-filter-summary" id="catFilterSummary" role="status" aria-live="polite"></p>
+            <p class="cat-favorites-note" id="catFavoritesNote" hidden>Yêu thích được lưu trên thiết bị này.</p>
             <div class="cat-search-results" id="catSearchResults" role="list"></div>
         </div>
     </section>
@@ -1421,6 +1531,16 @@
         const catClearFiltersButton = document.getElementById('catClearFiltersBtn');
         const catLocationNote = document.getElementById('catLocationNote');
         const catFilterSummary = document.getElementById('catFilterSummary');
+        const catAllTab = document.getElementById('catAllTab');
+        const catFavoritesTab = document.getElementById('catFavoritesTab');
+        const catFavoritesNote = document.getElementById('catFavoritesNote');
+        const catListFilters = document.getElementById('catListFilters');
+        const catFiltersSummary = document.getElementById('catFiltersSummary');
+        catListFilters.open = window.innerWidth > 600;
+        const favoriteCatsStorageKey = 'catMapFavoritesV1';
+        let favoriteStorageAvailable = true;
+        let favoriteCatIds = readFavoriteCatIds();
+        let favoritesOnly = false;
         let catFilterLocation = null;
         let catLocationMarker = null;
         let catLocationLoading = false;
@@ -1487,6 +1607,92 @@
             imageViewerClose.focus();
         }
 
+        function readFavoriteCatIds() {
+            try {
+                const stored = localStorage.getItem(favoriteCatsStorageKey);
+                const values = stored ? JSON.parse(stored) : [];
+                return new Set(Array.isArray(values) ? values.filter(id => typeof id === 'string' && id.trim() && id.length <= 200) : []);
+            } catch (error) {
+                if (!(error instanceof SyntaxError)) favoriteStorageAvailable = false;
+                return new Set();
+            }
+        }
+
+        function updateCatFavoriteButton(button) {
+            const selected = favoriteCatIds.has(button.dataset.catFavorite);
+            button.textContent = selected ? '♥ Yêu thích' : '♡ Yêu thích';
+            button.setAttribute('aria-pressed', String(selected));
+            button.setAttribute('aria-label', `${selected ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}: ${button.dataset.catName}`);
+        }
+
+        function refreshCatFavoriteViews() {
+            const activeButton = document.activeElement;
+            const focusedId = catSearchResults.contains(activeButton) ? activeButton?.dataset.catFavorite : null;
+            const scrollTop = catSearchResults.scrollTop;
+            if (favoritesOnly) renderCatMarkers();
+            else renderCatList();
+            document.querySelectorAll('button[data-cat-favorite]').forEach(updateCatFavoriteButton);
+            catSearchResults.scrollTop = scrollTop;
+            if (focusedId) {
+                const nextButton = [...catSearchResults.querySelectorAll('button[data-cat-favorite]')]
+                    .find(button => button.dataset.catFavorite === focusedId);
+                (nextButton || catFavoritesTab).focus({ preventScroll: true });
+            }
+        }
+
+        function toggleCatFavorite(catId) {
+            if (!cats.some(cat => cat.id === catId)) return;
+            if (favoriteCatIds.has(catId)) favoriteCatIds.delete(catId);
+            else favoriteCatIds.add(catId);
+            try {
+                localStorage.setItem(favoriteCatsStorageKey, JSON.stringify([...favoriteCatIds]));
+                favoriteStorageAvailable = true;
+            } catch (error) {
+                favoriteStorageAvailable = false;
+            }
+            refreshCatFavoriteViews();
+        }
+
+        function getCatDirectionsUrl(cat) {
+            const coordinates = [cat?.lat, cat?.lng];
+            if (coordinates.some(value => !['number', 'string'].includes(typeof value) ||
+                (typeof value === 'string' && !value.trim()))) return null;
+            const lat = Number(cat.lat);
+            const lng = Number(cat.lng);
+            if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lng) || lng < -180 || lng > 180) return null;
+            const url = new URL('https://www.google.com/maps/dir/');
+            url.search = new URLSearchParams({ api: '1', destination: `${lat},${lng}`, dir_action: 'navigate' });
+            return url.href;
+        }
+
+        function createCatQuickActions(cat) {
+            const actions = document.createElement('div');
+            actions.className = 'cat-quick-actions';
+            const favoriteButton = document.createElement('button');
+            favoriteButton.type = 'button';
+            favoriteButton.dataset.catFavorite = cat.id;
+            favoriteButton.dataset.catName = cat.name || 'Mèo chưa đặt tên';
+            updateCatFavoriteButton(favoriteButton);
+            favoriteButton.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                toggleCatFavorite(cat.id);
+            });
+            actions.appendChild(favoriteButton);
+            const href = getCatDirectionsUrl(cat);
+            if (href) {
+                const directions = document.createElement('a');
+                directions.href = href;
+                directions.target = '_blank';
+                directions.rel = 'noopener noreferrer';
+                directions.textContent = '↗ Chỉ đường';
+                directions.setAttribute('aria-label', `Chỉ đường đến ${cat.name || 'mèo'} trên Google Maps (mở trong thẻ mới)`);
+                directions.addEventListener('click', event => event.stopPropagation());
+                actions.appendChild(directions);
+            }
+            return actions;
+        }
+
         function createCatPopupContent(groupCats) {
             const content = document.createElement('div');
             content.className = 'cat-popup-list';
@@ -1513,6 +1719,7 @@
                 setCatLocationLabel(location, cat, '📍 ');
                 header.appendChild(location);
                 entry.appendChild(header);
+                entry.appendChild(createCatQuickActions(cat));
 
                 if (cat.image) {
                     const image = document.createElement('img');
@@ -2300,6 +2507,7 @@
                 cat,
                 distance: catFilterLocation ? L.latLng(cat.lat, cat.lng).distanceTo(catFilterLocation) : null
             })).filter(({ cat, distance }) =>
+                (!favoritesOnly || favoriteCatIds.has(cat.id)) &&
                 (!selectedStatus || (cat.current_status || 'unknown') === selectedStatus) &&
                 (!radius || (distance !== null && distance <= radius)) &&
                 normalizeSearchText(`${cat.name || 'Mèo chưa đặt tên'} ${cat.note || ''} ${formatCatLocation(cat)}`).includes(query)
@@ -2329,19 +2537,32 @@
 
         function renderCatList(results = getFilteredCatResults()) {
             const hasFilters = Boolean(catSearchInput.value.trim() || catStatusFilter.value || catDistanceFilter.value);
-            catListToggle.textContent = hasFilters
+            const filterCount = Number(Boolean(catStatusFilter.value)) + Number(Boolean(catDistanceFilter.value));
+            catFiltersSummary.textContent = filterCount ? `Bộ lọc (${filterCount})` : 'Bộ lọc';
+            const favoriteCount = cats.filter(cat => favoriteCatIds.has(cat.id)).length;
+            catAllTab.textContent = `Tất cả (${cats.length})`;
+            catFavoritesTab.textContent = `♥ Yêu thích (${favoriteCount})`;
+            catAllTab.setAttribute('aria-pressed', String(!favoritesOnly));
+            catFavoritesTab.setAttribute('aria-pressed', String(favoritesOnly));
+            catFavoritesNote.hidden = !favoritesOnly && favoriteStorageAvailable;
+            catFavoritesNote.textContent = favoriteStorageAvailable ? 'Yêu thích được lưu trên thiết bị này.'
+                : 'Trình duyệt không cho lưu. Yêu thích chỉ được giữ trong lần mở này.';
+            catListToggle.textContent = favoritesOnly ? `♥ Yêu thích (${results.length}/${favoriteCount})` : hasFilters
                 ? `🐾 Danh sách mèo (${results.length}/${cats.length})`
                 : `🐾 Danh sách mèo (${cats.length})`;
             catClearFiltersButton.disabled = !hasFilters;
             catFilterSummary.textContent = catDistanceFilter.value && !catFilterLocation
                 ? 'Cần vị trí của bạn để lọc theo khoảng cách.'
-                : `Hiển thị ${results.length}/${cats.length} mèo trên bản đồ.`;
+                : favoritesOnly ? `Hiển thị ${results.length}/${favoriteCount} mèo yêu thích trên bản đồ.`
+                    : `Hiển thị ${results.length}/${cats.length} mèo trên bản đồ.`;
             stopObservingCatLocations(catSearchResults);
             catSearchResults.replaceChildren();
             if (!results.length) {
                 const emptyMessage = document.createElement('p');
                 emptyMessage.className = 'cat-search-empty';
-                emptyMessage.textContent = catDistanceFilter.value && !catFilterLocation
+                emptyMessage.textContent = favoritesOnly && !favoriteCount
+                    ? 'Chưa có mèo yêu thích. Bấm ♡ Yêu thích ở một bé mèo để thêm vào danh sách.'
+                    : catDistanceFilter.value && !catFilterLocation
                     ? catLocationLoading ? 'Đang chờ vị trí GPS…' : 'Bấm “Dùng vị trí của tôi” hoặc chọn “Tất cả” trong Khoảng cách để xem mèo.'
                     : cats.length ? 'Không tìm thấy bé mèo phù hợp. Hãy thử mở rộng khoảng cách hoặc xóa bộ lọc.' : 'Chưa có mèo nào được lưu.';
                 catSearchResults.appendChild(emptyMessage);
@@ -2349,10 +2570,14 @@
             }
 
             results.forEach(({ cat, distance }) => {
+                const card = document.createElement('div');
+                card.className = 'cat-search-result';
+                card.setAttribute('role', 'listitem');
+                card.dataset.catId = cat.id;
                 const button = document.createElement('button');
                 button.type = 'button';
-                button.className = 'cat-search-result';
-                button.setAttribute('role', 'listitem');
+                button.className = 'cat-search-open';
+                button.dataset.catOpen = cat.id;
                 const name = document.createElement('span');
                 name.textContent = cat.name || 'Mèo chưa đặt tên';
                 button.appendChild(name);
@@ -2377,7 +2602,8 @@
                     map.setView([cat.lat, cat.lng], Math.max(map.getZoom(), 17));
                     openSingleCatPopup(cat);
                 });
-                catSearchResults.appendChild(button);
+                card.append(button, createCatQuickActions(cat));
+                catSearchResults.appendChild(card);
             });
             observeCatLocations(catSearchResults);
         }
@@ -3172,6 +3398,19 @@
             }
         };
         catSearchInput.addEventListener('input', () => renderCatMarkers());
+        catAllTab.addEventListener('click', () => {
+            favoritesOnly = false;
+            renderCatMarkers();
+        });
+        catFavoritesTab.addEventListener('click', () => {
+            favoritesOnly = true;
+            renderCatMarkers();
+        });
+        window.addEventListener('storage', event => {
+            if (event.key !== favoriteCatsStorageKey && event.key !== null) return;
+            favoriteCatIds = readFavoriteCatIds();
+            refreshCatFavoriteViews();
+        });
         catStatusFilter.addEventListener('change', () => renderCatMarkers());
         catDistanceFilter.addEventListener('change', () => {
             renderCatMarkers();
