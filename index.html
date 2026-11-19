@@ -1931,25 +1931,6 @@
             color: #c2410c;
         }
 
-        .sen-sync-badge {
-            font-size: 10px;
-            font-weight: 700;
-            color: #059669;
-            background: #ecfdf5;
-            padding: 2px 7px;
-            border-radius: 10px;
-            border: 1px solid #a7f3d0;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-        }
-
-        .sen-sync-badge.local {
-            color: #d97706;
-            background: #fffbeb;
-            border-color: #fde68a;
-        }
-
         .sen-rank-badge-title {
             font-size: 17px;
             font-weight: 900;
@@ -3180,7 +3161,6 @@
                     <div class="sen-rank-info">
                         <div class="sen-rank-tag-row">
                             <span class="sen-rank-tag-label">Danh hiệu hiện tại</span>
-                            <span class="sen-sync-badge" id="senSyncBadge">☁️ Đã lưu DB</span>
                         </div>
                         <div class="sen-rank-badge-title" id="senRankTitle">Sen Tập Sự</div>
                         <div class="sen-rank-badge-desc" id="senRankDesc">Mới vào nghề, thấy bé mèo nào cũng muốn lại gần làm quen.</div>
@@ -3562,7 +3542,6 @@
         const senRankProgressFill = document.getElementById('senRankProgressFill');
         const senRankProgressText = document.getElementById('senRankProgressText');
         const senRankProgressPercent = document.getElementById('senRankProgressPercent');
-        const senSyncBadge = document.getElementById('senSyncBadge');
         const streakDaysRow = document.getElementById('streakDaysRow');
         const closeSenWalletModalBtn = document.getElementById('closeSenWalletModalBtn');
         const SEN_WALLET_KEY = 'catMap_sen_wallet_v2';
@@ -5753,16 +5732,6 @@
             if (senRankProgressFill) senRankProgressFill.style.width = `${rankInfo.progress}%`;
             if (senRankProgressPercent) senRankProgressPercent.textContent = `${rankInfo.progress}%`;
             if (senRankProgressText) senRankProgressText.textContent = rankInfo.progressText;
-
-            if (senSyncBadge) {
-                if (isCloudConfigured && (isWalletDbSynced || currentUser)) {
-                    senSyncBadge.textContent = '☁️ Đã lưu DB';
-                    senSyncBadge.className = 'sen-sync-badge';
-                } else {
-                    senSyncBadge.textContent = '📱 Lưu trên máy';
-                    senSyncBadge.className = 'sen-sync-badge local';
-                }
-            }
 
             if (streakDaysRow) {
                 const currentDayInWeek = ((wallet.streak - 1) % 7) + 1;
