@@ -28,7 +28,8 @@ alter table public.cats
     add column if not exists fed_count int not null default 0,
     add column if not exists pate_count int not null default 0,
     add column if not exists is_sos boolean not null default false,
-    add column if not exists sos_note text not null default '' check (char_length(sos_note) <= 200);
+    add column if not exists sos_note text not null default '' check (char_length(sos_note) <= 200),
+    add column if not exists sightings_count int not null default 1;
 
 do $$
 begin
@@ -509,5 +510,90 @@ create policy "Users can remove own cat favorites"
 -- Supabase default privileges can include more than this feature needs.
 revoke all on table public.cat_favorites from public, anon, authenticated;
 grant select, insert, delete on table public.cat_favorites to authenticated;
+
+
+create table if not exists public.cat_sightings (
+    id text primary key,
+    cat_id text not null references public.cats(id) on delete cascade,
+    seen_at timestamptz not null default now(),
+    image text,
+    note text not null default '' check (char_length(note) <= 1000),
+    reporter_name text not null default '' check (char_length(reporter_name) <= 40),
+    created_by uuid references auth.users(id) on delete set null,
+    created_at timestamptz not null default now()
+);
+
+create index if not exists cat_sightings_cat_id_seen_at_idx
+    on public.cat_sightings (cat_id, seen_at asc);
+
+alter table public.cat_sightings enable row level security;
+
+drop policy if exists "Public can view cat sightings" on public.cat_sightings;
+create policy "Public can view cat sightings"
+    on public.cat_sightings for select to public
+    using (true);
+
+drop policy if exists "Anyone can insert cat sightings" on public.cat_sightings;
+create policy "Anyone can insert cat sightings"
+    on public.cat_sightings for insert to anon, authenticated
+    with check (true);
+
+create or replace function public.add_cat_sighting(
+    p_cat_id text,
+    p_image text default null,
+    p_note text default '',
+    p_reporter_name text default '',
+    p_seen_at timestamptz default now()
+)
+returns text
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+    v_sighting_id text;
+    v_reporter text;
+    v_note text;
+begin
+    v_sighting_id := gen_random_uuid()::text;
+    v_reporter := trim(coalesce(p_reporter_name, ''));
+    if v_reporter = '' then
+        v_reporter := 'Một Sen tốt bụng';
+    end if;
+    if char_length(v_reporter) > 40 then
+        v_reporter := substring(v_reporter from 1 for 40);
+    end if;
+
+    v_note := trim(coalesce(p_note, ''));
+    if char_length(v_note) > 1000 then
+        v_note := substring(v_note from 1 for 1000);
+    end if;
+
+    insert into public.cat_sightings (id, cat_id, seen_at, image, note, reporter_name, created_by, created_at)
+    values (
+        v_sighting_id,
+        p_cat_id,
+        coalesce(p_seen_at, now()),
+        p_image,
+        v_note,
+        v_reporter,
+        auth.uid(),
+        now()
+    );
+
+    update public.cats
+    set sightings_count = coalesce(sightings_count, 1) + 1
+    where id = p_cat_id;
+
+    if not found then
+        raise exception 'Cat not found.';
+    end if;
+
+    return v_sighting_id;
+end;
+$$;
+
+grant execute on function public.add_cat_sighting(text, text, text, text, timestamptz) to anon, authenticated;
+grant select, insert on table public.cat_sightings to anon, authenticated;
 
 commit;

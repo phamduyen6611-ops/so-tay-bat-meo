@@ -14,6 +14,8 @@ Users earn daily virtual canned pate via their check-in streak and can gift pate
 
 Users can flag or resolve urgent cat assistance alerts (**🚨 Radar SOS**) with a rescue note via the `toggle_cat_sos` database function, making emergency cases stand out on the map and on the Leaderboard SOS Radar.
 
+Users can check in sighting milestones (**📸 Hôm nay lại gặp bé!**) to increment `sightings_count` and view the cat's chronological growth timeline (**📅 Hành trình lớn lên**) with photos across months. This is powered by the `cat_sightings` table and `add_cat_sighting` database function.
+
 ## Deployment and account settings
 
 The app is hosted on GitHub Pages at <https://phamduyen6611-ops.github.io/so-tay-bat-meo/>. This URL is configured as the Supabase Auth Site URL and Redirect URL.

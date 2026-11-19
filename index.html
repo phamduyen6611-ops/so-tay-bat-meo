@@ -2129,6 +2129,255 @@
             70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
+
+        /* Nhật ký gặp lại & Hành trình lớn lên */
+        .cat-sightings-section {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: #fffaf5;
+            border-radius: 12px;
+            border: 1px solid #fed7aa;
+        }
+
+        .cat-sightings-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #7c2d12;
+            margin-bottom: 8px;
+        }
+
+        .cat-sightings-title {
+            font-weight: 700;
+        }
+
+        .cat-sightings-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .cat-sighting-btn {
+            flex: 1;
+            min-height: 34px;
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 0;
+            font: inherit;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .btn-meet-again {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            box-shadow: 0 2px 6px rgba(234, 88, 12, 0.25);
+        }
+
+        .btn-meet-again:hover {
+            background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+            transform: translateY(-1px);
+        }
+
+        .btn-view-timeline {
+            background: #ffedd5;
+            color: #9a3412;
+            border: 1px solid #fdba74;
+        }
+
+        .btn-view-timeline:hover {
+            background: #fed7aa;
+        }
+
+        /* Modal Check-in Gặp lại */
+        .sighting-modal-content {
+            max-width: 440px;
+            text-align: left;
+            border-radius: 24px;
+        }
+
+        .sighting-modal-desc {
+            font-size: 13px;
+            color: #78716c;
+            margin: 0 0 12px;
+        }
+
+        .sighting-photo-preview-wrap {
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .sighting-photo-preview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 12px;
+            object-fit: cover;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        /* Modal Timeline Hành trình lớn lên */
+        .timeline-modal-content {
+            max-width: 500px;
+            text-align: left;
+            border-radius: 26px;
+            background: linear-gradient(180deg, #fffaf5 0%, #ffffff 100%);
+            padding: 20px;
+            max-height: 90dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .timeline-header {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .timeline-quick-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffedd5;
+            padding: 8px 12px;
+            border-radius: 12px;
+            margin-bottom: 14px;
+        }
+
+        .timeline-count-badge {
+            font-size: 12px;
+            font-weight: 800;
+            color: #9a3412;
+        }
+
+        .btn-timeline-add {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 0;
+            background: #ea580c;
+            color: white;
+            font: inherit;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-timeline-add:hover {
+            background: #c2410c;
+            transform: translateY(-1px);
+        }
+
+        .timeline-body {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+            position: relative;
+        }
+
+        /* Visual Timeline Tree */
+        .timeline-list {
+            position: relative;
+            padding-left: 28px;
+        }
+
+        .timeline-list::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            bottom: 10px;
+            left: 11px;
+            width: 3px;
+            background: linear-gradient(180deg, #f97316 0%, #fed7aa 100%);
+            border-radius: 2px;
+        }
+
+        .timeline-card {
+            position: relative;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #fed7aa;
+            padding: 12px 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .timeline-node-dot {
+            position: absolute;
+            left: -28px;
+            top: 14px;
+            width: 22px;
+            height: 22px;
+            background: #ea580c;
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            box-shadow: 0 2px 5px rgba(234, 88, 12, 0.4);
+            z-index: 2;
+        }
+
+        .timeline-node-dot.first-meet {
+            background: #059669;
+            box-shadow: 0 2px 5px rgba(5, 150, 105, 0.4);
+        }
+
+        .timeline-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .timeline-month-tag {
+            font-weight: 800;
+            color: #c2410c;
+            background: #fff7ed;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid #ffedd5;
+        }
+
+        .timeline-date-time {
+            font-size: 11px;
+            color: #78716c;
+        }
+
+        .timeline-card-image {
+            width: 100%;
+            max-height: 220px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            background: #fdf4ff;
+            display: block;
+        }
+
+        .timeline-card-image:hover {
+            transform: scale(1.02);
+        }
+
+        .timeline-card-note {
+            font-size: 13px;
+            color: #44403c;
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+
+        .timeline-card-reporter {
+            font-size: 11px;
+            color: #a8a29e;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
     </style>
 </head>
 
@@ -2433,6 +2682,66 @@
         </div>
     </div>
 
+    <!-- Hộp thoại Check-in Gặp lại bé -->
+    <div class="modal" id="sightingModal" role="dialog" aria-modal="true" aria-labelledby="sightingModalTitle">
+        <div class="modal-content sighting-modal-content">
+            <h3 id="sightingModalTitle" style="margin: 0 0 8px; color: #4a3336; font-size: 18px;">📸 Gặp lại bé mèo!</h3>
+            <p class="sighting-modal-desc" id="sightingModalDesc">Ghi lại khoảnh khắc hôm nay bạn gặp lại bé để lưu vào hành trình lớn lên theo từng tháng.</p>
+
+            <div class="form-group">
+                <label for="sightingPhotoInput" style="font-weight: 700; font-size: 13px; color: #634347;">Ảnh chụp hôm nay (rất nên có! 📸):</label>
+                <input type="file" id="sightingPhotoInput" accept="image/jpeg,image/png,image/webp" style="margin-top: 6px; width: 100%;">
+                <div class="sighting-photo-preview-wrap" id="sightingPhotoPreviewWrap" style="display: none;">
+                    <img id="sightingPhotoPreview" alt="Xem trước ảnh chụp lại" class="sighting-photo-preview">
+                    <div>
+                        <button type="button" class="btn btn-cancel" id="sightingRemovePhotoBtn" style="margin-top: 6px; padding: 4px 10px; font-size: 11px;">✕ Bỏ ảnh này</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 10px;">
+                <label for="sightingDateInput" style="font-weight: 700; font-size: 13px; color: #634347;">Ngày gặp lại:</label>
+                <input type="date" id="sightingDateInput" class="text-input" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; border: 1px solid #fed7aa; margin-top: 4px;">
+            </div>
+
+            <div class="form-group" style="margin-top: 10px;">
+                <label for="sightingNoteInput" style="font-weight: 700; font-size: 13px; color: #634347;">Ghi chú khoảnh khắc:</label>
+                <textarea id="sightingNoteInput" rows="2" placeholder="VD: Bé mập hơn nhiều, đang ngủ ngoan trên ghế đá, rất quấn người..." style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; border: 1px solid #fed7aa; margin-top: 4px; font-family: inherit; font-size: 13px; resize: vertical;"></textarea>
+            </div>
+
+            <div class="form-group" style="margin-top: 10px;">
+                <label for="sightingReporterInput" style="font-weight: 700; font-size: 13px; color: #634347;">Tên của bạn (Sen):</label>
+                <input type="text" id="sightingReporterInput" maxlength="40" placeholder="Tên hoặc biệt danh của bạn" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; border: 1px solid #fed7aa; margin-top: 4px; font-family: inherit; font-size: 13px;">
+            </div>
+
+            <div class="modal-buttons" style="margin-top: 16px; display: flex; gap: 8px;">
+                <button type="button" class="btn btn-save" id="sightingSubmitBtn" style="flex: 2; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);">Lưu kỷ niệm gặp lại 🐾</button>
+                <button type="button" class="btn btn-cancel" id="sightingCancelBtn" style="flex: 1;">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hộp thoại Dòng thời gian Hành trình lớn lên -->
+    <div class="modal" id="timelineModal" role="dialog" aria-modal="true" aria-labelledby="timelineModalTitle">
+        <div class="modal-content timeline-modal-content">
+            <div class="timeline-header">
+                <h3 id="timelineModalTitle" style="margin: 0; font-size: 19px; color: #4a3336;">📅 Hành trình lớn lên 🐾</h3>
+                <p id="timelineModalSubtitle" style="margin: 4px 0 0; font-size: 13px; color: #8c7377;">Dòng thời gian các lần gặp gỡ của bé mèo</p>
+            </div>
+
+            <div class="timeline-quick-bar">
+                <span id="timelineTotalCount" class="timeline-count-badge">Tổng cộng: 1 lần gặp</span>
+                <button type="button" class="btn-timeline-add" id="timelineAddNowBtn">📸 Hôm nay lại gặp</button>
+            </div>
+
+            <div class="timeline-body" id="timelineBody">
+                <!-- Timeline items rendered dynamically -->
+            </div>
+
+            <button type="button" class="btn btn-cancel" id="timelineCloseBtn" style="width: 100%; margin-top: 14px;">Đóng</button>
+        </div>
+    </div>
+
     <!-- Thư viện Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2646,6 +2955,30 @@
         const idolList = document.getElementById('idolList');
         const sosList = document.getElementById('sosList');
         const closeLeaderboardModalBtn = document.getElementById('closeLeaderboardModalBtn');
+
+        const sightingModal = document.getElementById('sightingModal');
+        const sightingModalTitle = document.getElementById('sightingModalTitle');
+        const sightingModalDesc = document.getElementById('sightingModalDesc');
+        const sightingPhotoInput = document.getElementById('sightingPhotoInput');
+        const sightingPhotoPreviewWrap = document.getElementById('sightingPhotoPreviewWrap');
+        const sightingPhotoPreview = document.getElementById('sightingPhotoPreview');
+        const sightingRemovePhotoBtn = document.getElementById('sightingRemovePhotoBtn');
+        const sightingDateInput = document.getElementById('sightingDateInput');
+        const sightingNoteInput = document.getElementById('sightingNoteInput');
+        const sightingReporterInput = document.getElementById('sightingReporterInput');
+        const sightingSubmitBtn = document.getElementById('sightingSubmitBtn');
+        const sightingCancelBtn = document.getElementById('sightingCancelBtn');
+        let currentSightingCatId = null;
+        let currentSightingImageDataUrl = '';
+
+        const timelineModal = document.getElementById('timelineModal');
+        const timelineModalTitle = document.getElementById('timelineModalTitle');
+        const timelineModalSubtitle = document.getElementById('timelineModalSubtitle');
+        const timelineTotalCount = document.getElementById('timelineTotalCount');
+        const timelineAddNowBtn = document.getElementById('timelineAddNowBtn');
+        const timelineBody = document.getElementById('timelineBody');
+        const timelineCloseBtn = document.getElementById('timelineCloseBtn');
+        let currentTimelineCatId = null;
 
         const CAT_FORTUNES = [
             { title: "Đại Cát Bụng Mỡ", desc: "Tài lộc hôm nay rủng rỉnh như chiếc bụng mỡ của mèo sau bữa tiệc pate thượng hạng!" },
@@ -3052,6 +3385,40 @@
 
                 entry.appendChild(feedingSection);
 
+                // Phần Nhật ký gặp lại & Hành trình lớn lên
+                const sightingsSection = document.createElement('div');
+                sightingsSection.className = 'cat-sightings-section';
+
+                const sightingsHeader = document.createElement('div');
+                sightingsHeader.className = 'cat-sightings-header';
+
+                const sightingsTitle = document.createElement('span');
+                sightingsTitle.className = 'cat-sightings-title';
+                const totalSightings = Math.max(1, Number(cat.sightings_count) || 1);
+                sightingsTitle.innerHTML = `🐾 Đã gặp bé: <b>${totalSightings} lần</b>`;
+
+                sightingsHeader.appendChild(sightingsTitle);
+                sightingsSection.appendChild(sightingsHeader);
+
+                const sightingsActionRow = document.createElement('div');
+                sightingsActionRow.className = 'cat-sightings-actions';
+
+                const addSightingBtn = document.createElement('button');
+                addSightingBtn.type = 'button';
+                addSightingBtn.className = 'cat-sighting-btn btn-meet-again';
+                addSightingBtn.dataset.catSightingAdd = cat.id;
+                addSightingBtn.textContent = '📸 Hôm nay lại gặp bé!';
+
+                const viewTimelineBtn = document.createElement('button');
+                viewTimelineBtn.type = 'button';
+                viewTimelineBtn.className = 'cat-sighting-btn btn-view-timeline';
+                viewTimelineBtn.dataset.catTimeline = cat.id;
+                viewTimelineBtn.textContent = '📅 Xem hành trình ảnh';
+
+                sightingsActionRow.append(addSightingBtn, viewTimelineBtn);
+                sightingsSection.appendChild(sightingsActionRow);
+                entry.appendChild(sightingsSection);
+
                 // Phần Radar SOS
                 const sosSection = document.createElement('div');
                 sosSection.className = 'cat-sos-section' + (cat.is_sos ? ' active-sos' : '');
@@ -3221,6 +3588,8 @@
                     pate_count: Number.isFinite(cat.pate_count) ? cat.pate_count : 0,
                     is_sos: Boolean(cat.is_sos),
                     sos_note: typeof cat.sos_note === 'string' ? cat.sos_note.trim().slice(0, 200) : '',
+                    sightings_count: Number.isFinite(cat.sightings_count) ? cat.sightings_count : 1,
+                    sightings: Array.isArray(cat.sightings) ? cat.sightings : [],
                     created_by: typeof cat.created_by === 'string' ? cat.created_by : null,
                     updated_by: typeof cat.updated_by === 'string' ? cat.updated_by : null,
                     updated_at: typeof cat.updated_at === 'string' ? cat.updated_at : null
@@ -3247,6 +3616,8 @@
                 pate_count: Number(row.pate_count) || 0,
                 is_sos: Boolean(row.is_sos),
                 sos_note: row.sos_note || '',
+                sightings_count: Number(row.sightings_count) || 1,
+                sightings: Array.isArray(row.sightings) ? row.sightings : [],
                 created_by: row.created_by || null,
                 updated_by: row.updated_by || null,
                 updated_at: row.updated_at || null
@@ -3377,6 +3748,7 @@
                 pate_count: Number(cat.pate_count) || 0,
                 is_sos: Boolean(cat.is_sos),
                 sos_note: cat.sos_note || '',
+                sightings_count: Number(cat.sightings_count) || 1,
                 created_by: cat.created_by || currentUser?.id || null,
                 updated_by: currentUser?.id || cat.updated_by || null,
                 updated_at: new Date().toISOString()
@@ -3394,7 +3766,8 @@
                 first.fed_count !== second.fed_count ||
                 first.pate_count !== second.pate_count ||
                 first.is_sos !== second.is_sos ||
-                first.sos_note !== second.sos_note;
+                first.sos_note !== second.sos_note ||
+                first.sightings_count !== second.sightings_count;
         }
 
         function canManageCat(cat) {
@@ -3538,8 +3911,14 @@
         async function refreshCloudCats() {
             let res = await supabaseClient
                 .from('cats')
-                .select('id, lat, lng, name, location_name, note, image, approximate, current_status, status_note, status_updated_at, created_by, updated_by, updated_at, last_fed_at, last_fed_by, fed_count, pate_count, is_sos, sos_note')
+                .select('id, lat, lng, name, location_name, note, image, approximate, current_status, status_note, status_updated_at, created_by, updated_by, updated_at, last_fed_at, last_fed_by, fed_count, pate_count, is_sos, sos_note, sightings_count')
                 .order('updated_at', { ascending: false });
+            if (res.error && res.error.message && (res.error.message.includes('sightings_count') || res.error.message.includes('column'))) {
+                res = await supabaseClient
+                    .from('cats')
+                    .select('id, lat, lng, name, location_name, note, image, approximate, current_status, status_note, status_updated_at, created_by, updated_by, updated_at, last_fed_at, last_fed_by, fed_count, pate_count, is_sos, sos_note')
+                    .order('updated_at', { ascending: false });
+            }
             if (res.error && res.error.message && (res.error.message.includes('is_sos') || res.error.message.includes('sos_note'))) {
                 res = await supabaseClient
                     .from('cats')
@@ -4913,6 +5292,320 @@
             });
         }
 
+        async function compressImageFile(file, maxDimension = 1280, quality = 0.82) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onerror = reject;
+                reader.onload = () => {
+                    const img = new Image();
+                    img.onerror = reject;
+                    img.onload = () => {
+                        let { width, height } = img;
+                        if (width > maxDimension || height > maxDimension) {
+                            if (width > height) {
+                                height = Math.round((height * maxDimension) / width);
+                                width = maxDimension;
+                            } else {
+                                width = Math.round((width * maxDimension) / height);
+                                height = maxDimension;
+                            }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.src = reader.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function fetchCatSightings(catId) {
+            const cat = cats.find(item => item.id === catId);
+            if (!cat) return [];
+
+            let remoteSightings = [];
+            if (isCloudConfigured && supabaseClient) {
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('cat_sightings')
+                        .select('id, cat_id, seen_at, image, note, reporter_name, created_at')
+                        .eq('cat_id', catId)
+                        .order('seen_at', { ascending: true });
+                    if (!error && Array.isArray(data)) {
+                        remoteSightings = data;
+                    }
+                } catch (e) {
+                    console.warn('Không thể tải sightings từ cloud:', e);
+                }
+            }
+
+            const localSightings = Array.isArray(cat.sightings) ? cat.sightings : [];
+            const mergedMap = new Map();
+            localSightings.forEach(s => mergedMap.set(s.id, s));
+            remoteSightings.forEach(s => mergedMap.set(s.id, s));
+
+            return Array.from(mergedMap.values()).sort((a, b) => {
+                const ta = new Date(a.seen_at || a.created_at || 0).getTime();
+                const tb = new Date(b.seen_at || b.created_at || 0).getTime();
+                return ta - tb;
+            });
+        }
+
+        function openSightingModal(catId) {
+            const cat = cats.find(item => item.id === catId);
+            if (!cat) return;
+            currentSightingCatId = catId;
+            currentSightingImageDataUrl = '';
+
+            sightingModalTitle.textContent = `📸 Gặp lại ${cat.name || 'bé mèo'}!`;
+            sightingModalDesc.textContent = `Lưu lại khoảnh khắc hôm nay bạn gặp lại ${cat.name || 'bé'}. Ảnh sẽ được thêm vào dòng thời gian lớn lên theo từng tháng! 🐾`;
+
+            sightingPhotoInput.value = '';
+            sightingPhotoPreview.src = '';
+            sightingPhotoPreviewWrap.style.display = 'none';
+
+            const todayStr = new Date().toLocaleDateString('en-CA');
+            sightingDateInput.value = todayStr;
+
+            sightingNoteInput.value = '';
+
+            const defaultReporter = currentUser?.email ? currentUser.email.split('@')[0] : (localStorage.getItem('catMap_feeder_name') || '');
+            sightingReporterInput.value = defaultReporter;
+
+            sightingSubmitBtn.disabled = false;
+            sightingSubmitBtn.textContent = 'Lưu kỷ niệm gặp lại 🐾';
+
+            sightingModal.classList.add('active');
+        }
+
+        function closeSightingModal() {
+            sightingModal.classList.remove('active');
+            currentSightingCatId = null;
+            currentSightingImageDataUrl = '';
+        }
+
+        async function handleSightingSubmit() {
+            if (!currentSightingCatId) return;
+            const catId = currentSightingCatId;
+            const cat = cats.find(c => c.id === catId);
+            if (!cat) return;
+
+            const note = sightingNoteInput.value.trim().slice(0, 1000);
+            const reporterName = sightingReporterInput.value.trim().slice(0, 40) || 'Một Sen tốt bụng';
+            if (reporterName) {
+                localStorage.setItem('catMap_feeder_name', reporterName);
+            }
+            const dateVal = sightingDateInput.value;
+            const seenAt = dateVal ? new Date(dateVal + 'T12:00:00').toISOString() : new Date().toISOString();
+
+            sightingSubmitBtn.disabled = true;
+            sightingSubmitBtn.textContent = 'Đang lưu kỷ niệm...';
+
+            try {
+                let imagePath = currentSightingImageDataUrl || null;
+                const sightingId = createCatId();
+
+                if (isCloudConfigured && supabaseClient && currentUser && currentSightingImageDataUrl) {
+                    try {
+                        imagePath = await uploadCatImage(currentSightingImageDataUrl, sightingId, 'sightings');
+                    } catch (uploadError) {
+                        console.warn('Không thể tải ảnh lên Storage, lưu dataUrl:', uploadError);
+                        imagePath = currentSightingImageDataUrl;
+                    }
+                }
+
+                const newSighting = {
+                    id: sightingId,
+                    cat_id: catId,
+                    seen_at: seenAt,
+                    image: imagePath,
+                    note: note,
+                    reporter_name: reporterName,
+                    created_at: new Date().toISOString()
+                };
+
+                let savedOnCloud = false;
+                if (isCloudConfigured && supabaseClient) {
+                    const { error } = await supabaseClient.rpc('add_cat_sighting', {
+                        p_cat_id: catId,
+                        p_image: imagePath,
+                        p_note: note,
+                        p_reporter_name: reporterName,
+                        p_seen_at: seenAt
+                    });
+                    if (error) {
+                        console.warn('RPC add_cat_sighting lỗi, thử insert bảng trực tiếp:', error);
+                        const { error: insertErr } = await supabaseClient.from('cat_sightings').insert([{
+                            id: sightingId,
+                            cat_id: catId,
+                            seen_at: seenAt,
+                            image: imagePath,
+                            note: note,
+                            reporter_name: reporterName
+                        }]);
+                        if (!insertErr) {
+                            savedOnCloud = true;
+                            if (canManageCat(cat)) {
+                                await supabaseClient.from('cats').update({
+                                    sightings_count: (Number(cat.sightings_count) || 1) + 1
+                                }).eq('id', catId);
+                            }
+                        }
+                    } else {
+                        savedOnCloud = true;
+                    }
+                    await refreshCloudCats();
+                }
+
+                if (!Array.isArray(cat.sightings)) cat.sightings = [];
+                cat.sightings.push(newSighting);
+                const updatedCount = (Number(cat.sightings_count) || 1) + 1;
+                cat.sightings_count = updatedCount;
+
+                if (!savedOnCloud) {
+                    await persistCats(cats.map(item => item.id === catId ? {
+                        ...item,
+                        sightings_count: updatedCount,
+                        sightings: cat.sightings
+                    } : item));
+                }
+
+                closeSightingModal();
+                renderCatMarkers();
+
+                const updatedCat = cats.find(item => item.id === catId);
+                if (updatedCat) {
+                    openSingleCatPopup(updatedCat);
+                }
+
+                showAppStatus(`🎉 Đã lưu kỷ niệm gặp lại! Bạn và cộng đồng đã gặp ${cat.name || 'bé'} ${updatedCount} lần 🐾📸`);
+                setTimeout(() => {
+                    openTimelineModal(catId);
+                }, 400);
+            } catch (err) {
+                console.error('Không thể lưu kỷ niệm gặp lại:', err);
+                showAppStatus(`Không thể lưu: ${err.message}`);
+                sightingSubmitBtn.disabled = false;
+                sightingSubmitBtn.textContent = 'Thử lại';
+            }
+        }
+
+        async function openTimelineModal(catId) {
+            const cat = cats.find(item => item.id === catId);
+            if (!cat) return;
+            currentTimelineCatId = catId;
+
+            timelineModalTitle.textContent = `📅 Hành trình lớn lên: ${cat.name || 'Bé mèo'} 🐾`;
+            timelineModalSubtitle.textContent = `Dòng thời gian ảnh và các lần gặp gỡ ${cat.name || 'bé'}`;
+            timelineBody.innerHTML = '<div style="text-align:center; padding: 24px; color:#8c7377;">Đang tải hành trình của bé... 🐾</div>';
+            timelineModal.classList.add('active');
+
+            const sightings = await fetchCatSightings(catId);
+            const totalCount = 1 + sightings.length;
+            timelineTotalCount.textContent = `Tổng cộng: ${Math.max(totalCount, Number(cat.sightings_count) || 1)} lần gặp 🐾`;
+
+            timelineBody.innerHTML = '';
+
+            const listEl = document.createElement('div');
+            listEl.className = 'timeline-list';
+
+            const initialDate = cat.created_at || cat.updated_at ? new Date(cat.created_at || cat.updated_at) : new Date();
+            const initialCard = createTimelineCard({
+                isFirst: true,
+                date: initialDate,
+                image: cat.image,
+                note: cat.note || 'Bé được phát hiện và lưu lên bản đồ lần đầu tiên 🐾',
+                reporterName: cat.created_by ? 'Người phát hiện ban đầu' : 'Một Sen ghi dấu'
+            });
+            listEl.appendChild(initialCard);
+
+            sightings.forEach(sighting => {
+                const sightDate = sighting.seen_at ? new Date(sighting.seen_at) : (sighting.created_at ? new Date(sighting.created_at) : new Date());
+                const card = createTimelineCard({
+                    isFirst: false,
+                    date: sightDate,
+                    image: sighting.image,
+                    note: sighting.note,
+                    reporterName: sighting.reporter_name || 'Một Sen tốt bụng'
+                });
+                listEl.appendChild(card);
+            });
+
+            timelineBody.appendChild(listEl);
+        }
+
+        function createTimelineCard({ isFirst, date, image, note, reporterName }) {
+            const card = document.createElement('div');
+            card.className = 'timeline-card';
+
+            const dot = document.createElement('div');
+            dot.className = 'timeline-node-dot' + (isFirst ? ' first-meet' : '');
+            dot.textContent = isFirst ? '🌱' : '🐾';
+            card.appendChild(dot);
+
+            const header = document.createElement('div');
+            header.className = 'timeline-card-header';
+
+            const monthStr = date && Number.isFinite(date.getTime())
+                ? `Tháng ${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`
+                : 'Kỷ niệm xưa';
+            const dateStr = date && Number.isFinite(date.getTime())
+                ? date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                : '';
+
+            const monthTag = document.createElement('span');
+            monthTag.className = 'timeline-month-tag';
+            monthTag.textContent = isFirst ? `🌱 Lần đầu gặp · ${monthStr}` : `🐾 ${monthStr}`;
+
+            const dateLabel = document.createElement('span');
+            dateLabel.className = 'timeline-date-time';
+            dateLabel.textContent = dateStr;
+
+            header.append(monthTag, dateLabel);
+            card.appendChild(header);
+
+            if (image) {
+                const imgEl = document.createElement('img');
+                imgEl.className = 'timeline-card-image';
+                imgEl.src = getCatImageUrl(image);
+                imgEl.alt = note || 'Ảnh bé mèo';
+                imgEl.tabIndex = 0;
+                imgEl.addEventListener('click', () => openImageViewer(imgEl));
+                imgEl.addEventListener('keydown', event => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openImageViewer(imgEl);
+                    }
+                });
+                card.appendChild(imgEl);
+            }
+
+            if (note) {
+                const noteEl = document.createElement('div');
+                noteEl.className = 'timeline-card-note';
+                noteEl.textContent = note;
+                card.appendChild(noteEl);
+            }
+
+            if (reporterName) {
+                const repEl = document.createElement('div');
+                repEl.className = 'timeline-card-reporter';
+                repEl.textContent = `Ghi nhận bởi: ${reporterName}`;
+                card.appendChild(repEl);
+            }
+
+            return card;
+        }
+
+        function closeTimelineModal() {
+            timelineModal.classList.remove('active');
+            currentTimelineCatId = null;
+        }
+
         function updateDailyFortuneBadge() {
             if (!fortunePillBadge) return;
             const todayStr = new Date().toLocaleDateString('en-CA');
@@ -5078,6 +5771,20 @@
                     sosResolveBtn.disabled = false;
                     sosResolveBtn.textContent = '✅ Đánh dấu bé đã an toàn / Đã được cứu';
                 }
+                return;
+            }
+            const sightingAddBtn = event.target.closest('button[data-cat-sighting-add]');
+            if (sightingAddBtn) {
+                event.preventDefault();
+                event.stopPropagation();
+                openSightingModal(sightingAddBtn.dataset.catSightingAdd);
+                return;
+            }
+            const timelineBtn = event.target.closest('button[data-cat-timeline]');
+            if (timelineBtn) {
+                event.preventDefault();
+                event.stopPropagation();
+                openTimelineModal(timelineBtn.dataset.catTimeline);
                 return;
             }
             const statusButton = event.target.closest('button[data-cat-status]');
@@ -5471,6 +6178,8 @@
                 if (fortuneModal.classList.contains('active')) closeFortuneModal();
                 if (senWalletModal.classList.contains('active')) closeSenWalletModal();
                 if (leaderboardModal.classList.contains('active')) closeLeaderboardModal();
+                if (sightingModal.classList.contains('active')) closeSightingModal();
+                if (timelineModal.classList.contains('active')) closeTimelineModal();
             }
         });
 
@@ -5503,6 +6212,41 @@
         leaderboardModal.addEventListener('click', event => {
             if (event.target === leaderboardModal) closeLeaderboardModal();
         });
+
+        sightingCancelBtn.onclick = closeSightingModal;
+        sightingModal.addEventListener('click', event => {
+            if (event.target === sightingModal) closeSightingModal();
+        });
+        timelineCloseBtn.onclick = closeTimelineModal;
+        timelineModal.addEventListener('click', event => {
+            if (event.target === timelineModal) closeTimelineModal();
+        });
+        timelineAddNowBtn.onclick = () => {
+            if (!currentTimelineCatId) return;
+            const targetId = currentTimelineCatId;
+            closeTimelineModal();
+            openSightingModal(targetId);
+        };
+        sightingPhotoInput.onchange = async () => {
+            const file = sightingPhotoInput.files[0];
+            if (!file) return;
+            try {
+                const dataUrl = await compressImageFile(file, 1280, 0.82);
+                currentSightingImageDataUrl = dataUrl;
+                sightingPhotoPreview.src = dataUrl;
+                sightingPhotoPreviewWrap.style.display = 'block';
+            } catch (error) {
+                console.error('Không thể xử lý ảnh:', error);
+                alert('Không thể đọc ảnh này. Vui lòng thử ảnh khác!');
+            }
+        };
+        sightingRemovePhotoBtn.onclick = () => {
+            sightingPhotoInput.value = '';
+            currentSightingImageDataUrl = '';
+            sightingPhotoPreview.src = '';
+            sightingPhotoPreviewWrap.style.display = 'none';
+        };
+        sightingSubmitBtn.onclick = handleSightingSubmit;
 
         window.addEventListener('beforeinstallprompt', event => {
             event.preventDefault();
