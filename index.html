@@ -3540,7 +3540,13 @@
                 .from('cats')
                 .select('id, lat, lng, name, location_name, note, image, approximate, current_status, status_note, status_updated_at, created_by, updated_by, updated_at, last_fed_at, last_fed_by, fed_count, pate_count, is_sos, sos_note')
                 .order('updated_at', { ascending: false });
-            if (res.error && res.error.message && (res.error.message.includes('is_sos') || res.error.message.includes('pate_count') || res.error.message.includes('last_fed_at') || res.error.message.includes('column'))) {
+            if (res.error && res.error.message && (res.error.message.includes('is_sos') || res.error.message.includes('sos_note'))) {
+                res = await supabaseClient
+                    .from('cats')
+                    .select('id, lat, lng, name, location_name, note, image, approximate, current_status, status_note, status_updated_at, created_by, updated_by, updated_at, last_fed_at, last_fed_by, fed_count, pate_count')
+                    .order('updated_at', { ascending: false });
+            }
+            if (res.error && res.error.message && (res.error.message.includes('pate_count') || res.error.message.includes('last_fed_at') || res.error.message.includes('column'))) {
                 res = await supabaseClient
                     .from('cats')
                     .select('id, lat, lng, name, location_name, note, image, approximate, current_status, status_note, status_updated_at, created_by, updated_by, updated_at')
