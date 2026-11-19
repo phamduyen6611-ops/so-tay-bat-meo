@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff758c" />
+      <stop offset="100%" stop-color="#ff7eb3" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+  <g fill="#ffffff">
+    <!-- Tai trái -->
+    <path d="M140 170 L210 240 L120 250 Z" />
+    <!-- Tai phải -->
+    <path d="M372 170 L392 250 L302 240 Z" />
+    <!-- Khuôn mặt -->
+    <circle cx="256" cy="290" r="130" />
+    <!-- Tai trong hồng -->
+    <path d="M148 190 L195 238 L138 245 Z" fill="#ffb3c1" />
+    <path d="M364 190 L374 245 L317 238 Z" fill="#ffb3c1" />
+    <!-- Mắt nhắm tít vui vẻ (hình vòng cung) -->
+    <path d="M190 280 Q215 305 240 280" fill="none" stroke="#5c4346" stroke-width="8" stroke-linecap="round" />
+    <path d="M272 280 Q297 305 322 280" fill="none" stroke="#5c4346" stroke-width="8" stroke-linecap="round" />
+    <!-- Mũi hồng nhỏ -->
+    <polygon points="256,310 248,300 264,300" fill="#ff758c" />
+    <!-- Miệng mèo -->
+    <path d="M246 312 Q256 322 256 312 Q256 322 266 312" fill="none" stroke="#5c4346" stroke-width="6" stroke-linecap="round" />
+    <!-- Má hồng -->
+    <ellipse cx="180" cy="315" rx="18" ry="10" fill="#ffb3c1" opacity="0.8" />
+    <ellipse cx="332" cy="315" rx="18" ry="10" fill="#ffb3c1" opacity="0.8" />
+  </g>
+</svg>

@@ -8,6 +8,12 @@ When the location name field is left blank, the app sends the coordinates to Ope
 
 Users can sign in to update a shared cat's status to **Vẫn thấy**, **Đã được giúp đỡ**, **Không còn ở đây**, or **Khác** with a note of up to 200 characters. The map shows when a status was last reported. New cat records start as **Vẫn thấy**; existing records start as **Chưa cập nhật** until a user reports their status. Status updates go through a restricted database function and do not grant permission to edit another user's cat details.
 
+Users (both guests and signed-in members) can also log daily feeding check-ins (**🥣 Mình vừa cho bé ăn!**) to record when a cat was last fed, who fed them, and the total feeding count. This is powered by the `check_in_cat_feed` database function.
+
+Users earn daily virtual canned pate via their check-in streak and can gift pate to any cat on the map (**🐟 Tặng 1 lon pate**), incrementing the cat's `pate_count` through the `give_cat_pate` database function.
+
+Users can flag or resolve urgent cat assistance alerts (**🚨 Radar SOS**) with a rescue note via the `toggle_cat_sos` database function, making emergency cases stand out on the map and on the Leaderboard SOS Radar.
+
 ## Deployment and account settings
 
 The app is hosted on GitHub Pages at <https://phamduyen6611-ops.github.io/so-tay-bat-meo/>. This URL is configured as the Supabase Auth Site URL and Redirect URL.
