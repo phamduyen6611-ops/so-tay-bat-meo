@@ -1002,6 +1002,56 @@
             display: none;
         }
 
+        .photo-upload-options {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .photo-upload-options .file-upload-btn {
+            flex: 1;
+            margin-bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 13px 8px;
+            font-size: 13.5px;
+            text-align: center;
+            border-radius: 14px;
+            transition: all 0.2s;
+        }
+
+        .upload-camera-btn {
+            background: #fff0f3;
+            border: 2px dashed #ff758c;
+            color: #d63353;
+        }
+
+        .upload-gallery-btn {
+            background: #f0f7ff;
+            border: 2px dashed #60a5fa;
+            color: #1d4ed8;
+        }
+
+        .upload-camera-btn:hover,
+        .upload-camera-btn:active {
+            background: #ffe2e8;
+            transform: scale(0.98);
+        }
+
+        .upload-gallery-btn:hover,
+        .upload-gallery-btn:active {
+            background: #dbeafe;
+            transform: scale(0.98);
+        }
+
+        @media (max-width: 380px) {
+            .photo-upload-options {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+
         .file-upload-btn {
             display: inline-block;
             background: var(--bg-color);
@@ -2847,11 +2897,16 @@
         <div class="modal-content">
             <h2 id="modalTitle">Bắt được một bé! 🐾</h2>
 
-            <label class="file-upload-btn">
-                📸 Chụp/Tải ảnh lên
-                <!-- capture="environment" ưu tiên mở camera sau trên mobile -->
-                <input type="file" id="catPhoto" accept="image/*" capture="environment">
-            </label>
+            <div class="photo-upload-options">
+                <label class="file-upload-btn upload-camera-btn">
+                    <span>📸 Chụp ảnh ngay</span>
+                    <input type="file" id="catPhotoCamera" accept="image/*" capture="environment">
+                </label>
+                <label class="file-upload-btn upload-gallery-btn">
+                    <span>🖼️ Tải ảnh từ thư viện</span>
+                    <input type="file" id="catPhotoGallery" accept="image/*">
+                </label>
+            </div>
             <div id="previewContainer" style="display:none; margin-bottom: 15px;">
                 <div class="image-preview-frame">
                     <canvas id="photoPreviewCanvas" width="900" height="675"
@@ -3021,8 +3076,17 @@
             <p class="sighting-modal-desc" id="sightingModalDesc">Ghi lại khoảnh khắc hôm nay bạn gặp lại bé để lưu vào hành trình lớn lên theo từng tháng.</p>
 
             <div class="form-group">
-                <label for="sightingPhotoInput" style="font-weight: 700; font-size: 13px; color: #634347;">Ảnh chụp hôm nay (rất nên có! 📸):</label>
-                <input type="file" id="sightingPhotoInput" accept="image/jpeg,image/png,image/webp" style="margin-top: 6px; width: 100%;">
+                <label style="font-weight: 700; font-size: 13px; color: #634347; display: block; margin-bottom: 6px;">Ảnh chụp hôm nay (rất nên có! 📸):</label>
+                <div class="photo-upload-options" style="margin-bottom: 8px;">
+                    <label class="file-upload-btn upload-camera-btn" style="padding: 10px 6px; font-size: 12.5px;">
+                        <span>📸 Chụp ảnh ngay</span>
+                        <input type="file" id="sightingPhotoCamera" accept="image/*" capture="environment">
+                    </label>
+                    <label class="file-upload-btn upload-gallery-btn" style="padding: 10px 6px; font-size: 12.5px;">
+                        <span>🖼️ Chọn từ thư viện</span>
+                        <input type="file" id="sightingPhotoInput" accept="image/*">
+                    </label>
+                </div>
                 <div class="sighting-photo-preview-wrap" id="sightingPhotoPreviewWrap" style="display: none;">
                     <img id="sightingPhotoPreview" alt="Xem trước ảnh chụp lại" class="sighting-photo-preview">
                     <div>
@@ -3204,7 +3268,9 @@
         }
 
         const modal = document.getElementById('addCatModal');
-        const photoInput = document.getElementById('catPhoto');
+        const catPhotoCamera = document.getElementById('catPhotoCamera');
+        const catPhotoGallery = document.getElementById('catPhotoGallery');
+        const photoInput = catPhotoGallery || document.getElementById('catPhoto');
         const photoPreviewCanvas = document.getElementById('photoPreviewCanvas');
         const imageZoom = document.getElementById('imageZoom');
         const imagePanX = document.getElementById('imagePanX');
@@ -3313,6 +3379,7 @@
         const sightingModal = document.getElementById('sightingModal');
         const sightingModalTitle = document.getElementById('sightingModalTitle');
         const sightingModalDesc = document.getElementById('sightingModalDesc');
+        const sightingPhotoCamera = document.getElementById('sightingPhotoCamera');
         const sightingPhotoInput = document.getElementById('sightingPhotoInput');
         const sightingPhotoPreviewWrap = document.getElementById('sightingPhotoPreviewWrap');
         const sightingPhotoPreview = document.getElementById('sightingPhotoPreview');
@@ -5723,7 +5790,8 @@
             sightingModalTitle.textContent = `📸 Gặp lại ${cat.name || 'bé mèo'}!`;
             sightingModalDesc.textContent = `Lưu lại khoảnh khắc hôm nay bạn gặp lại ${cat.name || 'bé'}. Ảnh sẽ được thêm vào dòng thời gian lớn lên theo từng tháng! 🐾`;
 
-            sightingPhotoInput.value = '';
+            if (sightingPhotoInput) sightingPhotoInput.value = '';
+            if (sightingPhotoCamera) sightingPhotoCamera.value = '';
             sightingPhotoPreview.src = '';
             sightingPhotoPreviewWrap.style.display = 'none';
 
@@ -5745,6 +5813,10 @@
             sightingModal.classList.remove('active');
             currentSightingCatId = null;
             currentSightingImageDataUrl = '';
+            if (sightingPhotoInput) sightingPhotoInput.value = '';
+            if (sightingPhotoCamera) sightingPhotoCamera.value = '';
+            sightingPhotoPreview.src = '';
+            sightingPhotoPreviewWrap.style.display = 'none';
         }
 
         async function handleSightingSubmit() {
@@ -6587,8 +6659,7 @@
             closeTimelineModal();
             openSightingModal(targetId);
         };
-        sightingPhotoInput.onchange = async () => {
-            const file = sightingPhotoInput.files[0];
+        const handleSightingPhotoFile = async (file) => {
             if (!file) return;
             try {
                 const dataUrl = await compressImageFile(file, 1280, 0.82);
@@ -6600,8 +6671,12 @@
                 alert('Không thể đọc ảnh này. Vui lòng thử ảnh khác!');
             }
         };
+        if (sightingPhotoCamera) sightingPhotoCamera.onchange = (e) => handleSightingPhotoFile(e.target.files[0]);
+        if (sightingPhotoInput) sightingPhotoInput.onchange = (e) => handleSightingPhotoFile(e.target.files[0]);
+
         sightingRemovePhotoBtn.onclick = () => {
-            sightingPhotoInput.value = '';
+            if (sightingPhotoInput) sightingPhotoInput.value = '';
+            if (sightingPhotoCamera) sightingPhotoCamera.value = '';
             currentSightingImageDataUrl = '';
             sightingPhotoPreview.src = '';
             sightingPhotoPreviewWrap.style.display = 'none';
@@ -6699,8 +6774,7 @@
         };
         document.getElementById('resetImageEditBtn').onclick = resetImageEditor;
 
-        photoInput.onchange = (e) => {
-            const file = e.target.files[0];
+        function handleCatPhotoSelected(file) {
             if (file) {
                 sourceImage = null;
                 currentImageDataUrl = "";
@@ -6725,7 +6799,11 @@
                 };
                 reader.readAsDataURL(file);
             }
-        };
+        }
+
+        if (catPhotoCamera) catPhotoCamera.onchange = (e) => handleCatPhotoSelected(e.target.files[0]);
+        if (catPhotoGallery) catPhotoGallery.onchange = (e) => handleCatPhotoSelected(e.target.files[0]);
+        if (photoInput && photoInput !== catPhotoGallery) photoInput.onchange = (e) => handleCatPhotoSelected(e.target.files[0]);
 
         collaborationMigrateImagesButton.onclick = async () => {
             try {
@@ -6923,7 +7001,9 @@
 
         function resetAndCloseModal() {
             modal.classList.remove('active');
-            photoInput.value = "";
+            if (catPhotoCamera) catPhotoCamera.value = "";
+            if (catPhotoGallery) catPhotoGallery.value = "";
+            if (photoInput) photoInput.value = "";
             document.getElementById('catName').value = "";
             document.getElementById('catLocationName').value = "";
             document.getElementById('catNote').value = "";
