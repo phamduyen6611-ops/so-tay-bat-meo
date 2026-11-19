@@ -16,6 +16,8 @@ Users can flag or resolve urgent cat assistance alerts (**🚨 Radar SOS**) with
 
 Users can check in sighting milestones (**📸 Hôm nay lại gặp bé!**) to increment `sightings_count` and view the cat's chronological growth timeline (**📅 Hành trình lớn lên**) with photos across months. This is powered by the `cat_sightings` table and `add_cat_sighting` database function.
 
+Users can track their check-in streak, pate stash, and Sen Badges (**Danh hiệu Sen trong Ví: Sen Tập Sự, Sen Chu Đáo, Sen Cần Mẫn, Đại Gia Pate, Bảo Mẫu Hoàng Gia**). All wallet data, streak counters, and badge tiers are synchronized directly to the database through the `public.sen_wallets` table and `sync_sen_wallet` function.
+
 ## Deployment and account settings
 
 The app is hosted on GitHub Pages at <https://phamduyen6611-ops.github.io/so-tay-bat-meo/>. This URL is configured as the Supabase Auth Site URL and Redirect URL.
