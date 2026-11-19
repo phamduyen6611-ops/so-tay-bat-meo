@@ -1322,8 +1322,8 @@
 
         @media (max-width: 600px) {
             .cat-popup-list {
-                width: min(310px, calc(100vw - 76px));
-                max-height: min(42dvh, 360px);
+                width: min(320px, calc(100vw - 36px));
+                max-height: min(65dvh, 500px);
             }
 
             .cat-popup-entry {
@@ -1331,7 +1331,7 @@
             }
 
             .popup-img {
-                height: min(150px, 18vh);
+                height: min(150px, 20vh);
             }
 
             .cat-record-actions {
@@ -1342,6 +1342,35 @@
             .cat-record-actions button {
                 min-height: 40px;
                 border-radius: 10px;
+            }
+
+            .top-left-actions {
+                top: max(60px, calc(env(safe-area-inset-top) + 52px));
+                left: max(10px, env(safe-area-inset-left));
+                gap: 6px;
+                max-width: calc(100vw - 20px);
+            }
+
+            .fortune-pill-btn,
+            .sen-wallet-btn,
+            .leaderboard-pill-btn,
+            .pwa-install-btn {
+                min-height: 34px;
+                padding: 6px 10px;
+                font-size: 12px;
+                border-radius: 17px;
+            }
+
+            .qr-pill-btn {
+                display: none !important;
+            }
+
+            .timeline-modal-content,
+            .sighting-modal-content,
+            .leaderboard-modal-content,
+            .fortune-card {
+                max-height: calc(100dvh - 28px);
+                padding: 14px;
             }
         }
 
@@ -1460,6 +1489,33 @@
         }
 
         .pwa-install-btn:active {
+            transform: scale(0.95);
+        }
+
+        .qr-pill-btn {
+            min-height: 40px;
+            padding: 8px 14px;
+            border: 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+            font: inherit;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .qr-pill-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5);
+        }
+
+        .qr-pill-btn:active {
             transform: scale(0.95);
         }
 
@@ -2456,6 +2512,9 @@
         <button type="button" class="leaderboard-pill-btn" id="leaderboardPillBtn" aria-label="Bảng Vàng Mèo Idol & Radar SOS">
             <span>🏆</span> <span>Bảng Vàng</span>
         </button>
+        <button type="button" class="qr-pill-btn" id="qrPillBtn" aria-label="Xem trên điện thoại">
+            <span>📱 Xem trên ĐT</span>
+        </button>
         <button type="button" class="pwa-install-btn" id="pwaInstallBtn" aria-label="Cài đặt ứng dụng lên màn hình chính" style="display: none;">
             <span>📲 Cài App</span>
         </button>
@@ -2742,6 +2801,24 @@
         </div>
     </div>
 
+    <!-- Hộp thoại Quét QR mở trên điện thoại -->
+    <div class="modal" id="qrModal" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle">
+        <div class="modal-content" style="max-width: 360px; text-align: center; border-radius: 24px; padding: 22px;">
+            <h3 id="qrModalTitle" style="margin: 0 0 6px; font-size: 18px; color: #4a3336;">📱 Mở trên điện thoại</h3>
+            <p style="margin: 0 0 16px; font-size: 13px; color: #78716c;">Mở camera điện thoại (iPhone hoặc Android) quét mã QR bên dưới để xem ngay:</p>
+            <div style="background: white; padding: 12px; border-radius: 16px; display: inline-block; box-shadow: 0 4px 14px rgba(0,0,0,0.08); border: 1px solid #fed7aa;">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://phamduyen6611-ops.github.io/so-tay-bat-meo/" alt="Mã QR mở Sổ Tay Bắt Mèo" width="200" height="200" style="display: block; border-radius: 8px;">
+            </div>
+            <p style="margin: 12px 0 16px; font-size: 12px; color: #8c7377; line-height: 1.4;">
+                💡 <b>Mẹo:</b> Khi mở trên điện thoại, bấm vào biểu tượng <b>Chia sẻ / Menu ⋯</b> rồi chọn <b>"Thêm vào Màn hình chính"</b> để dùng như một ứng dụng độc lập nhé!
+            </p>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn btn-save" id="copyAppUrlBtn" style="flex: 1; font-size: 12px;">📋 Sao chép Link</button>
+                <button type="button" class="btn btn-cancel" id="closeQrModalBtn" style="flex: 1; font-size: 12px;">Đóng</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Thư viện Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -2979,6 +3056,11 @@
         const timelineBody = document.getElementById('timelineBody');
         const timelineCloseBtn = document.getElementById('timelineCloseBtn');
         let currentTimelineCatId = null;
+
+        const qrPillBtn = document.getElementById('qrPillBtn');
+        const qrModal = document.getElementById('qrModal');
+        const closeQrModalBtn = document.getElementById('closeQrModalBtn');
+        const copyAppUrlBtn = document.getElementById('copyAppUrlBtn');
 
         const CAT_FORTUNES = [
             { title: "Đại Cát Bụng Mỡ", desc: "Tài lộc hôm nay rủng rỉnh như chiếc bụng mỡ của mèo sau bữa tiệc pate thượng hạng!" },
@@ -6180,6 +6262,7 @@
                 if (leaderboardModal.classList.contains('active')) closeLeaderboardModal();
                 if (sightingModal.classList.contains('active')) closeSightingModal();
                 if (timelineModal.classList.contains('active')) closeTimelineModal();
+                if (qrModal && qrModal.classList.contains('active')) qrModal.classList.remove('active');
             }
         });
 
@@ -6247,6 +6330,22 @@
             sightingPhotoPreviewWrap.style.display = 'none';
         };
         sightingSubmitBtn.onclick = handleSightingSubmit;
+
+        if (qrPillBtn) qrPillBtn.onclick = () => qrModal.classList.add('active');
+        if (closeQrModalBtn) closeQrModalBtn.onclick = () => qrModal.classList.remove('active');
+        if (qrModal) qrModal.addEventListener('click', event => { if (event.target === qrModal) qrModal.classList.remove('active'); });
+        if (copyAppUrlBtn) {
+            copyAppUrlBtn.onclick = async () => {
+                const url = 'https://phamduyen6611-ops.github.io/so-tay-bat-meo/';
+                try {
+                    await navigator.clipboard.writeText(url);
+                    copyAppUrlBtn.textContent = '✅ Đã chép link!';
+                    setTimeout(() => { copyAppUrlBtn.textContent = '📋 Sao chép Link'; }, 2000);
+                } catch {
+                    prompt('Sao chép đường link bên dưới:', url);
+                }
+            };
+        }
 
         window.addEventListener('beforeinstallprompt', event => {
             event.preventDefault();
