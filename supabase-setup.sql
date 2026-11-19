@@ -22,7 +22,13 @@ alter table public.cats
 alter table public.cats
     add column if not exists current_status text not null default 'unknown',
     add column if not exists status_note text not null default '',
-    add column if not exists status_updated_at timestamptz;
+    add column if not exists status_updated_at timestamptz,
+    add column if not exists last_fed_at timestamptz,
+    add column if not exists last_fed_by text not null default '' check (char_length(last_fed_by) <= 40),
+    add column if not exists fed_count int not null default 0,
+    add column if not exists pate_count int not null default 0,
+    add column if not exists is_sos boolean not null default false,
+    add column if not exists sos_note text not null default '' check (char_length(sos_note) <= 200);
 
 do $$
 begin
@@ -156,6 +162,75 @@ security definer
 set search_path = ''
 as $$
     select public.report_cat_status(p_cat_id, p_status, '');
+$$;
+
+create or replace function public.check_in_cat_feed(p_cat_id text, p_feeder_name text default '')
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+    v_feeder text;
+begin
+    v_feeder := trim(coalesce(p_feeder_name, ''));
+    if v_feeder = '' then
+        v_feeder := 'Một Sen tốt bụng';
+    end if;
+    if char_length(v_feeder) > 40 then
+        v_feeder := substring(v_feeder from 1 for 40);
+    end if;
+
+    update public.cats
+    set last_fed_at = now(),
+        fed_count = coalesce(fed_count, 0) + 1,
+        last_fed_by = v_feeder
+    where id = p_cat_id;
+
+    if not found then
+        raise exception 'Cat not found.';
+    end if;
+end;
+$$;
+
+create or replace function public.give_cat_pate(p_cat_id text)
+returns int
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+    v_new_count int;
+begin
+    update public.cats
+    set pate_count = coalesce(pate_count, 0) + 1
+    where id = p_cat_id
+    returning pate_count into v_new_count;
+
+    if not found then
+        raise exception 'Cat not found.';
+    end if;
+
+    return v_new_count;
+end;
+$$;
+
+create or replace function public.toggle_cat_sos(p_cat_id text, p_is_sos boolean, p_sos_note text default '')
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+    update public.cats
+    set is_sos = p_is_sos,
+        sos_note = case when p_is_sos then trim(coalesce(p_sos_note, '')) else '' end
+    where id = p_cat_id;
+
+    if not found then
+        raise exception 'Cat not found.';
+    end if;
+end;
 $$;
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -368,6 +443,9 @@ grant execute on function public.report_cat_status(text, text, text) to authenti
 grant execute on function public.report_cat_status(text, text) to authenticated;
 grant execute on function public.approve_cat_submission(text) to authenticated;
 grant execute on function public.reject_cat_submission(text) to authenticated;
+grant execute on function public.check_in_cat_feed(text, text) to anon, authenticated;
+grant execute on function public.give_cat_pate(text) to anon, authenticated;
+grant execute on function public.toggle_cat_sos(text, boolean, text) to anon, authenticated;
 
 insert into public.cat_editors (user_id, is_admin)
 values ('642005de-39c8-4930-abbb-92c6169b67a1', true)

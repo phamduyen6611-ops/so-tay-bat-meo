@@ -18,6 +18,15 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9861032559060235"
         crossorigin="anonymous"></script>
 
+    <!-- Cấu hình PWA & App Icons -->
+    <meta name="theme-color" content="#ff758c" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Bắt Mèo" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="icons/cat-icon.svg" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
     <!-- Thư viện Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- Font chữ dễ thương (Nunito) -->
@@ -1355,6 +1364,771 @@
                 transform: translateY(-10px);
             }
         }
+
+        /* Quẻ Mèo May Mắn, Ví Sen & Streak (Giai đoạn 1 & 2) */
+        .top-left-actions {
+            position: fixed;
+            top: max(68px, calc(env(safe-area-inset-top) + 56px));
+            left: max(16px, env(safe-area-inset-left));
+            z-index: 1000;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            max-width: calc(100vw - 32px);
+        }
+
+        .fortune-pill-btn {
+            min-height: 40px;
+            padding: 8px 14px;
+            border: 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(255, 117, 140, 0.4);
+            font: inherit;
+            font-weight: 800;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .fortune-pill-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(255, 117, 140, 0.5);
+        }
+
+        .fortune-pill-btn:active {
+            transform: scale(0.95);
+        }
+
+        .sen-wallet-btn {
+            min-height: 40px;
+            padding: 8px 14px;
+            border: 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #ff9a44 0%, #fc6076 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(252, 96, 118, 0.4);
+            font: inherit;
+            font-weight: 800;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .sen-wallet-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(252, 96, 118, 0.5);
+        }
+
+        .sen-wallet-btn:active {
+            transform: scale(0.95);
+        }
+
+        .wallet-divider {
+            opacity: 0.7;
+        }
+
+        .pwa-install-btn {
+            min-height: 40px;
+            padding: 8px 14px;
+            border: 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(79, 172, 254, 0.4);
+            font: inherit;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .pwa-install-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(79, 172, 254, 0.5);
+        }
+
+        .pwa-install-btn:active {
+            transform: scale(0.95);
+        }
+
+        .fortune-pill-badge {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #ffd166;
+            border: 2px solid white;
+            border-radius: 50%;
+            margin-left: 2px;
+            animation: pulse-badge 1.8s infinite;
+        }
+
+        .fortune-pill-badge.hidden {
+            display: none;
+        }
+
+        @keyframes pulse-badge {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 209, 102, 0.7); }
+            70% { transform: scale(1.25); box-shadow: 0 0 0 6px rgba(255, 209, 102, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 209, 102, 0); }
+        }
+
+        .fortune-modal-content {
+            max-width: 400px;
+            text-align: center;
+            border-radius: 26px;
+            background: linear-gradient(180deg, #fffafd 0%, #ffffff 100%);
+            padding: 24px 20px;
+            box-shadow: 0 16px 36px rgba(255, 141, 161, 0.3);
+            border: 2px solid #ffe5eb;
+        }
+
+        .fortune-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .fortune-badge {
+            background: linear-gradient(135deg, #ff8da1, #ff6b8b);
+            color: white;
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            padding: 5px 16px;
+            border-radius: 20px;
+            box-shadow: 0 3px 10px rgba(255, 107, 139, 0.3);
+        }
+
+        .fortune-date {
+            font-size: 12px;
+            color: #997e82;
+            font-weight: 700;
+        }
+
+        .fortune-cat-avatar-wrap {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 8px auto 4px;
+            padding: 4px;
+            background: linear-gradient(135deg, #ffd166, #ff8da1);
+            box-shadow: 0 6px 18px rgba(255, 141, 161, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .fortune-cat-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            background: white;
+        }
+
+        .fortune-cat-emoji {
+            font-size: 64px;
+            line-height: 1;
+        }
+
+        .fortune-cat-name {
+            margin: 0;
+            font-size: 21px;
+            font-weight: 900;
+            color: #4a3336;
+        }
+
+        .fortune-cat-loc {
+            margin: 0;
+            font-size: 13px;
+            color: #8c7377;
+            max-width: 90%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .fortune-message-box {
+            margin: 10px 0 6px;
+            padding: 14px 16px;
+            background: #fff0f3;
+            border-radius: 16px;
+            border: 1px dashed #ffb3c1;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .fortune-title-text {
+            font-size: 15px;
+            font-weight: 900;
+            color: #e63960;
+            margin-bottom: 6px;
+        }
+
+        .fortune-message-text {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #5c4346;
+            font-style: italic;
+        }
+
+        .fortune-card-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .fortune-card-actions .btn {
+            width: 100%;
+            border-radius: 14px;
+            font-weight: 900;
+            padding: 10px 14px;
+        }
+
+        /* Nhật ký cho ăn trong popup thông tin mèo */
+        .cat-feeding-section {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: #fff8f9;
+            border-radius: 12px;
+            border: 1px solid #ffd8e0;
+        }
+
+        .cat-feeding-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #634347;
+            margin-bottom: 6px;
+        }
+
+        .cat-feeding-info {
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .feeding-status-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .feeding-status-tag.fed-today {
+            background: #e8f8f0;
+            color: #1e7e48;
+            border: 1px solid #c2e8d3;
+        }
+
+        .feeding-status-tag.fed-none {
+            background: #fff1db;
+            color: #945300;
+            border: 1px solid #ffe0b3;
+        }
+
+        .feeding-detail {
+            color: #7d6569;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .cat-feed-btn {
+            width: 100%;
+            min-height: 38px;
+            padding: 6px 12px;
+            border: 1px solid #ff7b95;
+            border-radius: 10px;
+            background: #ffecf0;
+            color: #d63353;
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .cat-feed-btn:hover {
+            background: #ff7b95;
+            color: white;
+        }
+
+        .cat-feed-btn:disabled {
+            opacity: 0.65;
+            cursor: wait;
+        }
+
+        /* Modal Túi Đồ của Sen & Streak */
+        .sen-wallet-modal-content {
+            max-width: 420px;
+            text-align: center;
+            border-radius: 26px;
+            background: linear-gradient(180deg, #fffcf9 0%, #ffffff 100%);
+            padding: 24px 20px;
+            box-shadow: 0 16px 36px rgba(252, 96, 118, 0.25);
+            border: 2px solid #ffe8cc;
+        }
+
+        .wallet-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 16px 0;
+        }
+
+        .wallet-stat-card {
+            background: #fff5eb;
+            border: 1px solid #fed7aa;
+            border-radius: 16px;
+            padding: 12px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .wallet-stat-value {
+            font-size: 22px;
+            font-weight: 900;
+            color: #c2410c;
+        }
+
+        .wallet-stat-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #7c2d12;
+        }
+
+        .streak-track {
+            background: #fff0f3;
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 14px;
+            border: 1px dashed #ffb3c1;
+        }
+
+        .streak-track-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #d63353;
+            margin-bottom: 10px;
+        }
+
+        .streak-days-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 4px;
+        }
+
+        .streak-day-badge {
+            flex: 1;
+            padding: 8px 4px;
+            border-radius: 10px;
+            background: white;
+            border: 1px solid #ffd1dc;
+            font-size: 11px;
+            font-weight: 800;
+            color: #997e82;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .streak-day-badge.active {
+            background: linear-gradient(135deg, #ff758c, #ff7eb3);
+            border-color: #ff758c;
+            color: white;
+            box-shadow: 0 2px 8px rgba(255, 117, 140, 0.4);
+        }
+
+        .streak-day-badge.gift {
+            border-color: #f59e0b;
+        }
+
+        .streak-day-badge.gift.active {
+            background: linear-gradient(135deg, #f59e0b, #fbbf24);
+            border-color: #f59e0b;
+            color: white;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+        }
+
+        .wallet-guide-text {
+            font-size: 12px;
+            line-height: 1.5;
+            color: #78716c;
+            text-align: left;
+            margin: 0 0 16px;
+            padding: 0 6px;
+        }
+
+        /* Pate trong Popup Mèo */
+        .cat-pate-row {
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #ffd8e0;
+        }
+
+        .cat-pate-badge {
+            font-size: 11px;
+            font-weight: 800;
+            color: #be185d;
+            background: #fdf2f8;
+            padding: 4px 8px;
+            border-radius: 8px;
+            border: 1px solid #fbcfe8;
+        }
+
+        .cat-give-pate-btn {
+            flex-shrink: 0;
+            min-height: 34px;
+            padding: 4px 12px;
+            border: 1px solid #fb7185;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ff758c, #ff7eb3);
+            color: white;
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 12px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(255, 117, 140, 0.3);
+            transition: all 0.2s;
+        }
+
+        .cat-give-pate-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 117, 140, 0.4);
+        }
+
+        .cat-give-pate-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Bảng Vàng Mèo Idol & Radar SOS (Giai đoạn 3) */
+        .leaderboard-pill-btn {
+            min-height: 40px;
+            padding: 8px 14px;
+            border: 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #ffd166 0%, #f59e0b 100%);
+            color: #78350f;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+            font: inherit;
+            font-weight: 800;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .leaderboard-pill-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(245, 158, 11, 0.5);
+        }
+
+        .leaderboard-pill-btn:active {
+            transform: scale(0.95);
+        }
+
+        .leaderboard-modal-content {
+            max-width: 460px;
+            text-align: left;
+            border-radius: 26px;
+            background: linear-gradient(180deg, #fffdf8 0%, #ffffff 100%);
+            padding: 20px;
+            box-shadow: 0 16px 36px rgba(245, 158, 11, 0.25);
+            border: 2px solid #fde68a;
+            max-height: 88dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .leaderboard-header {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .leaderboard-tabs {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            background: #fef3c7;
+            padding: 4px;
+            border-radius: 14px;
+        }
+
+        .leaderboard-tab-btn {
+            flex: 1;
+            padding: 8px 10px;
+            border: 0;
+            border-radius: 10px;
+            background: transparent;
+            color: #92400e;
+            font: inherit;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .leaderboard-tab-btn.active {
+            background: white;
+            color: #b45309;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .leaderboard-subtitle {
+            margin: 0 0 12px;
+            font-size: 12px;
+            color: #78716c;
+            text-align: center;
+        }
+
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+            max-height: calc(88dvh - 200px);
+            padding-right: 2px;
+        }
+
+        .leaderboard-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 16px;
+            background: white;
+            border: 1px solid #fed7aa;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            transition: transform 0.15s;
+        }
+
+        .leaderboard-card.rank-1 {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            border: 2px solid #f59e0b;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25);
+        }
+
+        .leaderboard-rank {
+            font-size: 16px;
+            font-weight: 900;
+            color: #b45309;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .leaderboard-card-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #fff0f3;
+            flex-shrink: 0;
+            border: 2px solid #ffd1dc;
+        }
+
+        .leaderboard-card-avatar.emoji-avatar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .leaderboard-card-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .leaderboard-card-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: #4a3336;
+            margin: 0 0 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .leaderboard-card-location {
+            font-size: 11px;
+            color: #8c7377;
+            margin: 0 0 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .leaderboard-card-metrics {
+            display: flex;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .metric-pate {
+            color: #d97706;
+            background: #fffbeb;
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        .metric-fed {
+            color: #059669;
+            background: #ecfdf5;
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        .leaderboard-card-btn {
+            flex-shrink: 0;
+            padding: 6px 10px;
+            border-radius: 10px;
+            border: 0;
+            background: #ff8da1;
+            color: white;
+            font: inherit;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .leaderboard-card-btn:hover {
+            background: #ff758c;
+            transform: translateY(-1px);
+        }
+
+        /* SOS Card Style */
+        .sos-card {
+            border: 2px solid #f87171;
+            background: #fef2f2;
+        }
+
+        .sos-badge-tag {
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            font-weight: 900;
+            padding: 2px 6px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-bottom: 4px;
+            animation: pulse-sos 1.5s infinite;
+        }
+
+        @keyframes pulse-sos {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .cat-sos-section {
+            margin-top: 8px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            border: 1px dashed #fca5a5;
+            background: #fff5f5;
+        }
+
+        .cat-sos-section.active-sos {
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+        }
+
+        .cat-sos-toggle-btn {
+            width: 100%;
+            margin-top: 6px;
+            min-height: 32px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid #fca5a5;
+            background: white;
+            color: #dc2626;
+            font-family: inherit;
+            font-weight: 800;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cat-sos-toggle-btn:hover {
+            background: #fee2e2;
+        }
+
+        .cat-sos-toggle-btn.btn-resolve {
+            border-color: #86efac;
+            color: #166534;
+            background: #f0fdf4;
+        }
+
+        .cat-sos-toggle-btn.btn-resolve:hover {
+            background: #dcfce7;
+        }
+
+        /* Marker SOS & Crown Badge */
+        .cat-marker-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .marker-sos-badge,
+        .marker-crown-badge {
+            position: absolute;
+            top: -10px;
+            right: -6px;
+            font-size: 18px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .custom-cat-icon.sos-pulse .cat-marker-photo,
+        .custom-cat-icon.sos-pulse .cat-marker {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            animation: pulse-marker-sos 1.6s infinite;
+            border: 2px solid #ef4444;
+        }
+
+        @keyframes pulse-marker-sos {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
     </style>
 </head>
 
@@ -1384,6 +2158,8 @@
                     <select id="catStatusFilter">
                         <option value="">Tất cả</option>
                         <option value="seen">Vẫn thấy</option>
+                        <option value="sos">🚨 Cần hỗ trợ (SOS)</option>
+                        <option value="hungry">🥣 Chưa ăn hôm nay</option>
                         <option value="helped">Đã được giúp đỡ</option>
                         <option value="not_found">Không còn ở đây</option>
                         <option value="other">Khác</option>
@@ -1417,6 +2193,24 @@
             </nav>
         </div>
     </section>
+    <div class="top-left-actions">
+        <button type="button" class="fortune-pill-btn" id="fortunePillBtn" aria-label="Quẻ Mèo May Mắn Hôm Nay">
+            <span class="fortune-pill-icon">🔮</span>
+            <span class="fortune-pill-text">Quẻ Mèo</span>
+            <span class="fortune-pill-badge" id="fortunePillBadge" title="Hôm nay bạn chưa bốc quẻ!"></span>
+        </button>
+        <button type="button" class="sen-wallet-btn" id="senWalletBtn" aria-label="Túi đồ của Sen & Chuỗi điểm danh">
+            <span>🔥</span> <span id="streakCountText">1</span>
+            <span class="wallet-divider">·</span>
+            <span>🐟</span> <span id="pateCountText">3</span>
+        </button>
+        <button type="button" class="leaderboard-pill-btn" id="leaderboardPillBtn" aria-label="Bảng Vàng Mèo Idol & Radar SOS">
+            <span>🏆</span> <span>Bảng Vàng</span>
+        </button>
+        <button type="button" class="pwa-install-btn" id="pwaInstallBtn" aria-label="Cài đặt ứng dụng lên màn hình chính" style="display: none;">
+            <span>📲 Cài App</span>
+        </button>
+    </div>
     <section class="collaboration-panel" id="collaborationPanel" aria-label="Tài khoản cộng tác">
         <button type="button" class="collaboration-toggle" id="collaborationToggle" aria-expanded="false"
             aria-controls="collaborationContent">☁️ Đang lưu trên thiết bị</button>
@@ -1546,6 +2340,99 @@
         </div>
     </div>
 
+    <!-- Hộp thoại Quẻ Mèo May Mắn -->
+    <div class="modal" id="fortuneModal" role="dialog" aria-modal="true" aria-labelledby="fortuneModalTitle">
+        <div class="modal-content fortune-modal-content">
+            <div class="fortune-card">
+                <div class="fortune-badge" id="fortuneModalTitle">✨ Quẻ Mèo May Mắn ✨</div>
+                <div class="fortune-date" id="fortuneDate">Hôm nay</div>
+                <div class="fortune-cat-avatar-wrap">
+                    <img id="fortuneCatImg" class="fortune-cat-img" alt="Ảnh mèo may mắn" style="display:none;">
+                    <div id="fortuneCatEmoji" class="fortune-cat-emoji">🐱</div>
+                </div>
+                <h3 id="fortuneCatName" class="fortune-cat-name">Hoàng Thượng</h3>
+                <div id="fortuneCatLoc" class="fortune-cat-loc">📍 Đang xác định vị trí...</div>
+                <div class="fortune-message-box">
+                    <div class="fortune-title-text" id="fortuneTitle">Đại Cát Bụng Mỡ</div>
+                    <p class="fortune-message-text" id="fortuneMessage">Tài lộc hôm nay rủng rỉnh như chiếc bụng mỡ của mèo sau bữa tiệc pate thượng hạng!</p>
+                </div>
+                <div class="fortune-card-actions">
+                    <button type="button" class="btn btn-save" id="fortuneGoToCatBtn">🐾 Ghé thăm bé trên bản đồ</button>
+                    <button type="button" class="btn btn-location" id="fortuneRedrawBtn">🎲 Bốc quẻ khác</button>
+                    <button type="button" class="btn btn-cancel" id="closeFortuneModalBtn">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hộp thoại Túi Đồ Của Sen & Điểm danh -->
+    <div class="modal" id="senWalletModal" role="dialog" aria-modal="true" aria-labelledby="senWalletModalTitle">
+        <div class="modal-content sen-wallet-modal-content">
+            <div class="fortune-badge" id="senWalletModalTitle">🎒 Túi Đồ Của Sen 🐾</div>
+            <h3 style="margin: 10px 0 4px; color: #4a3336;">Chuỗi Tuần Tra & Quà Tặng</h3>
+            <p style="margin: 0; font-size: 13px; color: #8c7377;">Điểm danh hàng ngày nhận lon pate yêu thương!</p>
+
+            <div class="wallet-stats-grid">
+                <div class="wallet-stat-card">
+                    <span class="wallet-stat-value" id="walletStreakValue">1 ngày</span>
+                    <span class="wallet-stat-label">🔥 Chuỗi hiện tại</span>
+                </div>
+                <div class="wallet-stat-card">
+                    <span class="wallet-stat-value" id="walletPateValue">3 lon</span>
+                    <span class="wallet-stat-label">🐟 Pate sẵn sàng</span>
+                </div>
+            </div>
+
+            <div class="streak-track">
+                <div class="streak-track-title">Tiến trình nhận quà 7 ngày (Mỗi ngày +1 🐟, ngày 7 +3 🎁)</div>
+                <div class="streak-days-row" id="streakDaysRow">
+                    <div class="streak-day-badge" data-day="1">N1<span>+1🐟</span></div>
+                    <div class="streak-day-badge" data-day="2">N2<span>+1🐟</span></div>
+                    <div class="streak-day-badge" data-day="3">N3<span>+1🐟</span></div>
+                    <div class="streak-day-badge" data-day="4">N4<span>+1🐟</span></div>
+                    <div class="streak-day-badge" data-day="5">N5<span>+1🐟</span></div>
+                    <div class="streak-day-badge" data-day="6">N6<span>+1🐟</span></div>
+                    <div class="streak-day-badge gift" data-day="7">N7<span>+3🎁</span></div>
+                </div>
+            </div>
+
+            <div class="wallet-guide-text">
+                • <strong>Mỗi ngày vào app:</strong> Tự động nhận ngay 1 lon pate ảo 🐟 để giữ chuỗi.<br>
+                • <strong>Tặng pate cho mèo:</strong> Bấm vào bất kỳ bé mèo nào trên bản đồ và nhấn <em>"🐟 Tặng 1 lon pate"</em> để tiếp tế yêu thương!<br>
+                • <strong>Cài App:</strong> Thêm Sổ Tay Bắt Mèo vào màn hình chính để mở app chỉ với 1 chạm.
+            </div>
+
+            <button type="button" class="btn btn-cancel" id="closeSenWalletModalBtn" style="width: 100%;">Đóng</button>
+        </div>
+    </div>
+
+    <!-- Hộp thoại Bảng Vàng & Radar SOS -->
+    <div class="modal" id="leaderboardModal" role="dialog" aria-modal="true" aria-labelledby="leaderboardModalTitle">
+        <div class="modal-content leaderboard-modal-content">
+            <div class="leaderboard-header">
+                <div class="fortune-badge" id="leaderboardModalTitle">🏆 Bảng Vàng & Radar SOS 🐾</div>
+                <div class="leaderboard-tabs">
+                    <button type="button" class="leaderboard-tab-btn active" id="tabIdolBtn">👑 Mèo Idol</button>
+                    <button type="button" class="leaderboard-tab-btn" id="tabSosBtn">🚨 Radar SOS (<span id="sosBadgeCount">0</span>)</button>
+                </div>
+            </div>
+
+            <!-- Tab 1: Mèo Idol -->
+            <div class="leaderboard-tab-panel" id="panelIdol">
+                <p class="leaderboard-subtitle">Top các bé mèo được yêu thích và nhận nhiều pate nhất bản đồ 💖</p>
+                <div class="leaderboard-list" id="idolList"></div>
+            </div>
+
+            <!-- Tab 2: Radar SOS -->
+            <div class="leaderboard-tab-panel" id="panelSos" style="display: none;">
+                <p class="leaderboard-subtitle">Danh sách mèo đang cần hỗ trợ y tế, thức ăn hoặc trạm cứu hộ 🚨</p>
+                <div class="leaderboard-list" id="sosList"></div>
+            </div>
+
+            <button type="button" class="btn btn-cancel" id="closeLeaderboardModalBtn" style="margin-top: 14px; width: 100%;">Đóng</button>
+        </div>
+    </div>
+
     <!-- Thư viện Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1600,19 +2487,56 @@
             popupAnchor: [0, -40]
         });
 
-        function createCatIcon(cat) {
-            if (!cat.image) return catIcon;
+        function isTopIdolCat(catId) {
+            if (!cats || !cats.length) return false;
+            let topCat = null;
+            let maxScore = 0;
+            for (const c of cats) {
+                const s = (Number(c.pate_count) || 0) * 10 + (Number(c.fed_count) || 0);
+                if (s > maxScore) {
+                    maxScore = s;
+                    topCat = c;
+                }
+            }
+            return Boolean(topCat && maxScore > 0 && topCat.id === catId);
+        }
 
-            const image = document.createElement('img');
-            image.className = 'cat-marker-photo';
-            image.src = getCatImageUrl(cat.image);
-            image.alt = 'Ảnh xem trước mèo';
+        function createCatIcon(cat) {
+            const container = document.createElement('div');
+            container.className = 'cat-marker-wrap';
+
+            if (cat.image) {
+                const image = document.createElement('img');
+                image.className = 'cat-marker-photo';
+                image.src = getCatImageUrl(cat.image);
+                image.alt = `Ảnh mèo ${cat.name || 'chưa đặt tên'}`;
+                container.appendChild(image);
+            } else {
+                const emoji = document.createElement('div');
+                emoji.className = 'cat-marker';
+                emoji.textContent = '🐱';
+                container.appendChild(emoji);
+            }
+
+            if (cat.is_sos) {
+                const sosBadge = document.createElement('span');
+                sosBadge.className = 'marker-sos-badge';
+                sosBadge.textContent = '🚨';
+                container.appendChild(sosBadge);
+            } else if (isTopIdolCat(cat.id)) {
+                const crownBadge = document.createElement('span');
+                crownBadge.className = 'marker-crown-badge';
+                crownBadge.textContent = '👑';
+                container.appendChild(crownBadge);
+            }
+
+            const isPhoto = Boolean(cat.image);
             return L.divIcon({
-                html: image,
-                className: 'custom-cat-icon',
-                iconSize: [64, 64],
-                iconAnchor: [32, 64],
-                popupAnchor: [0, -64]
+                html: container,
+                className: 'custom-cat-icon' + (cat.is_sos ? ' sos-pulse' : ''),
+                iconSize: isPhoto ? [64, 64] : [40, 40],
+                iconAnchor: isPhoto ? [32, 64] : [20, 40],
+                popupAnchor: isPhoto ? [0, -64] : [0, -40]
             });
         }
 
@@ -1687,6 +2611,83 @@
         const imageViewer = document.getElementById('imageViewer');
         const imageViewerImage = document.getElementById('imageViewerImage');
         const imageViewerClose = document.getElementById('imageViewerClose');
+        const fortunePillButton = document.getElementById('fortunePillBtn');
+        const fortunePillBadge = document.getElementById('fortunePillBadge');
+        const fortuneModal = document.getElementById('fortuneModal');
+        const fortuneDate = document.getElementById('fortuneDate');
+        const fortuneCatImg = document.getElementById('fortuneCatImg');
+        const fortuneCatEmoji = document.getElementById('fortuneCatEmoji');
+        const fortuneCatName = document.getElementById('fortuneCatName');
+        const fortuneCatLoc = document.getElementById('fortuneCatLoc');
+        const fortuneTitle = document.getElementById('fortuneTitle');
+        const fortuneMessage = document.getElementById('fortuneMessage');
+        const fortuneGoToCatBtn = document.getElementById('fortuneGoToCatBtn');
+        const fortuneRedrawBtn = document.getElementById('fortuneRedrawBtn');
+        const closeFortuneModalBtn = document.getElementById('closeFortuneModalBtn');
+        let currentFortuneCat = null;
+        const senWalletBtn = document.getElementById('senWalletBtn');
+        const streakCountText = document.getElementById('streakCountText');
+        const pateCountText = document.getElementById('pateCountText');
+        const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+        const senWalletModal = document.getElementById('senWalletModal');
+        const walletStreakValue = document.getElementById('walletStreakValue');
+        const walletPateValue = document.getElementById('walletPateValue');
+        const streakDaysRow = document.getElementById('streakDaysRow');
+        const closeSenWalletModalBtn = document.getElementById('closeSenWalletModalBtn');
+        const SEN_WALLET_KEY = 'catMap_sen_wallet_v2';
+        let deferredInstallPrompt = null;
+        const leaderboardPillBtn = document.getElementById('leaderboardPillBtn');
+        const leaderboardModal = document.getElementById('leaderboardModal');
+        const tabIdolBtn = document.getElementById('tabIdolBtn');
+        const tabSosBtn = document.getElementById('tabSosBtn');
+        const sosBadgeCount = document.getElementById('sosBadgeCount');
+        const panelIdol = document.getElementById('panelIdol');
+        const panelSos = document.getElementById('panelSos');
+        const idolList = document.getElementById('idolList');
+        const sosList = document.getElementById('sosList');
+        const closeLeaderboardModalBtn = document.getElementById('closeLeaderboardModalBtn');
+
+        const CAT_FORTUNES = [
+            { title: "Đại Cát Bụng Mỡ", desc: "Tài lộc hôm nay rủng rỉnh như chiếc bụng mỡ của mèo sau bữa tiệc pate thượng hạng!" },
+            { title: "Ung Dung Tự Tại", desc: "Thần thái đỉnh cao! Ai làm bạn phiền lòng thì cứ meo một tiếng rồi lơ đẹp nhé." },
+            { title: "Quý Nhân Bốn Chân", desc: "Hôm nay ra đường nhớ nhìn trước ngó sau, rất có thể bạn sẽ va phải một 'quý nhân bốn chân' cực kỳ dễ thương." },
+            { title: "Ngủ Kỹ No Say", desc: "Dự báo ngày mới: Năng lượng dồi dào, hãy vươn vai thật dài và ngáp một cái thật sảng khoái trước khi bắt đầu." },
+            { title: "Yêu Chiều Bản Thân", desc: "Một ngày tuyệt vời để tự thưởng! Đừng quên đãi mình một món ngon như thưởng cho mèo một thanh súp thưởng." },
+            { title: "Trực Giác Siêu Phàm", desc: "Trực giác hôm nay nhạy bén như tai mèo nghe thấy tiếng xé gói đồ ăn vặt lúc nửa đêm!" },
+            { title: "Điềm Lành Đệm Thịt", desc: "Mọi việc hôm nay đều sẽ êm ái, nhẹ nhàng và mềm mại như đệm thịt hồng hào của chân mèo." },
+            { title: "Triết Lý Hoàng Thượng", desc: "Gặp chuyện khó khăn đừng quạu, cứ ngủ một giấc rồi dậy tính tiếp. Mọi chuyện rồi sẽ êm xuôi!" },
+            { title: "Sát Thủ Đáng Yêu", desc: "Hôm nay sự dễ thương của bạn đạt điểm tối đa, làm gì cũng được mọi người yêu quý và nhường nhịn." },
+            { title: "Bữa Tiệc Thịnh Soạn", desc: "Quẻ Thượng Thượng Cát: Có thực mới vực được đạo, hãy ăn uống no say và ấm bụng như một chú mèo ngoan!" },
+            { title: "Bước Nhảy Vồ Mồi", desc: "Hôm nay bạn sẽ có một bước tiến bứt phá đầy ấn tượng, chuẩn xác như mèo tung người vồ trúng tia laser." },
+            { title: "Tắm Nắng Bình Yên", desc: "Tâm bất biến giữa dòng đời vạn biến, ung dung ngắm mây trôi như mèo nằm sưởi nắng bên khung cửa sổ." },
+            { title: "Tình Duyên Chớm Nở", desc: "Hôm nay bạn sẽ nhận được sự quan tâm ấm áp bất ngờ... có thể là từ một người bạn hoặc một chú mèo lạ dụi đầu vào chân!" },
+            { title: "Khí Chất Quý Tộc", desc: "Tự tin ngẩng cao đầu! Khí chất hôm nay sang chảnh, thần thái như một chú mèo hoàng gia." },
+            { title: "Khám Phá Góc Phố", desc: "Ngày đẹp trời để dạo quanh góc phố quen thuộc, bạn sẽ phát hiện ra nhiều điều bí mật thú vị." },
+            { title: "Vượt Lưới An Toàn", desc: "Dũng cảm như một chú mèo leo nóc nhà! Mọi thử thách hôm nay bạn đều sẽ vượt qua nhẹ tênh." },
+            { title: "Sóng Âm Gừ Gừ", desc: "Tần số hạnh phúc đang ở mức cao nhất. Hôm nay hãy lan tỏa tiếng cười và sự dịu dàng tới mọi người xung quanh." }
+        ];
+
+        function isSameDay(d1, d2) {
+            return d1.getFullYear() === d2.getFullYear() &&
+                d1.getMonth() === d2.getMonth() &&
+                d1.getDate() === d2.getDate();
+        }
+
+        function formatRelativeTime(date) {
+            if (!date || isNaN(date.getTime())) return '';
+            const now = new Date();
+            const diffMs = now - date;
+            const diffSec = Math.floor(diffMs / 1000);
+            const diffMin = Math.floor(diffSec / 60);
+            const diffHour = Math.floor(diffMin / 60);
+            const timeStr = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+            if (diffMin < 1) return 'Vừa mới xong';
+            if (diffMin < 60) return `${diffMin} phút trước (${timeStr})`;
+            if (diffHour < 24 && isSameDay(date, now)) return `${diffHour} giờ trước (${timeStr})`;
+            const dateStr = date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
+            return `${dateStr} lúc ${timeStr}`;
+        }
         const previewContext = photoPreviewCanvas.getContext('2d');
         let sourceImage = null;
         let imageRotation = 0;
@@ -1989,6 +2990,101 @@
                     entry.appendChild(locationNote);
                 }
 
+                // Nhật ký cho ăn hôm nay
+                const feedingSection = document.createElement('div');
+                feedingSection.className = 'cat-feeding-section';
+
+                const feedingHeader = document.createElement('div');
+                feedingHeader.className = 'cat-feeding-header';
+                const feedingIcon = document.createElement('span');
+                feedingIcon.textContent = '🥣 ';
+                const feedingTitle = document.createElement('b');
+                feedingTitle.textContent = 'Nhật ký bữa ăn hôm nay:';
+                feedingHeader.append(feedingIcon, feedingTitle);
+                feedingSection.appendChild(feedingHeader);
+
+                const feedingInfo = document.createElement('div');
+                feedingInfo.className = 'cat-feeding-info';
+
+                const lastFedTime = cat.last_fed_at ? new Date(cat.last_fed_at) : null;
+                const isFedToday = Boolean(lastFedTime && Number.isFinite(lastFedTime.getTime()) && isSameDay(lastFedTime, new Date()));
+
+                const statusTag = document.createElement('div');
+                statusTag.className = 'feeding-status-tag ' + (isFedToday ? 'fed-today' : 'fed-none');
+                statusTag.textContent = isFedToday ? '✅ Đã được cho ăn hôm nay! 🐟' : '🥣 Hôm nay chưa ghi nhận ai cho ăn';
+                feedingInfo.appendChild(statusTag);
+
+                const detail = document.createElement('div');
+                detail.className = 'feeding-detail';
+                if (isFedToday) {
+                    detail.textContent = `Lần gần nhất: ${formatRelativeTime(lastFedTime)} bởi ${cat.last_fed_by || 'Một Sen tốt bụng'}${cat.fed_count ? ` (${cat.fed_count} lần tiếp tế)` : ''}`;
+                } else if (lastFedTime && Number.isFinite(lastFedTime.getTime())) {
+                    detail.textContent = `Lần ăn trước: ${formatRelativeTime(lastFedTime)}${cat.last_fed_by ? ` (bởi ${cat.last_fed_by})` : ''}`;
+                } else {
+                    detail.textContent = 'Bé đang đợi một Sen ghé thăm tiếp tế!';
+                }
+                feedingInfo.appendChild(detail);
+                feedingSection.appendChild(feedingInfo);
+
+                const feedButton = document.createElement('button');
+                feedButton.type = 'button';
+                feedButton.className = 'cat-feed-btn';
+                feedButton.dataset.catFeed = cat.id;
+                feedButton.textContent = isFedToday ? '🥣 Mình vừa cho bé ăn thêm!' : '🥣 Mình vừa cho bé ăn!';
+                feedingSection.appendChild(feedButton);
+
+                // Hàng tặng pate yêu thương
+                const pateRow = document.createElement('div');
+                pateRow.className = 'cat-pate-row';
+
+                const pateCountText = document.createElement('span');
+                pateCountText.className = 'cat-pate-badge';
+                pateCountText.textContent = `💖 ${cat.pate_count || 0} lon pate đã nhận`;
+
+                const givePateBtn = document.createElement('button');
+                givePateBtn.type = 'button';
+                givePateBtn.className = 'cat-give-pate-btn';
+                givePateBtn.dataset.catPate = cat.id;
+                givePateBtn.textContent = '🐟 Tặng 1 lon pate';
+
+                pateRow.append(pateCountText, givePateBtn);
+                feedingSection.appendChild(pateRow);
+
+                entry.appendChild(feedingSection);
+
+                // Phần Radar SOS
+                const sosSection = document.createElement('div');
+                sosSection.className = 'cat-sos-section' + (cat.is_sos ? ' active-sos' : '');
+                if (cat.is_sos) {
+                    const sosTag = document.createElement('div');
+                    sosTag.className = 'sos-badge-tag';
+                    sosTag.textContent = '🚨 BÉ ĐANG CẦN HỖ TRỢ KHẨN CẤP';
+                    sosSection.appendChild(sosTag);
+
+                    if (cat.sos_note) {
+                        const sosNoteText = document.createElement('div');
+                        sosNoteText.style.fontWeight = '700';
+                        sosNoteText.style.marginBottom = '4px';
+                        sosNoteText.textContent = `Ghi chú cứu trợ: ${cat.sos_note}`;
+                        sosSection.appendChild(sosNoteText);
+                    }
+
+                    const resolveBtn = document.createElement('button');
+                    resolveBtn.type = 'button';
+                    resolveBtn.className = 'cat-sos-toggle-btn btn-resolve';
+                    resolveBtn.dataset.catSosResolve = cat.id;
+                    resolveBtn.textContent = '✅ Đánh dấu bé đã an toàn / Đã được cứu';
+                    sosSection.appendChild(resolveBtn);
+                } else {
+                    const reportSosBtn = document.createElement('button');
+                    reportSosBtn.type = 'button';
+                    reportSosBtn.className = 'cat-sos-toggle-btn';
+                    reportSosBtn.dataset.catSosReport = cat.id;
+                    reportSosBtn.textContent = '🚨 Báo bé này cần hỗ trợ khẩn cấp (SOS)';
+                    sosSection.appendChild(reportSosBtn);
+                }
+                entry.appendChild(sosSection);
+
                 const status = document.createElement('div');
                 status.className = 'cat-status';
                 if (cat.current_status === 'other' && cat.status_note) {
@@ -2119,6 +3215,12 @@
                         : cat.current_status === 'other' ? 'other' : 'unknown',
                     status_note: typeof cat.status_note === 'string' ? cat.status_note.trim().slice(0, 200) : '',
                     status_updated_at: typeof cat.status_updated_at === 'string' ? cat.status_updated_at : null,
+                    last_fed_at: typeof cat.last_fed_at === 'string' ? cat.last_fed_at : null,
+                    last_fed_by: typeof cat.last_fed_by === 'string' ? cat.last_fed_by.trim().slice(0, 40) : '',
+                    fed_count: Number.isFinite(cat.fed_count) ? cat.fed_count : 0,
+                    pate_count: Number.isFinite(cat.pate_count) ? cat.pate_count : 0,
+                    is_sos: Boolean(cat.is_sos),
+                    sos_note: typeof cat.sos_note === 'string' ? cat.sos_note.trim().slice(0, 200) : '',
                     created_by: typeof cat.created_by === 'string' ? cat.created_by : null,
                     updated_by: typeof cat.updated_by === 'string' ? cat.updated_by : null,
                     updated_at: typeof cat.updated_at === 'string' ? cat.updated_at : null
@@ -2139,6 +3241,12 @@
                 current_status: row.current_status || 'unknown',
                 status_note: row.status_note || '',
                 status_updated_at: row.status_updated_at || null,
+                last_fed_at: row.last_fed_at || null,
+                last_fed_by: row.last_fed_by || '',
+                fed_count: Number(row.fed_count) || 0,
+                pate_count: Number(row.pate_count) || 0,
+                is_sos: Boolean(row.is_sos),
+                sos_note: row.sos_note || '',
                 created_by: row.created_by || null,
                 updated_by: row.updated_by || null,
                 updated_at: row.updated_at || null
@@ -2263,6 +3371,12 @@
                 current_status: cat.current_status || 'unknown',
                 status_note: cat.status_note || '',
                 status_updated_at: cat.status_updated_at || null,
+                last_fed_at: cat.last_fed_at || null,
+                last_fed_by: cat.last_fed_by || '',
+                fed_count: Number(cat.fed_count) || 0,
+                pate_count: Number(cat.pate_count) || 0,
+                is_sos: Boolean(cat.is_sos),
+                sos_note: cat.sos_note || '',
                 created_by: cat.created_by || currentUser?.id || null,
                 updated_by: currentUser?.id || cat.updated_by || null,
                 updated_at: new Date().toISOString()
@@ -2274,7 +3388,13 @@
                 first.location_name !== second.location_name || first.note !== second.note ||
                 first.image !== second.image || first.approximate !== second.approximate ||
                 first.current_status !== second.current_status || first.status_note !== second.status_note ||
-                first.status_updated_at !== second.status_updated_at;
+                first.status_updated_at !== second.status_updated_at ||
+                first.last_fed_at !== second.last_fed_at ||
+                first.last_fed_by !== second.last_fed_by ||
+                first.fed_count !== second.fed_count ||
+                first.pate_count !== second.pate_count ||
+                first.is_sos !== second.is_sos ||
+                first.sos_note !== second.sos_note;
         }
 
         function canManageCat(cat) {
@@ -2416,14 +3536,23 @@
         }
 
         async function refreshCloudCats() {
-            const { data, error } = await supabaseClient
+            let res = await supabaseClient
                 .from('cats')
-                .select('id, lat, lng, name, location_name, note, image, approximate, current_status, status_note, status_updated_at, created_by, updated_by, updated_at')
+                .select('id, lat, lng, name, location_name, note, image, approximate, current_status, status_note, status_updated_at, created_by, updated_by, updated_at, last_fed_at, last_fed_by, fed_count, pate_count, is_sos, sos_note')
                 .order('updated_at', { ascending: false });
-            if (error) throw error;
-            cats = validateCats(data.map(catFromCloudRow));
+            if (res.error && res.error.message && (res.error.message.includes('is_sos') || res.error.message.includes('pate_count') || res.error.message.includes('last_fed_at') || res.error.message.includes('column'))) {
+                res = await supabaseClient
+                    .from('cats')
+                    .select('id, lat, lng, name, location_name, note, image, approximate, current_status, status_note, status_updated_at, created_by, updated_by, updated_at')
+                    .order('updated_at', { ascending: false });
+            }
+            if (res.error) throw res.error;
+            cats = validateCats(res.data.map(catFromCloudRow));
             renderCatMarkers();
             await refreshCloudCatFavorites({ migrateLocal: true });
+            updateDailyFortuneBadge();
+            updateWalletDisplay();
+            updateSosBadge();
         }
 
         function renderModerationQueue() {
@@ -2761,12 +3890,16 @@
             const results = cats.map(cat => ({
                 cat,
                 distance: catFilterLocation ? L.latLng(cat.lat, cat.lng).distanceTo(catFilterLocation) : null
-            })).filter(({ cat, distance }) =>
-                (!favoritesOnly || favoriteCatIds.has(cat.id)) &&
-                (!selectedStatus || (cat.current_status || 'unknown') === selectedStatus) &&
-                (!radius || (distance !== null && distance <= radius)) &&
-                normalizeSearchText(`${cat.name || 'Mèo chưa đặt tên'} ${cat.note || ''} ${formatCatLocation(cat)}`).includes(query)
-            );
+            })).filter(({ cat, distance }) => {
+                const matchesStatus = !selectedStatus ||
+                    (selectedStatus === 'sos' ? Boolean(cat.is_sos) :
+                    selectedStatus === 'hungry' ? (!cat.last_fed_at || !isSameDay(new Date(cat.last_fed_at), new Date())) :
+                    (cat.current_status || 'unknown') === selectedStatus);
+                return (!favoritesOnly || favoriteCatIds.has(cat.id)) &&
+                    matchesStatus &&
+                    (!radius || (distance !== null && distance <= radius)) &&
+                    normalizeSearchText(`${cat.name || 'Mèo chưa đặt tên'} ${cat.note || ''} ${formatCatLocation(cat)}`).includes(query);
+            });
             if (catFilterLocation) results.sort((a, b) => a.distance - b.distance);
             return results;
         }
@@ -2911,6 +4044,8 @@
             const results = getFilteredCatResults();
             results.forEach(({ cat }) => addCatMarker(cat));
             renderCatList(results);
+            updateDailyFortuneBadge();
+            updateSosBadge();
         }
 
         async function initializeStorage() {
@@ -3349,7 +4484,596 @@
             showAppStatus(`Đã cập nhật tình trạng: ${getCatStatusLabel(status)}.`);
         }
 
+        async function checkInCatFeed(catId) {
+            const cat = cats.find(item => item.id === catId);
+            if (!cat) throw new Error('Không tìm thấy bản ghi mèo.');
+
+            let feederName = currentUser?.email ? currentUser.email.split('@')[0] : '';
+            if (!feederName) {
+                const storedName = localStorage.getItem('catMap_feeder_name') || '';
+                const entered = prompt('Nhập tên của bạn để ghi nhận tiếp tế (hoặc để trống):', storedName);
+                if (entered === null) return;
+                feederName = entered.trim().slice(0, 40) || 'Một Sen tốt bụng';
+                if (entered.trim()) {
+                    localStorage.setItem('catMap_feeder_name', entered.trim().slice(0, 40));
+                }
+            }
+
+            const nowIso = new Date().toISOString();
+            const newFedCount = (Number(cat.fed_count) || 0) + 1;
+
+            if (isCloudConfigured && supabaseClient) {
+                const { error } = await supabaseClient.rpc('check_in_cat_feed', {
+                    p_cat_id: catId,
+                    p_feeder_name: feederName
+                });
+                if (error) {
+                    console.warn('RPC check_in_cat_feed gặp lỗi, thử cập nhật trực tiếp:', error);
+                    if (canManageCat(cat)) {
+                        const { error: updateError } = await supabaseClient
+                            .from('cats')
+                            .update({
+                                last_fed_at: nowIso,
+                                fed_count: newFedCount,
+                                last_fed_by: feederName
+                            })
+                            .eq('id', catId);
+                        if (updateError) throw updateError;
+                    } else {
+                        throw error;
+                    }
+                }
+                await refreshCloudCats();
+            } else {
+                await persistCats(cats.map(item => item.id === catId
+                    ? {
+                        ...item,
+                        last_fed_at: nowIso,
+                        fed_count: newFedCount,
+                        last_fed_by: feederName
+                    }
+                    : item));
+            }
+
+            const updatedCat = cats.find(item => item.id === catId);
+            if (updatedCat) {
+                openSingleCatPopup(updatedCat);
+            }
+            showAppStatus(`🥣 Cảm ơn Sen ${feederName} đã tiếp tế cho ${cat.name || 'bé mèo'}! 🐾🐟`);
+        }
+
+        function getSenWallet() {
+            try {
+                const raw = localStorage.getItem(SEN_WALLET_KEY);
+                if (raw) return JSON.parse(raw);
+            } catch (e) {
+                console.warn('Lỗi đọc ví Sen:', e);
+            }
+            return {
+                streak: 1,
+                pate: 3,
+                lastCheckinDate: new Date().toLocaleDateString('en-CA'),
+                totalGiven: 0
+            };
+        }
+
+        function saveSenWallet(wallet) {
+            try {
+                localStorage.setItem(SEN_WALLET_KEY, JSON.stringify(wallet));
+            } catch (e) {
+                console.warn('Lỗi lưu ví Sen:', e);
+            }
+            updateWalletDisplay(wallet);
+        }
+
+        function updateWalletDisplay(wallet = getSenWallet()) {
+            if (streakCountText) streakCountText.textContent = wallet.streak || 1;
+            if (pateCountText) pateCountText.textContent = wallet.pate || 0;
+            if (walletStreakValue) walletStreakValue.textContent = `${wallet.streak || 1} ngày`;
+            if (walletPateValue) walletPateValue.textContent = `${wallet.pate || 0} lon`;
+
+            if (streakDaysRow) {
+                const currentDayInWeek = ((wallet.streak - 1) % 7) + 1;
+                const badges = streakDaysRow.querySelectorAll('.streak-day-badge');
+                badges.forEach((badge, index) => {
+                    const dayNum = index + 1;
+                    if (dayNum <= currentDayInWeek) {
+                        badge.classList.add('active');
+                    } else {
+                        badge.classList.remove('active');
+                    }
+                });
+            }
+        }
+
+        function checkDailyStreak() {
+            const wallet = getSenWallet();
+            const todayStr = new Date().toLocaleDateString('en-CA');
+
+            if (!wallet.lastCheckinDate) {
+                wallet.lastCheckinDate = todayStr;
+                wallet.streak = 1;
+                wallet.pate = Math.max(wallet.pate || 0, 3);
+                saveSenWallet(wallet);
+                showAppStatus('🎒 Chào mừng Sen mới! Bạn được tặng 3 lon pate yêu thương 🐟');
+                return;
+            }
+
+            if (wallet.lastCheckinDate === todayStr) {
+                updateWalletDisplay(wallet);
+                return;
+            }
+
+            const lastDate = new Date(wallet.lastCheckinDate + 'T00:00:00');
+            const today = new Date(todayStr + 'T00:00:00');
+            const diffTime = today - lastDate;
+            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+            let bonus = 1;
+            if (diffDays === 1) {
+                wallet.streak = (wallet.streak || 0) + 1;
+                if (wallet.streak % 7 === 0) {
+                    bonus += 3;
+                }
+            } else {
+                wallet.streak = 1;
+            }
+
+            wallet.pate = (wallet.pate || 0) + bonus;
+            wallet.lastCheckinDate = todayStr;
+            saveSenWallet(wallet);
+
+            if (wallet.streak % 7 === 0) {
+                showAppStatus(`🌟 Xuất sắc! Chuỗi ${wallet.streak} ngày tuần tra! Thưởng lớn +${bonus} lon pate 🐟`);
+            } else {
+                showAppStatus(`🎉 Điểm danh ngày mới! Bạn nhận được +${bonus} lon pate 🐟 (Chuỗi ${wallet.streak} ngày 🔥)`);
+            }
+        }
+
+        function openSenWalletModal() {
+            updateWalletDisplay();
+            senWalletModal.classList.add('active');
+        }
+
+        function closeSenWalletModal() {
+            senWalletModal.classList.remove('active');
+        }
+
+        async function giveCatPate(catId) {
+            const wallet = getSenWallet();
+            if ((wallet.pate || 0) <= 0) {
+                showAppStatus('😿 Bạn đã hết pate rồi! Hãy quay lại điểm danh vào ngày mai để nhận thêm nhé 🐟');
+                openSenWalletModal();
+                return;
+            }
+
+            const cat = cats.find(item => item.id === catId);
+            if (!cat) throw new Error('Không tìm thấy bản ghi mèo.');
+
+            wallet.pate -= 1;
+            wallet.totalGiven = (wallet.totalGiven || 0) + 1;
+            saveSenWallet(wallet);
+
+            const newPateCount = (Number(cat.pate_count) || 0) + 1;
+            cat.pate_count = newPateCount;
+
+            if (isCloudConfigured && supabaseClient) {
+                const { data, error } = await supabaseClient.rpc('give_cat_pate', {
+                    p_cat_id: catId
+                });
+                if (error) {
+                    console.warn('RPC give_cat_pate gặp lỗi, thử cập nhật trực tiếp:', error);
+                    if (canManageCat(cat)) {
+                        await supabaseClient
+                            .from('cats')
+                            .update({ pate_count: newPateCount })
+                            .eq('id', catId);
+                    }
+                } else if (typeof data === 'number') {
+                    cat.pate_count = data;
+                }
+                await refreshCloudCats();
+            } else {
+                await persistCats(cats.map(item => item.id === catId ? { ...item, pate_count: newPateCount } : item));
+            }
+
+            const updatedCat = cats.find(item => item.id === catId);
+            if (updatedCat) {
+                openSingleCatPopup(updatedCat);
+            }
+            showAppStatus(`🐟 Bạn vừa tặng 1 lon pate cho ${cat.name || 'bé mèo'}! Cảm ơn tấm lòng của Sen ❤️ (Còn ${wallet.pate} lon)`);
+        }
+
+        async function toggleCatSos(catId, isSos, sosNote = '') {
+            const cat = cats.find(item => item.id === catId);
+            if (!cat) throw new Error('Không tìm thấy bản ghi mèo.');
+
+            const note = typeof sosNote === 'string' ? sosNote.trim().slice(0, 200) : '';
+
+            if (isCloudConfigured && supabaseClient) {
+                const { error } = await supabaseClient.rpc('toggle_cat_sos', {
+                    p_cat_id: catId,
+                    p_is_sos: isSos,
+                    p_sos_note: note
+                });
+                if (error) {
+                    console.warn('RPC toggle_cat_sos gặp lỗi, thử cập nhật trực tiếp:', error);
+                    if (canManageCat(cat)) {
+                        await supabaseClient
+                            .from('cats')
+                            .update({ is_sos: isSos, sos_note: note })
+                            .eq('id', catId);
+                    }
+                }
+                await refreshCloudCats();
+            } else {
+                cat.is_sos = isSos;
+                cat.sos_note = note;
+                await persistCats(cats.map(item => item.id === catId ? { ...item, is_sos: isSos, sos_note: note } : item));
+            }
+
+            renderCatMarkers();
+            updateSosBadge();
+
+            const updatedCat = cats.find(item => item.id === catId);
+            if (updatedCat) {
+                openSingleCatPopup(updatedCat);
+            }
+            showAppStatus(isSos ? `🚨 Đã bật cảnh báo cứu trợ SOS cho ${cat.name || 'bé mèo'}!` : `✅ Đã đánh dấu ${cat.name || 'bé mèo'} đã an toàn!`);
+        }
+
+        function updateSosBadge() {
+            if (!sosBadgeCount) return;
+            const sosCount = cats.filter(c => c.is_sos).length;
+            sosBadgeCount.textContent = sosCount;
+        }
+
+        function openLeaderboardModal(activeTab = 'idol') {
+            switchLeaderboardTab(activeTab);
+            leaderboardModal.classList.add('active');
+        }
+
+        function closeLeaderboardModal() {
+            leaderboardModal.classList.remove('active');
+        }
+
+        function switchLeaderboardTab(tab) {
+            if (tab === 'sos') {
+                tabIdolBtn.classList.remove('active');
+                tabSosBtn.classList.add('active');
+                panelIdol.style.display = 'none';
+                panelSos.style.display = 'block';
+                renderSosList();
+            } else {
+                tabSosBtn.classList.remove('active');
+                tabIdolBtn.classList.add('active');
+                panelSos.style.display = 'none';
+                panelIdol.style.display = 'block';
+                renderIdolList();
+            }
+        }
+
+        function renderIdolList() {
+            idolList.innerHTML = '';
+            if (!cats.length) {
+                const emptyEl = document.createElement('div');
+                emptyEl.style.textAlign = 'center';
+                emptyEl.style.padding = '24px 12px';
+                emptyEl.style.color = '#8c7377';
+                emptyEl.textContent = 'Chưa có bé mèo nào trên bản đồ để xếp hạng.';
+                idolList.appendChild(emptyEl);
+                return;
+            }
+
+            const rankedCats = [...cats].sort((a, b) => {
+                const scoreA = (Number(a.pate_count) || 0) * 10 + (Number(a.fed_count) || 0);
+                const scoreB = (Number(b.pate_count) || 0) * 10 + (Number(b.fed_count) || 0);
+                if (scoreB !== scoreA) return scoreB - scoreA;
+                return (Number(b.pate_count) || 0) - (Number(a.pate_count) || 0);
+            }).slice(0, 10);
+
+            rankedCats.forEach((cat, index) => {
+                const card = document.createElement('div');
+                card.className = 'leaderboard-card' + (index === 0 ? ' rank-1' : '');
+
+                const rankEl = document.createElement('div');
+                rankEl.className = 'leaderboard-rank';
+                rankEl.textContent = index === 0 ? '👑' : (index === 1 ? '🥈' : (index === 2 ? '🥉' : `#${index + 1}`));
+
+                let avatarEl;
+                if (cat.image) {
+                    avatarEl = document.createElement('img');
+                    avatarEl.className = 'leaderboard-card-avatar';
+                    avatarEl.src = getCatImageUrl(cat.image);
+                    avatarEl.alt = cat.name || 'Mèo';
+                } else {
+                    avatarEl = document.createElement('div');
+                    avatarEl.className = 'leaderboard-card-avatar emoji-avatar';
+                    const emojis = ['🐱', '😸', '😻', '😽', '🐾'];
+                    avatarEl.textContent = emojis[Math.abs(cat.id.charCodeAt(0) || 0) % emojis.length];
+                }
+
+                const infoEl = document.createElement('div');
+                infoEl.className = 'leaderboard-card-info';
+
+                const nameEl = document.createElement('div');
+                nameEl.className = 'leaderboard-card-name';
+                nameEl.textContent = cat.name || 'Bé mèo ẩn danh';
+
+                const locEl = document.createElement('div');
+                locEl.className = 'leaderboard-card-location';
+                setCatLocationLabel(locEl, cat, '📍 ');
+
+                const metricsEl = document.createElement('div');
+                metricsEl.className = 'leaderboard-card-metrics';
+
+                const pateEl = document.createElement('span');
+                pateEl.className = 'metric-pate';
+                pateEl.textContent = `🐟 ${cat.pate_count || 0} pate`;
+
+                const fedEl = document.createElement('span');
+                fedEl.className = 'metric-fed';
+                fedEl.textContent = `🥣 ${cat.fed_count || 0} lần ăn`;
+
+                metricsEl.append(pateEl, fedEl);
+                infoEl.append(nameEl, locEl, metricsEl);
+
+                const actionBtn = document.createElement('button');
+                actionBtn.type = 'button';
+                actionBtn.className = 'leaderboard-card-btn';
+                actionBtn.textContent = '🐾 Đến chỗ';
+                actionBtn.onclick = () => {
+                    closeLeaderboardModal();
+                    map.flyTo([cat.lat, cat.lng], Math.max(map.getZoom(), 17), { duration: 1.2 });
+                    setTimeout(() => {
+                        openSingleCatPopup(cat);
+                    }, 1250);
+                };
+
+                card.append(rankEl, avatarEl, infoEl, actionBtn);
+                idolList.appendChild(card);
+            });
+        }
+
+        function renderSosList() {
+            sosList.innerHTML = '';
+            const sosCats = cats.filter(c => c.is_sos);
+            if (!sosCats.length) {
+                const emptyEl = document.createElement('div');
+                emptyEl.style.textAlign = 'center';
+                emptyEl.style.padding = '28px 12px';
+                emptyEl.style.color = '#059669';
+                emptyEl.style.fontWeight = '700';
+                emptyEl.innerHTML = '🎉 Hiện không có bé mèo nào cần cứu trợ khẩn cấp!<br><span style="font-size:12px; font-weight:normal; color:#6b7280;">Mọi bé mèo trên bản đồ đều đang an toàn. Cảm ơn cộng đồng Sen! ❤️</span>';
+                sosList.appendChild(emptyEl);
+                return;
+            }
+
+            sosCats.forEach(cat => {
+                const card = document.createElement('div');
+                card.className = 'leaderboard-card sos-card';
+
+                let avatarEl;
+                if (cat.image) {
+                    avatarEl = document.createElement('img');
+                    avatarEl.className = 'leaderboard-card-avatar';
+                    avatarEl.src = getCatImageUrl(cat.image);
+                    avatarEl.alt = cat.name || 'Mèo SOS';
+                } else {
+                    avatarEl = document.createElement('div');
+                    avatarEl.className = 'leaderboard-card-avatar emoji-avatar';
+                    avatarEl.textContent = '🚨';
+                }
+
+                const infoEl = document.createElement('div');
+                infoEl.className = 'leaderboard-card-info';
+
+                const tagEl = document.createElement('div');
+                tagEl.className = 'sos-badge-tag';
+                tagEl.textContent = '🚨 CẦN HỖ TRỢ';
+
+                const nameEl = document.createElement('div');
+                nameEl.className = 'leaderboard-card-name';
+                nameEl.textContent = cat.name || 'Bé mèo SOS';
+
+                const locEl = document.createElement('div');
+                locEl.className = 'leaderboard-card-location';
+                setCatLocationLabel(locEl, cat, '📍 ');
+
+                const noteEl = document.createElement('div');
+                noteEl.style.fontSize = '11px';
+                noteEl.style.color = '#dc2626';
+                noteEl.style.fontWeight = '700';
+                noteEl.style.marginTop = '2px';
+                noteEl.textContent = cat.sos_note ? `Ghi chú: ${cat.sos_note}` : 'Được cộng đồng báo cần cứu trợ!';
+
+                infoEl.append(tagEl, nameEl, locEl, noteEl);
+
+                const actionBtn = document.createElement('button');
+                actionBtn.type = 'button';
+                actionBtn.className = 'leaderboard-card-btn';
+                actionBtn.style.background = '#ef4444';
+                actionBtn.textContent = '🚨 Cứu trợ';
+                actionBtn.onclick = () => {
+                    closeLeaderboardModal();
+                    map.flyTo([cat.lat, cat.lng], Math.max(map.getZoom(), 17), { duration: 1.2 });
+                    setTimeout(() => {
+                        openSingleCatPopup(cat);
+                    }, 1250);
+                };
+
+                card.append(avatarEl, infoEl, actionBtn);
+                sosList.appendChild(card);
+            });
+        }
+
+        function updateDailyFortuneBadge() {
+            if (!fortunePillBadge) return;
+            const todayStr = new Date().toLocaleDateString('en-CA');
+            const seen = localStorage.getItem('catMap_fortune_seen_' + todayStr);
+            if (seen) {
+                fortunePillBadge.classList.add('hidden');
+            } else {
+                fortunePillBadge.classList.remove('hidden');
+            }
+        }
+
+        function openFortuneModal(forceRandom = false) {
+            const today = new Date();
+            const todayStr = today.toLocaleDateString('en-CA');
+            fortuneDate.textContent = today.toLocaleDateString('vi-VN', {
+                weekday: 'long',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+
+            if (!cats.length) {
+                currentFortuneCat = null;
+                fortuneCatName.textContent = 'Mèo May Mắn Sổ Tay 🐾';
+                fortuneCatLoc.textContent = '📍 Khắp mọi nẻo đường';
+                fortuneCatImg.style.display = 'none';
+                fortuneCatEmoji.style.display = 'block';
+                fortuneCatEmoji.textContent = '😻';
+                fortuneTitle.textContent = 'Khởi Đầu Tươi Sáng';
+                fortuneMessage.textContent = 'Hôm nay là một ngày tuyệt vời! Hãy mở mắt thật to, có thể bạn sẽ là người đầu tiên ghi dấu một bé mèo lên bản đồ đấy.';
+                fortuneGoToCatBtn.style.display = 'none';
+                fortuneModal.classList.add('active');
+                localStorage.setItem('catMap_fortune_seen_' + todayStr, 'true');
+                fortunePillBadge.classList.add('hidden');
+                return;
+            }
+
+            fortuneGoToCatBtn.style.display = 'block';
+
+            let selectedCat;
+            let fortune;
+
+            if (forceRandom || !currentFortuneCat) {
+                if (forceRandom && cats.length > 1) {
+                    const otherCats = cats.filter(c => !currentFortuneCat || c.id !== currentFortuneCat.id);
+                    selectedCat = otherCats[Math.floor(Math.random() * otherCats.length)];
+                } else if (!forceRandom) {
+                    let hash = 0;
+                    for (let i = 0; i < todayStr.length; i++) {
+                        hash = (hash * 31 + todayStr.charCodeAt(i)) >>> 0;
+                    }
+                    selectedCat = cats[hash % cats.length];
+                } else {
+                    selectedCat = cats[0];
+                }
+                const fortuneIdx = Math.floor(Math.random() * CAT_FORTUNES.length);
+                fortune = CAT_FORTUNES[fortuneIdx];
+            } else {
+                selectedCat = currentFortuneCat;
+                fortune = CAT_FORTUNES[0];
+            }
+
+            currentFortuneCat = selectedCat;
+            fortuneCatName.textContent = selectedCat.name || 'Bé mèo bí ẩn';
+            setCatLocationLabel(fortuneCatLoc, selectedCat, '📍 ');
+
+            if (selectedCat.image) {
+                fortuneCatImg.src = getCatImageUrl(selectedCat.image);
+                fortuneCatImg.style.display = 'block';
+                fortuneCatEmoji.style.display = 'none';
+            } else {
+                fortuneCatImg.style.display = 'none';
+                fortuneCatEmoji.style.display = 'block';
+                const emojis = ['🐱', '😸', '😻', '😽', '🐾'];
+                fortuneCatEmoji.textContent = emojis[Math.abs(selectedCat.id.charCodeAt(0) || 0) % emojis.length];
+            }
+
+            fortuneTitle.textContent = fortune.title;
+            fortuneMessage.textContent = fortune.desc;
+
+            fortuneModal.classList.add('active');
+            localStorage.setItem('catMap_fortune_seen_' + todayStr, 'true');
+            fortunePillBadge.classList.add('hidden');
+        }
+
+        function closeFortuneModal() {
+            fortuneModal.classList.remove('active');
+        }
+
         map.getContainer().addEventListener('click', async event => {
+            const feedBtn = event.target.closest('button[data-cat-feed]');
+            if (feedBtn) {
+                event.preventDefault();
+                event.stopPropagation();
+                const catId = feedBtn.dataset.catFeed;
+                feedBtn.disabled = true;
+                feedBtn.textContent = 'Đang ghi nhận...';
+                try {
+                    await checkInCatFeed(catId);
+                } catch (error) {
+                    console.error('Không thể ghi nhận bữa ăn:', error);
+                    showAppStatus(`Không thể ghi nhận: ${error.message}`);
+                    feedBtn.disabled = false;
+                    feedBtn.textContent = '🥣 Thử lại';
+                }
+                return;
+            }
+            const pateBtn = event.target.closest('button[data-cat-pate]');
+            if (pateBtn) {
+                event.preventDefault();
+                event.stopPropagation();
+                const catId = pateBtn.dataset.catPate;
+                pateBtn.disabled = true;
+                pateBtn.textContent = 'Đang tặng...';
+                try {
+                    await giveCatPate(catId);
+                } catch (error) {
+                    console.error('Không thể tặng pate:', error);
+                    showAppStatus(`Không thể tặng: ${error.message}`);
+                    pateBtn.disabled = false;
+                    pateBtn.textContent = '🐟 Tặng 1 lon pate';
+                }
+                return;
+            }
+            const sosReportBtn = event.target.closest('button[data-cat-sos-report]');
+            if (sosReportBtn) {
+                event.preventDefault();
+                event.stopPropagation();
+                const catId = sosReportBtn.dataset.catSosReport;
+                const cat = cats.find(c => c.id === catId);
+                const catName = cat?.name || 'bé mèo';
+                const note = prompt(`Nhập tình trạng hoặc lý do cần cứu trợ cho ${catName} (VD: bị thương, đói lả, cần đưa đi thú y...):`, cat?.sos_note || '');
+                if (note === null) return;
+                sosReportBtn.disabled = true;
+                sosReportBtn.textContent = 'Đang gửi báo cáo...';
+                try {
+                    await toggleCatSos(catId, true, note);
+                } catch (error) {
+                    console.error('Không thể báo SOS:', error);
+                    showAppStatus(`Không thể báo SOS: ${error.message}`);
+                    sosReportBtn.disabled = false;
+                    sosReportBtn.textContent = '🚨 Báo bé này cần hỗ trợ khẩn cấp (SOS)';
+                }
+                return;
+            }
+            const sosResolveBtn = event.target.closest('button[data-cat-sos-resolve]');
+            if (sosResolveBtn) {
+                event.preventDefault();
+                event.stopPropagation();
+                const catId = sosResolveBtn.dataset.catSosResolve;
+                const cat = cats.find(c => c.id === catId);
+                const catName = cat?.name || 'bé mèo';
+                if (!confirm(`Xác nhận bé ${catName} đã được hỗ trợ hoặc đã an toàn?`)) {
+                    return;
+                }
+                sosResolveBtn.disabled = true;
+                sosResolveBtn.textContent = 'Đang cập nhật...';
+                try {
+                    await toggleCatSos(catId, false, '');
+                } catch (error) {
+                    console.error('Không thể hủy SOS:', error);
+                    showAppStatus(`Không thể cập nhật: ${error.message}`);
+                    sosResolveBtn.disabled = false;
+                    sosResolveBtn.textContent = '✅ Đánh dấu bé đã an toàn / Đã được cứu';
+                }
+                return;
+            }
             const statusButton = event.target.closest('button[data-cat-status]');
             if (statusButton) {
                 event.preventDefault();
@@ -3736,10 +5460,82 @@
             if (event.target === imageViewer) closeImageViewer();
         });
         document.addEventListener('keydown', event => {
-            if (event.key === 'Escape' && imageViewer.classList.contains('active')) {
-                closeImageViewer();
+            if (event.key === 'Escape') {
+                if (imageViewer.classList.contains('active')) closeImageViewer();
+                if (fortuneModal.classList.contains('active')) closeFortuneModal();
+                if (senWalletModal.classList.contains('active')) closeSenWalletModal();
+                if (leaderboardModal.classList.contains('active')) closeLeaderboardModal();
             }
         });
+
+        fortunePillButton.onclick = () => openFortuneModal();
+        closeFortuneModalBtn.onclick = closeFortuneModal;
+        fortuneModal.addEventListener('click', event => {
+            if (event.target === fortuneModal) closeFortuneModal();
+        });
+        fortuneRedrawBtn.onclick = () => openFortuneModal(true);
+        fortuneGoToCatBtn.onclick = () => {
+            if (!currentFortuneCat) return;
+            const targetCat = currentFortuneCat;
+            closeFortuneModal();
+            map.flyTo([targetCat.lat, targetCat.lng], Math.max(map.getZoom(), 17), { duration: 1.2 });
+            setTimeout(() => {
+                openSingleCatPopup(targetCat);
+            }, 1250);
+        };
+
+        senWalletBtn.onclick = () => openSenWalletModal();
+        closeSenWalletModalBtn.onclick = closeSenWalletModal;
+        senWalletModal.addEventListener('click', event => {
+            if (event.target === senWalletModal) closeSenWalletModal();
+        });
+
+        leaderboardPillBtn.onclick = () => openLeaderboardModal('idol');
+        closeLeaderboardModalBtn.onclick = closeLeaderboardModal;
+        tabIdolBtn.onclick = () => switchLeaderboardTab('idol');
+        tabSosBtn.onclick = () => switchLeaderboardTab('sos');
+        leaderboardModal.addEventListener('click', event => {
+            if (event.target === leaderboardModal) closeLeaderboardModal();
+        });
+
+        window.addEventListener('beforeinstallprompt', event => {
+            event.preventDefault();
+            deferredInstallPrompt = event;
+            if (pwaInstallBtn) {
+                pwaInstallBtn.style.display = 'inline-flex';
+            }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            deferredInstallPrompt = null;
+            if (pwaInstallBtn) {
+                pwaInstallBtn.style.display = 'none';
+            }
+            showAppStatus('🎉 Chúc mừng bạn đã cài đặt Sổ Tay Bắt Mèo lên màn hình chính!');
+        });
+
+        if (pwaInstallBtn) {
+            pwaInstallBtn.onclick = async () => {
+                if (!deferredInstallPrompt) {
+                    showAppStatus('Để cài đặt, hãy chọn "Thêm vào màn hình chính" (Add to Home Screen) trong menu trình duyệt nhé!');
+                    return;
+                }
+                deferredInstallPrompt.prompt();
+                const { outcome } = await deferredInstallPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    pwaInstallBtn.style.display = 'none';
+                }
+                deferredInstallPrompt = null;
+            };
+        }
+
+        if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => {
+                    console.warn('Đăng ký Service Worker thất bại:', err);
+                });
+            });
+        }
         backupMenuToggle.onclick = () => {
             if (!canManageBackups()) return;
             const expanded = backupActions.classList.toggle('expanded');
@@ -4021,6 +5817,9 @@
             saveButton.disabled = false;
             openModalButton.disabled = !storageReady || Boolean(pendingMapCat) || (isCloudConfigured && !supabaseClient);
             updateBackupControls();
+            checkDailyStreak();
+            updateWalletDisplay();
+            updateSosBadge();
         }).catch(error => {
             console.error('Không thể khởi tạo kho dữ liệu:', error);
             showAppStatus(`Không thể mở kho dữ liệu trên trình duyệt: ${error.message}`);
