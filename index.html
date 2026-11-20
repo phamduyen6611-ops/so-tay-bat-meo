@@ -3739,6 +3739,14 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
+        /* ========================================================
+           Song ngữ Tiếng Việt 🇻🇳 / English 🇬🇧 (I18N)
+           ======================================================== */
+        let currentLang = 'vi';
+        try {
+            currentLang = localStorage.getItem('catMap_lang') || (navigator.language && navigator.language.startsWith('en') ? 'en' : 'vi');
+        } catch (e) {}
+
         const map = L.map('map', { zoomControl: false }).setView([21.0285, 105.8542], 15);
         const mapStatus = document.getElementById('mapStatus');
         const appStatus = document.getElementById('appStatus');
@@ -4026,13 +4034,8 @@
         const gameDoneBtn = document.getElementById('gameDoneBtn');
 
         /* ========================================================
-           Song ngữ Tiếng Việt 🇻🇳 / English 🇬🇧 (I18N)
+           Từ điển Song ngữ (I18N Dictionary)
            ======================================================== */
-        let currentLang = 'vi';
-        try {
-            currentLang = localStorage.getItem('catMap_lang') || (navigator.language && navigator.language.startsWith('en') ? 'en' : 'vi');
-        } catch (e) {}
-
         const I18N = {
             vi: {
                 app_title: "Sổ Tay Bắt Mèo 🐾",
