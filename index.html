@@ -6852,9 +6852,13 @@
         function loadImageForEditing(dataUrl) {
             return new Promise((resolve, reject) => {
                 const image = new Image();
+                const url = getCatImageUrl(dataUrl);
+                // Ảnh trên Supabase Storage là khác tên miền: phải tải kiểu CORS,
+                // nếu không canvas bị "khóa" và không xuất lại ảnh được khi lưu.
+                if (/^https?:\/\//i.test(url)) image.crossOrigin = 'anonymous';
                 image.onload = () => resolve(image);
                 image.onerror = () => reject(new Error(t('err_open_saved_image')));
-                image.src = getCatImageUrl(dataUrl);
+                image.src = url;
             });
         }
 
@@ -9366,15 +9370,26 @@
             saveButton.disabled = true;
             saveButton.innerText = isEditing ? t('btn_saving') : t('btn_getting_location');
             await new Promise(resolve => requestAnimationFrame(resolve));
+            const editingCat = isEditing ? cats.find(cat => cat.id === editingCatId) : null;
             try {
-                currentImageDataUrl = sourceImage ? photoPreviewCanvas.toDataURL('image/jpeg', 0.82) : '';
+                // Đang sửa mà ảnh cũ chưa/không tải được vào trình chỉnh: giữ nguyên ảnh cũ
+                // (modal không có nút xóa ảnh, nên người dùng không thể cố ý xóa).
+                currentImageDataUrl = sourceImage
+                    ? photoPreviewCanvas.toDataURL('image/jpeg', 0.82)
+                    : (editingCat?.image || '');
             } catch (error) {
-                console.error('Không thể xuất ảnh đã chỉnh sửa:', error);
-                showAppStatus(currentLang === 'vi' ? 'Không thể xử lý ảnh này. Vui lòng chọn ảnh khác.' : 'Could not process this image. Please choose another.');
-                saveButton.disabled = false;
-                saveButton.innerText = isEditing ? t('btn_save_changes') :
-                    isCloudConfigured ? t('btn_add_to_map') : t('btn_save_location');
-                return;
+                if (editingCat?.image && sourceImage) {
+                    // Không xuất lại được ảnh cũ: giữ nguyên ảnh cũ, vẫn lưu tên/ghi chú.
+                    console.warn('Không xuất lại được ảnh cũ, giữ nguyên ảnh đã lưu:', error);
+                    currentImageDataUrl = editingCat.image;
+                } else {
+                    console.error('Không thể xuất ảnh đã chỉnh sửa:', error);
+                    showAppStatus(currentLang === 'vi' ? 'Không thể xử lý ảnh này. Vui lòng chọn ảnh khác.' : 'Could not process this image. Please choose another.');
+                    saveButton.disabled = false;
+                    saveButton.innerText = isEditing ? t('btn_save_changes') :
+                        isCloudConfigured ? t('btn_add_to_map') : t('btn_save_location');
+                    return;
+                }
             }
             let locationLookupWarning = '';
             try {
