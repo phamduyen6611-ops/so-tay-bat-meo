@@ -1469,6 +1469,7 @@
             .fortune-pill-btn,
             .sen-wallet-btn,
             .leaderboard-pill-btn,
+            .game-pill-btn,
             .pwa-install-btn {
                 min-height: 34px;
                 padding: 6px 11px;
@@ -2664,6 +2665,158 @@
             gap: 4px;
         }
 
+        /* Mini-game Hứng Pate 🐟🥫 */
+        .game-pill-btn {
+            min-height: 40px;
+            padding: 8px 14px;
+            border: 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+            font: inherit;
+            font-weight: 800;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .game-pill-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.5);
+        }
+
+        .game-pill-btn:active {
+            transform: scale(0.96);
+        }
+
+        .game-modal-content {
+            max-width: 400px;
+            text-align: center;
+            border-radius: 26px;
+            background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
+            padding: 20px 16px;
+            box-shadow: 0 16px 36px rgba(16, 185, 129, 0.25);
+            border: 2px solid #bbf7d0;
+            position: relative;
+        }
+
+        .game-modal-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            border: 0;
+            border-radius: 50%;
+            background: #dcfce7;
+            color: #065f46;
+            font-size: 20px;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .game-hud {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            padding: 8px 14px;
+            border-radius: 14px;
+            margin: 10px 0;
+            border: 1px solid #bbf7d0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        .hud-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .hud-score {
+            color: #059669;
+        }
+
+        .hud-timer {
+            color: #ea580c;
+        }
+
+        .hud-lives {
+            letter-spacing: 2px;
+        }
+
+        .game-canvas-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 360px;
+            aspect-ratio: 360 / 420;
+            margin: 0 auto;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(180deg, #bae6fd 0%, #e0f2fe 65%, #86efac 100%);
+            border: 2px solid #a7f3d0;
+            touch-action: none;
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        .game-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            border-radius: 16px;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .game-overlay-icon {
+            font-size: 44px;
+            line-height: 1;
+        }
+
+        .game-final-score {
+            font-size: 26px;
+            font-weight: 900;
+            color: #059669;
+            margin: 4px 0;
+        }
+
+        .game-high-score {
+            font-size: 13px;
+            font-weight: 700;
+            color: #d97706;
+        }
+
+        .game-footer-tip {
+            font-size: 11.5px;
+            color: #6b7280;
+            margin-top: 8px;
+        }
+
         /* ========================================================
            Mobile Responsive Enhancements (Screen width <= 600px)
            Final cascade override to prevent button covering/overlap
@@ -2753,6 +2906,7 @@
             .fortune-pill-btn,
             .sen-wallet-btn,
             .leaderboard-pill-btn,
+            .game-pill-btn,
             .pwa-install-btn {
                 min-height: 34px !important;
                 padding: 6px 11px !important;
@@ -2980,6 +3134,9 @@
         </button>
         <button type="button" class="leaderboard-pill-btn" id="leaderboardPillBtn" aria-label="Bảng Vàng Mèo Idol & Radar SOS">
             <span>🏆</span> <span>Bảng Vàng</span>
+        </button>
+        <button type="button" class="game-pill-btn" id="gamePillBtn" aria-label="Chơi Mini-game Hứng Pate">
+            <span>🎮</span> <span>Hứng Pate</span>
         </button>
         <button type="button" class="qr-pill-btn" id="qrPillBtn" aria-label="Xem trên điện thoại">
             <span>📱 Xem trên ĐT</span>
@@ -3211,6 +3368,7 @@
                 • <strong>Cài App:</strong> Thêm Sổ Tay Bắt Mèo vào màn hình chính để mở app chỉ với 1 chạm.
             </div>
 
+            <button type="button" class="btn btn-save" id="walletPlayGameBtn" style="width: 100%; margin-bottom: 8px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">🎮 Chơi game Hứng Pate kiếm thưởng</button>
             <button type="button" class="btn btn-cancel" id="closeSenWalletModalBtn" style="width: 100%;">Đóng</button>
         </div>
     </div>
@@ -3325,6 +3483,49 @@
             <div style="display: flex; gap: 8px;">
                 <button type="button" class="btn btn-save" id="copyAppUrlBtn" style="flex: 1; font-size: 12px;">📋 Sao chép Link</button>
                 <button type="button" class="btn btn-cancel" id="closeQrModalBtn" style="flex: 1; font-size: 12px;">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hộp thoại Mini-game Hứng Pate -->
+    <div class="modal" id="gameModal" role="dialog" aria-modal="true" aria-labelledby="gameModalTitle">
+        <div class="modal-content game-modal-content">
+            <button type="button" class="game-modal-close" id="closeGameModalBtn" aria-label="Đóng trò chơi">×</button>
+            <div class="game-header">
+                <div class="fortune-badge" id="gameModalTitle">🎮 Mini-Game 🐾</div>
+                <h3 style="margin: 6px 0 2px; color: #065f46; font-size: 19px;">Hứng Pate Cho Mèo 🐟🥫</h3>
+                <p style="margin: 0; font-size: 12px; color: #047857;">Kéo bé mèo qua lại hứng cá và pate, né bom cay!</p>
+            </div>
+            <div class="game-hud" id="gameHud">
+                <div class="hud-item hud-score">⭐ <span id="gameScoreText">0</span></div>
+                <div class="hud-item hud-timer">⏱️ <span id="gameTimerText">30s</span></div>
+                <div class="hud-item hud-lives" id="gameLivesText">❤️❤️❤️</div>
+            </div>
+            <div class="game-canvas-wrap" id="gameCanvasWrap">
+                <canvas id="gameCanvas" width="360" height="420"></canvas>
+                <div class="game-overlay" id="gameStartOverlay">
+                    <div class="game-overlay-icon">🐱🥣</div>
+                    <h4 style="margin: 8px 0; color: #065f46; font-size: 18px;">Sẵn sàng chưa Sen?</h4>
+                    <p style="font-size: 12.5px; color: #4b5563; margin-bottom: 14px; line-height: 1.5;">
+                        🐟 Cá: <b>+5đ</b> • 🥫 Pate: <b>+10đ</b> • 🥣 Hạt: <b>+15đ</b><br>
+                        💣 Bom: <b>-1 tim & -15đ</b> • Đạt <b>50đ</b> nhận ngay <b>1 lon pate</b>!
+                    </p>
+                    <button type="button" class="btn btn-save" id="startGameBtn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 12px 24px; font-size: 15px; border-radius: 16px;">▶ Chơi Ngay!</button>
+                </div>
+                <div class="game-overlay" id="gameOverOverlay" style="display: none;">
+                    <div class="game-overlay-icon" id="gameOverIcon">🎉</div>
+                    <h4 id="gameOverTitle" style="margin: 8px 0; color: #065f46; font-size: 18px;">Hết giờ rồi!</h4>
+                    <div class="game-final-score" id="gameFinalScore">Điểm: 0</div>
+                    <div class="game-high-score" id="gameHighScore">Kỷ lục: 0</div>
+                    <p id="gameRewardText" style="font-size: 13px; color: #047857; font-weight: 700; margin: 8px 0 14px;"></p>
+                    <div style="display: flex; gap: 8px; width: 100%; justify-content: center;">
+                        <button type="button" class="btn btn-save" id="playAgainBtn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); flex: 2;">🔄 Chơi lại</button>
+                        <button type="button" class="btn btn-cancel" id="gameDoneBtn" style="flex: 1;">Xong</button>
+                    </div>
+                </div>
+            </div>
+            <div class="game-footer-tip">
+                👆 <em>Kéo ngón tay trên màn hình hoặc rê chuột để di chuyển bé mèo</em>
             </div>
         </div>
     </div>
@@ -3587,6 +3788,25 @@
         const qrModal = document.getElementById('qrModal');
         const closeQrModalBtn = document.getElementById('closeQrModalBtn');
         const copyAppUrlBtn = document.getElementById('copyAppUrlBtn');
+
+        const gamePillBtn = document.getElementById('gamePillBtn');
+        const walletPlayGameBtn = document.getElementById('walletPlayGameBtn');
+        const gameModal = document.getElementById('gameModal');
+        const closeGameModalBtn = document.getElementById('closeGameModalBtn');
+        const gameCanvas = document.getElementById('gameCanvas');
+        const gameScoreText = document.getElementById('gameScoreText');
+        const gameTimerText = document.getElementById('gameTimerText');
+        const gameLivesText = document.getElementById('gameLivesText');
+        const gameStartOverlay = document.getElementById('gameStartOverlay');
+        const startGameBtn = document.getElementById('startGameBtn');
+        const gameOverOverlay = document.getElementById('gameOverOverlay');
+        const gameOverIcon = document.getElementById('gameOverIcon');
+        const gameOverTitle = document.getElementById('gameOverTitle');
+        const gameFinalScore = document.getElementById('gameFinalScore');
+        const gameHighScore = document.getElementById('gameHighScore');
+        const gameRewardText = document.getElementById('gameRewardText');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+        const gameDoneBtn = document.getElementById('gameDoneBtn');
 
         const CAT_FORTUNES = [
             { title: "Đại Cát Bụng Mỡ", desc: "Tài lộc hôm nay rủng rỉnh như chiếc bụng mỡ của mèo sau bữa tiệc pate thượng hạng!" },
@@ -6977,6 +7197,7 @@
                 if (sightingModal.classList.contains('active')) closeSightingModal();
                 if (timelineModal.classList.contains('active')) closeTimelineModal();
                 if (qrModal && qrModal.classList.contains('active')) qrModal.classList.remove('active');
+                if (gameModal && gameModal.classList.contains('active')) closeGameModal();
             }
         });
 
@@ -7063,6 +7284,538 @@
                 }
             };
         }
+
+        /* ========================================================
+           Mini-Game 1: Hứng Pate Cho Mèo 🐟🥫
+           ======================================================== */
+        let gameAudioCtx = null;
+        function getGameAudioContext() {
+            if (!gameAudioCtx) {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) gameAudioCtx = new AudioCtx();
+            }
+            if (gameAudioCtx && gameAudioCtx.state === 'suspended') {
+                gameAudioCtx.resume().catch(() => {});
+            }
+            return gameAudioCtx;
+        }
+
+        function playTone(freq, duration, type = 'sine', gainVal = 0.12) {
+            try {
+                const ctx = getGameAudioContext();
+                if (!ctx) return;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                gain.gain.setValueAtTime(gainVal, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + duration);
+            } catch (e) {}
+        }
+
+        function playItemSound(itemType) {
+            if (itemType === 'fish') {
+                playTone(587.33, 0.12, 'sine', 0.12);
+            } else if (itemType === 'pate') {
+                playTone(659.25, 0.08, 'triangle', 0.14);
+                setTimeout(() => playTone(880, 0.12, 'triangle', 0.12), 70);
+            } else if (itemType === 'bowl') {
+                playTone(783.99, 0.08, 'sine', 0.15);
+                setTimeout(() => playTone(1046.50, 0.14, 'sine', 0.12), 80);
+            } else if (itemType === 'bomb') {
+                playTone(160, 0.22, 'sawtooth', 0.2);
+            }
+        }
+
+        let gameRunning = false;
+        let gameAnimationId = null;
+        let gameTimerInterval = null;
+        let gameScore = 0;
+        let gameTimeLeft = 30;
+        let gameLives = 3;
+        let gameItems = [];
+        let gameParticles = [];
+        let gameFloatingTexts = [];
+        let spawnCountdown = 0;
+        let screenShake = 0;
+        const gameKeysDown = {};
+
+        const gamePlayer = {
+            x: 142,
+            y: 360,
+            w: 76,
+            h: 36
+        };
+
+        const GAME_ITEM_DEFS = [
+            { type: 'fish', emoji: '🐟', points: 5, weight: 45, speed: [2.3, 3.3], radius: 18 },
+            { type: 'pate', emoji: '🥫', points: 10, weight: 30, speed: [2.8, 3.8], radius: 20 },
+            { type: 'bowl', emoji: '🥣', points: 15, weight: 15, speed: [3.2, 4.4], radius: 22 },
+            { type: 'bomb', emoji: '💣', points: -15, isBomb: true, weight: 10, speed: [2.8, 4.0], radius: 20 }
+        ];
+
+        function chooseRandomGameItem() {
+            const totalWeight = GAME_ITEM_DEFS.reduce((sum, item) => sum + item.weight, 0);
+            let rand = Math.random() * totalWeight;
+            for (const def of GAME_ITEM_DEFS) {
+                if (rand < def.weight) return def;
+                rand -= def.weight;
+            }
+            return GAME_ITEM_DEFS[0];
+        }
+
+        function spawnGameItem() {
+            const def = chooseRandomGameItem();
+            const baseSpeed = def.speed[0] + Math.random() * (def.speed[1] - def.speed[0]);
+            const difficultyMult = 1 + (30 - gameTimeLeft) * 0.015;
+            const x = def.radius + Math.random() * (360 - def.radius * 2);
+            gameItems.push({
+                type: def.type,
+                emoji: def.emoji,
+                points: def.points,
+                isBomb: Boolean(def.isBomb),
+                radius: def.radius,
+                x,
+                y: -def.radius,
+                vy: baseSpeed * difficultyMult,
+                rotation: (Math.random() - 0.5) * 0.2,
+                rotSpeed: (Math.random() - 0.5) * 0.04
+            });
+        }
+
+        function addGameScorePopup(x, y, text, color) {
+            gameFloatingTexts.push({
+                x,
+                y,
+                text,
+                color,
+                alpha: 1.0,
+                vy: -1.6,
+                life: 32
+            });
+        }
+
+        function addGameSparkles(x, y, color) {
+            for (let i = 0; i < 7; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const spd = 1.4 + Math.random() * 2.6;
+                gameParticles.push({
+                    x,
+                    y,
+                    vx: Math.cos(angle) * spd,
+                    vy: Math.sin(angle) * spd,
+                    radius: 2 + Math.random() * 2.5,
+                    color,
+                    alpha: 1.0,
+                    life: 24
+                });
+            }
+        }
+
+        function updateGameHud() {
+            if (gameScoreText) gameScoreText.textContent = String(gameScore);
+            if (gameTimerText) gameTimerText.textContent = `${Math.max(0, gameTimeLeft)}s`;
+            if (gameLivesText) {
+                const safeLives = Math.max(0, Math.min(3, gameLives));
+                gameLivesText.textContent = '❤️'.repeat(safeLives) + '🖤'.repeat(3 - safeLives);
+            }
+        }
+
+        function drawGamePlayer(ctx, player) {
+            const x = player.x;
+            const y = player.y;
+            const w = player.w;
+            const h = player.h;
+
+            ctx.save();
+            // Bóng dưới đáy
+            ctx.beginPath();
+            ctx.ellipse(x + w / 2, y + h + 2, w * 0.44, 5, 0, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+            ctx.fill();
+
+            // Mèo con nhô đầu từ bát
+            ctx.font = '32px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🐱', x + w / 2, y - 4);
+
+            // Bát đựng pate
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(x, y + 10, w, 22, [6, 6, 12, 12]);
+            } else {
+                ctx.rect(x, y + 10, w, 22);
+            }
+            const bowlGrad = ctx.createLinearGradient(x, y + 10, x, y + 32);
+            bowlGrad.addColorStop(0, '#f97316');
+            bowlGrad.addColorStop(1, '#ea580c');
+            ctx.fillStyle = bowlGrad;
+            ctx.fill();
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#c2410c';
+            ctx.stroke();
+
+            // Vành miệng bát
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(x - 3, y + 8, w + 6, 6, 3);
+            } else {
+                ctx.rect(x - 3, y + 8, w + 6, 6);
+            }
+            ctx.fillStyle = '#fed7aa';
+            ctx.fill();
+            ctx.strokeStyle = '#f97316';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Nhãn dán chữ PATE trên bát
+            ctx.font = 'bold 10px sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🥣 PATE', x + w / 2, y + 21);
+
+            ctx.restore();
+        }
+
+        function drawInitialGameCanvas() {
+            if (!gameCanvas) return;
+            const ctx = gameCanvas.getContext('2d');
+            if (!ctx) return;
+            ctx.clearRect(0, 0, 360, 420);
+
+            // Nền cỏ xanh phía dưới
+            ctx.fillStyle = '#4ade80';
+            ctx.fillRect(0, 396, 360, 24);
+            ctx.fillStyle = '#22c55e';
+            for (let i = 10; i < 360; i += 24) {
+                ctx.fillRect(i, 393, 3, 5);
+            }
+
+            drawGamePlayer(ctx, gamePlayer);
+        }
+
+        function gameLoop() {
+            if (!gameRunning || !gameCanvas) return;
+            const ctx = gameCanvas.getContext('2d');
+            if (!ctx) return;
+
+            // Xử lý di chuyển bằng bàn phím
+            if (gameKeysDown['left']) {
+                gamePlayer.x = Math.max(0, gamePlayer.x - 7.5);
+            }
+            if (gameKeysDown['right']) {
+                gamePlayer.x = Math.min(360 - gamePlayer.w, gamePlayer.x + 7.5);
+            }
+
+            // Xóa khung hình
+            ctx.clearRect(0, 0, 360, 420);
+
+            // Hiệu ứng rung màn hình khi trúng bom
+            ctx.save();
+            if (screenShake > 0) {
+                const dx = (Math.random() - 0.5) * screenShake;
+                const dy = (Math.random() - 0.5) * screenShake;
+                ctx.translate(dx, dy);
+                screenShake = Math.max(0, screenShake - 1);
+            }
+
+            // Nền cỏ
+            ctx.fillStyle = '#4ade80';
+            ctx.fillRect(0, 396, 360, 24);
+            ctx.fillStyle = '#22c55e';
+            for (let i = 10; i < 360; i += 24) {
+                ctx.fillRect(i, 393, 3, 5);
+            }
+
+            // Sinh vật phẩm rơi
+            spawnCountdown -= 1;
+            if (spawnCountdown <= 0) {
+                spawnGameItem();
+                const minSpawn = Math.max(34, 58 - (30 - gameTimeLeft));
+                const maxSpawn = Math.max(48, 76 - (30 - gameTimeLeft));
+                spawnCountdown = Math.floor(minSpawn + Math.random() * (maxSpawn - minSpawn));
+            }
+
+            // Cập nhật và vẽ vật phẩm rơi
+            const bowlTop = gamePlayer.y + 6;
+            const bowlBottom = gamePlayer.y + gamePlayer.h;
+            const bowlLeft = gamePlayer.x - 6;
+            const bowlRight = gamePlayer.x + gamePlayer.w + 6;
+
+            for (let i = gameItems.length - 1; i >= 0; i--) {
+                const item = gameItems[i];
+                item.y += item.vy;
+                item.rotation += item.rotSpeed;
+
+                // Kiểm tra va chạm với bát
+                if (item.y + item.radius >= bowlTop &&
+                    item.y - item.radius <= bowlBottom &&
+                    item.x >= bowlLeft &&
+                    item.x <= bowlRight) {
+
+                    playItemSound(item.type);
+                    if (item.isBomb) {
+                        gameLives -= 1;
+                        gameScore = Math.max(0, gameScore + item.points);
+                        screenShake = 12;
+                        addGameScorePopup(item.x, item.y, '-15 💥', '#ef4444');
+                        addGameSparkles(item.x, item.y, '#f87171');
+                        updateGameHud();
+                        if (gameLives <= 0) {
+                            gameItems.splice(i, 1);
+                            ctx.restore();
+                            endGame('dead');
+                            return;
+                        }
+                    } else {
+                        gameScore += item.points;
+                        const text = `+${item.points}`;
+                        const color = item.type === 'bowl' ? '#d97706' : (item.type === 'pate' ? '#059669' : '#0284c7');
+                        addGameScorePopup(item.x, item.y, text, color);
+                        addGameSparkles(item.x, item.y, color);
+                        updateGameHud();
+                    }
+
+                    gameItems.splice(i, 1);
+                    continue;
+                }
+
+                // Rơi ra ngoài đáy màn hình
+                if (item.y - item.radius > 420) {
+                    gameItems.splice(i, 1);
+                    continue;
+                }
+
+                // Vẽ vật phẩm
+                ctx.save();
+                ctx.translate(item.x, item.y);
+                ctx.rotate(item.rotation);
+                ctx.font = '28px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(item.emoji, 0, 0);
+                ctx.restore();
+            }
+
+            // Vẽ bé mèo và bát
+            drawGamePlayer(ctx, gamePlayer);
+
+            // Cập nhật và vẽ hạt hiệu ứng (particles)
+            for (let i = gameParticles.length - 1; i >= 0; i--) {
+                const p = gameParticles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 1;
+                p.alpha = Math.max(0, p.life / 24);
+                if (p.life <= 0) {
+                    gameParticles.splice(i, 1);
+                    continue;
+                }
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Cập nhật và vẽ chữ điểm bay (+5, +10, -15...)
+            for (let i = gameFloatingTexts.length - 1; i >= 0; i--) {
+                const ft = gameFloatingTexts[i];
+                ft.y += ft.vy;
+                ft.life -= 1;
+                ft.alpha = Math.max(0, ft.life / 32);
+                if (ft.life <= 0) {
+                    gameFloatingTexts.splice(i, 1);
+                    continue;
+                }
+                ctx.save();
+                ctx.globalAlpha = ft.alpha;
+                ctx.font = 'bold 18px system-ui, -apple-system, sans-serif';
+                ctx.fillStyle = ft.color;
+                ctx.textAlign = 'center';
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.restore();
+            }
+
+            ctx.restore();
+
+            gameAnimationId = requestAnimationFrame(gameLoop);
+        }
+
+        function resetGameVars() {
+            gameScore = 0;
+            gameTimeLeft = 30;
+            gameLives = 3;
+            gameItems = [];
+            gameParticles = [];
+            gameFloatingTexts = [];
+            spawnCountdown = 0;
+            screenShake = 0;
+            gameKeysDown['left'] = false;
+            gameKeysDown['right'] = false;
+            gamePlayer.x = (360 - gamePlayer.w) / 2;
+            updateGameHud();
+        }
+
+        function startGameTimer() {
+            if (gameTimerInterval) clearInterval(gameTimerInterval);
+            gameTimerInterval = setInterval(() => {
+                if (!gameRunning) return;
+                gameTimeLeft -= 1;
+                updateGameHud();
+                if (gameTimeLeft <= 0) {
+                    endGame('timeup');
+                }
+            }, 1000);
+        }
+
+        function startGame() {
+            getGameAudioContext();
+            resetGameVars();
+            if (gameStartOverlay) gameStartOverlay.style.display = 'none';
+            if (gameOverOverlay) gameOverOverlay.style.display = 'none';
+            gameRunning = true;
+            startGameTimer();
+            if (gameAnimationId) cancelAnimationFrame(gameAnimationId);
+            gameAnimationId = requestAnimationFrame(gameLoop);
+        }
+
+        function stopGame() {
+            gameRunning = false;
+            if (gameAnimationId) {
+                cancelAnimationFrame(gameAnimationId);
+                gameAnimationId = null;
+            }
+            if (gameTimerInterval) {
+                clearInterval(gameTimerInterval);
+                gameTimerInterval = null;
+            }
+        }
+
+        function endGame(reason = 'timeup') {
+            stopGame();
+            playTone(reason === 'dead' ? 140 : 523, 0.3, 'triangle', 0.2);
+
+            const prevHigh = Number(localStorage.getItem('catMap_game_highScore') || 0);
+            const newHigh = Math.max(prevHigh, gameScore);
+            localStorage.setItem('catMap_game_highScore', String(newHigh));
+
+            if (gameFinalScore) gameFinalScore.textContent = `Điểm: ${gameScore}đ`;
+            if (gameHighScore) gameHighScore.textContent = `🏆 Kỷ lục: ${newHigh}đ`;
+
+            const todayStr = new Date().toLocaleDateString('en-CA');
+            const lastRewardDate = localStorage.getItem('catMap_game_reward_date');
+
+            if (gameScore >= 50) {
+                if (lastRewardDate !== todayStr) {
+                    const wallet = getSenWallet();
+                    wallet.pate = (wallet.pate || 0) + 1;
+                    saveSenWallet(wallet);
+                    updateWalletDisplay();
+                    localStorage.setItem('catMap_game_reward_date', todayStr);
+
+                    if (gameOverIcon) gameOverIcon.textContent = '🎉';
+                    if (gameOverTitle) gameOverTitle.textContent = reason === 'dead' ? 'Hết tim nhưng vẫn đủ chỉ tiêu!' : 'Chiến thắng xuất sắc!';
+                    if (gameRewardText) gameRewardText.innerHTML = '🎁 Thưởng: <b>+1 lon pate 🐟</b> đã được chuyển vào Túi Sen!';
+                    showAppStatus(`🎮 Tuyệt vời! Bạn ghi được ${gameScore}đ và nhận ngay 1 lon pate vào Ví Sen 🐟`);
+                } else {
+                    if (gameOverIcon) gameOverIcon.textContent = '⭐';
+                    if (gameOverTitle) gameOverTitle.textContent = 'Cao thủ hứng pate!';
+                    if (gameRewardText) gameRewardText.innerHTML = '✨ Bạn đã nhận phần thưởng pate của hôm nay rồi. Hãy quay lại vào ngày mai nhé!';
+                }
+            } else {
+                if (gameOverIcon) gameOverIcon.textContent = reason === 'dead' ? '😿' : '🐱';
+                if (gameOverTitle) gameOverTitle.textContent = reason === 'dead' ? 'Bé mèo bị trúng bom cay!' : 'Hết giờ rồi!';
+                if (gameRewardText) gameRewardText.innerHTML = 'Cố lên Sen ơi! Cần đạt <b>50đ</b> để nhận 1 lon pate vào Ví nhé!';
+            }
+
+            if (gameOverOverlay) gameOverOverlay.style.display = 'flex';
+        }
+
+        function openGameModal() {
+            stopGame();
+            resetGameVars();
+            if (gameStartOverlay) gameStartOverlay.style.display = 'flex';
+            if (gameOverOverlay) gameOverOverlay.style.display = 'none';
+            if (gameModal) gameModal.classList.add('active');
+            drawInitialGameCanvas();
+        }
+
+        function closeGameModal() {
+            stopGame();
+            if (gameModal) gameModal.classList.remove('active');
+        }
+
+        function handleGamePointer(clientX) {
+            if (!gameCanvas) return;
+            const rect = gameCanvas.getBoundingClientRect();
+            if (rect.width <= 0) return;
+            const scaleX = gameCanvas.width / rect.width;
+            const targetX = (clientX - rect.left) * scaleX - gamePlayer.w / 2;
+            gamePlayer.x = Math.max(0, Math.min(gameCanvas.width - gamePlayer.w, targetX));
+        }
+
+        const gameCanvasWrapEl = document.getElementById('gameCanvasWrap');
+        if (gameCanvasWrapEl) {
+            gameCanvasWrapEl.addEventListener('mousemove', e => {
+                if (!gameRunning) return;
+                handleGamePointer(e.clientX);
+            });
+
+            gameCanvasWrapEl.addEventListener('touchstart', e => {
+                if (!gameRunning) return;
+                if (e.touches && e.touches[0]) {
+                    e.preventDefault();
+                    handleGamePointer(e.touches[0].clientX);
+                }
+            }, { passive: false });
+
+            gameCanvasWrapEl.addEventListener('touchmove', e => {
+                if (!gameRunning) return;
+                if (e.touches && e.touches[0]) {
+                    e.preventDefault();
+                    handleGamePointer(e.touches[0].clientX);
+                }
+            }, { passive: false });
+        }
+
+        window.addEventListener('keydown', e => {
+            if (!gameRunning) return;
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                gameKeysDown['left'] = true;
+            } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                gameKeysDown['right'] = true;
+            }
+        });
+
+        window.addEventListener('keyup', e => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                gameKeysDown['left'] = false;
+            } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                gameKeysDown['right'] = false;
+            }
+        });
+
+        if (gamePillBtn) gamePillBtn.onclick = openGameModal;
+        if (walletPlayGameBtn) walletPlayGameBtn.onclick = () => {
+            closeSenWalletModal();
+            openGameModal();
+        };
+        if (closeGameModalBtn) closeGameModalBtn.onclick = closeGameModal;
+        if (gameModal) gameModal.addEventListener('click', event => {
+            if (event.target === gameModal) closeGameModal();
+        });
+        if (startGameBtn) startGameBtn.onclick = startGame;
+        if (playAgainBtn) playAgainBtn.onclick = startGame;
+        if (gameDoneBtn) gameDoneBtn.onclick = closeGameModal;
 
         window.addEventListener('beforeinstallprompt', event => {
             event.preventDefault();
