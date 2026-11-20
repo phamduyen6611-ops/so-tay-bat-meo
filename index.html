@@ -3188,23 +3188,23 @@
     </div>
     <section class="collaboration-panel" id="collaborationPanel" aria-label="Tài khoản cộng tác">
         <button type="button" class="collaboration-toggle" id="collaborationToggle" aria-expanded="false"
-            aria-controls="collaborationContent">☁️ Đang lưu trên thiết bị</button>
+            aria-controls="collaborationContent" data-i18n="collab_local_saving">☁️ Đang lưu trên thiết bị</button>
         <form class="collaboration-content" id="collaborationContent">
             <p id="collaborationMessage" role="status" aria-live="polite"></p>
-            <input id="collaborationEmail" type="email" placeholder="Email" autocomplete="email" required>
-            <input id="collaborationPassword" type="password" placeholder="Mật khẩu" autocomplete="current-password">
-            <input id="collaborationNewPassword" type="password" placeholder="Mật khẩu mới khi nhận lời mời"
+            <input id="collaborationEmail" type="email" placeholder="Email" data-i18n-placeholder="ph_email" autocomplete="email" required>
+            <input id="collaborationPassword" type="password" placeholder="Mật khẩu" data-i18n-placeholder="ph_password" autocomplete="current-password">
+            <input id="collaborationNewPassword" type="password" placeholder="Mật khẩu mới khi nhận lời mời" data-i18n-placeholder="ph_new_password_invite"
                 autocomplete="new-password" hidden>
-            <button type="submit" id="collaborationSignInBtn">Đăng nhập</button>
-            <button type="submit" id="collaborationCreateAccountBtn" hidden>Tạo tài khoản</button>
-            <button type="button" id="collaborationSignUpBtn">Chưa có tài khoản? Tạo tài khoản</button>
-            <button type="button" id="collaborationResetPasswordBtn">Quên mật khẩu?</button>
-            <button type="button" id="collaborationSetPasswordBtn" hidden>Đặt mật khẩu</button>
+            <button type="submit" id="collaborationSignInBtn" data-i18n="btn_signin">Đăng nhập</button>
+            <button type="submit" id="collaborationCreateAccountBtn" data-i18n="btn_create_account" hidden>Tạo tài khoản</button>
+            <button type="button" id="collaborationSignUpBtn" data-i18n="btn_switch_signup">Chưa có tài khoản? Tạo tài khoản</button>
+            <button type="button" id="collaborationResetPasswordBtn" data-i18n="btn_forgot_password">Quên mật khẩu?</button>
+            <button type="button" id="collaborationSetPasswordBtn" data-i18n="btn_set_password" hidden>Đặt mật khẩu</button>
             <button type="button" id="moderationQueueToggle" hidden>Chờ duyệt (0)</button>
             <div class="moderation-queue" id="moderationQueue" hidden></div>
-            <button type="button" id="collaborationMigrateImagesBtn" hidden>Chuyển ảnh cũ lên Storage</button>
+            <button type="button" id="collaborationMigrateImagesBtn" data-i18n="btn_migrate_images" hidden>Chuyển ảnh cũ lên Storage</button>
             <button type="button" id="collaborationMigrateLocalBtn" class="collaboration-migrate-button" hidden></button>
-            <button type="button" id="collaborationSignOutBtn" hidden>Đăng xuất</button>
+            <button type="button" id="collaborationSignOutBtn" data-i18n="btn_signout" hidden>Đăng xuất</button>
         </form>
     </section>
     <div class="backup-actions" hidden>
@@ -3215,23 +3215,23 @@
         <input type="file" id="backupFileInput" accept="application/json,.json">
     </div>
     <div class="map-selection" id="mapSelectionPrompt" role="status" aria-live="polite">
-        <span>Chạm vào bản đồ để đặt vị trí mèo</span>
-        <button type="button" id="cancelMapSelectionBtn">Hủy</button>
+        <span data-i18n="map_selection_prompt">Chạm vào bản đồ để đặt vị trí mèo</span>
+        <button type="button" id="cancelMapSelectionBtn" data-i18n="btn_cancel">Hủy</button>
     </div>
     <button class="fab-btn" id="openModalBtn" data-i18n="fab_spot_cat">😻 Thấy Mèo!</button>
-    <button type="button" class="install-shortcut" id="installAppButton" aria-haspopup="dialog" hidden>＋ Thêm vào màn hình chính</button>
+    <button type="button" class="install-shortcut" id="installAppButton" aria-haspopup="dialog" data-i18n="btn_install_shortcut" hidden>＋ Thêm vào màn hình chính</button>
     <dialog class="install-help-dialog" id="installHelpDialog" aria-labelledby="installHelpTitle" aria-describedby="installHelpIntro">
         <button type="button" class="install-help-close" id="installHelpClose" aria-label="Đóng hướng dẫn">×</button>
         <img class="install-help-icon" src="./icons/icon-192.png" alt="" width="52" height="52">
-        <h2 id="installHelpTitle">Thêm vào màn hình chính</h2>
-        <p id="installHelpIntro">Mở nhanh Sổ Tay Bắt Mèo từ biểu tượng trên thiết bị của bạn.</p>
+        <h2 id="installHelpTitle" data-i18n="install_help_title">Thêm vào màn hình chính</h2>
+        <p id="installHelpIntro" data-i18n="install_help_intro">Mở nhanh Sổ Tay Bắt Mèo từ biểu tượng trên thiết bị của bạn.</p>
         <ol id="installHelpSteps"></ol>
-        <p>Nếu đang mở trong Zalo hoặc Facebook, hãy chọn mở liên kết bằng trình duyệt trước.</p>
-        <label for="installAppUrl">Liên kết ứng dụng</label>
+        <p id="installHelpBrowserNote" data-i18n="install_help_browser_note">Nếu đang mở trong Zalo hoặc Facebook, hãy chọn mở liên kết bằng trình duyệt trước.</p>
+        <label for="installAppUrl" data-i18n="install_help_url_label">Liên kết ứng dụng</label>
         <input id="installAppUrl" type="url" readonly value="https://phamduyen6611-ops.github.io/so-tay-bat-meo/">
         <div class="install-help-actions">
-            <button type="button" id="installCopyLink">Sao chép liên kết</button>
-            <button type="button" id="installHelpDone">Đã hiểu</button>
+            <button type="button" id="installCopyLink" data-i18n="btn_copy_link">Sao chép liên kết</button>
+            <button type="button" id="installHelpDone" data-i18n="btn_got_it">Đã hiểu</button>
         </div>
         <p class="install-help-status" id="installHelpStatus" role="status" aria-live="polite"></p>
     </dialog>
@@ -4002,7 +4002,51 @@
                 toast_feed_thanks: "🥣 Cảm ơn Sen {feeder} đã tiếp tế cho {name}! 🐾🐟",
                 toast_sighting_saved: "🎉 Đã lưu kỷ niệm gặp lại! Bạn và cộng đồng đã gặp {name} {count} lần 🐾📸",
                 toast_game_win_reward: "🎮 Tuyệt vời! Bạn ghi được {score}đ và nhận ngay 1 lon pate vào Ví Sen 🐟",
-                toast_status_updated: "Đã cập nhật tình trạng: {status}."
+                toast_status_updated: "Đã cập nhật tình trạng: {status}.",
+                // Collaboration / Account
+                collab_local_saving: "☁️ Đang lưu trên thiết bị",
+                collab_not_configured: "☁️ Chưa cấu hình",
+                collab_conn_failed: "☁️ Không kết nối được",
+                collab_admin_access: "☁️ Admin toàn quyền",
+                collab_syncing: "☁️ Đang đồng bộ",
+                collab_login_to_add: "☁️ Đăng nhập để thêm mèo",
+                collab_connecting: "☁️ Đang kết nối dữ liệu chung…",
+                collab_msg_local: "Ứng dụng đang lưu dữ liệu trên thiết bị này.",
+                collab_msg_supabase_err: "Không tải được thư viện Supabase. Kiểm tra kết nối Internet rồi tải lại trang.",
+                collab_msg_guest: "Đăng nhập hoặc tạo tài khoản để thêm mèo và quản lý mèo do bạn tạo. Mèo mới sẽ hiện ngay trên bản đồ.",
+                collab_msg_admin: "Đã đăng nhập admin: {email}.",
+                collab_msg_user: "Đã đăng nhập: {email}. Bạn có thể thêm mèo và sửa/xóa mèo do mình tạo.",
+                collab_msg_logged_out: "Tài khoản {email} chưa đăng nhập.",
+                collab_msg_fav_prompt: "Đăng nhập để lưu yêu thích và đồng bộ giữa các thiết bị.",
+                collab_msg_add_cat_prompt: "Bạn cần đăng nhập để thêm mèo. Nếu chưa có tài khoản, hãy chọn Tạo tài khoản bên dưới.",
+                collab_msg_signup_mode: "Nhập email và mật khẩu mới để tạo tài khoản.",
+                collab_msg_signin_mode: "Nhập email và mật khẩu để đăng nhập.",
+                collab_msg_signup_success_verify: "Đã tạo tài khoản. Hãy kiểm tra email để xác nhận, sau đó đăng nhập.",
+                collab_msg_signup_success: "Đã tạo tài khoản và đăng nhập. Bạn có thể thêm mèo lên bản đồ.",
+                collab_msg_reset_sent: "Nếu email này có tài khoản, sẽ có thư đặt lại mật khẩu. Hãy kiểm tra hộp thư đến và thư rác.",
+                collab_msg_password_set: "Đã đặt mật khẩu. Bạn có thể sử dụng tài khoản được mời.",
+                ph_email: "Email",
+                ph_password: "Mật khẩu",
+                ph_password_new: "Mật khẩu mới (ít nhất 8 ký tự)",
+                ph_new_password_invite: "Mật khẩu mới khi nhận lời mời",
+                btn_signin: "Đăng nhập",
+                btn_create_account: "Tạo tài khoản",
+                btn_switch_signup: "Chưa có tài khoản? Tạo tài khoản",
+                btn_switch_signin: "Đã có tài khoản? Đăng nhập",
+                btn_forgot_password: "Quên mật khẩu?",
+                btn_set_password: "Đặt mật khẩu",
+                btn_pending_reviews: "Bài cũ chờ duyệt ({count})",
+                btn_migrate_images: "Chuyển ảnh cũ lên Storage",
+                btn_migrate_local: "Đưa {count} mèo trên thiết bị lên dữ liệu chung",
+                btn_signout: "Đăng xuất",
+                // Install App Dialog
+                btn_install_shortcut: "＋ Thêm vào màn hình chính",
+                install_help_title: "Thêm vào màn hình chính",
+                install_help_intro: "Mở nhanh Sổ Tay Bắt Mèo từ biểu tượng trên thiết bị của bạn.",
+                install_help_browser_note: "Nếu đang mở trong Zalo hoặc Facebook, hãy chọn mở liên kết bằng trình duyệt trước.",
+                install_help_url_label: "Liên kết ứng dụng",
+                btn_got_it: "Đã hiểu",
+                map_selection_prompt: "Chạm vào bản đồ để đặt vị trí mèo"
             },
             en: {
                 app_title: "Stray Cat Notebook 🐾",
@@ -4146,7 +4190,51 @@
                 toast_feed_thanks: "🥣 Thank you {feeder} for feeding {name}! 🐾🐟",
                 toast_sighting_saved: "🎉 Encounter saved! You and the community have met {name} {count} times 🐾📸",
                 toast_game_win_reward: "🎮 Awesome! You scored {score}pts and earned 1 pate can into your Bag 🐟",
-                toast_status_updated: "Status updated: {status}."
+                toast_status_updated: "Status updated: {status}.",
+                // Collaboration / Account
+                collab_local_saving: "☁️ Stored on device",
+                collab_not_configured: "☁️ Not configured",
+                collab_conn_failed: "☁️ Connection failed",
+                collab_admin_access: "☁️ Admin Access",
+                collab_syncing: "☁️ Cloud Synced",
+                collab_login_to_add: "☁️ Sign in to add cats",
+                collab_connecting: "☁️ Connecting to cloud…",
+                collab_msg_local: "App is currently storing data on this device only.",
+                collab_msg_supabase_err: "Could not load Supabase library. Check Internet connection and reload.",
+                collab_msg_guest: "Sign in or register to spot cats and manage your submissions. New cats appear on the public map.",
+                collab_msg_admin: "Signed in as admin: {email}.",
+                collab_msg_user: "Signed in: {email}. You can add cats and manage cats you created.",
+                collab_msg_logged_out: "Account {email} is not signed in.",
+                collab_msg_fav_prompt: "Sign in to save favorites and sync across devices.",
+                collab_msg_add_cat_prompt: "You need to sign in to add cats. If you don't have an account, choose Create Account below.",
+                collab_msg_signup_mode: "Enter email and a new password to create your account.",
+                collab_msg_signin_mode: "Enter email and password to sign in.",
+                collab_msg_signup_success_verify: "Account created! Please check your email to confirm, then sign in.",
+                collab_msg_signup_success: "Account created and signed in! You can now add cats to the map.",
+                collab_msg_reset_sent: "If this email is registered, a password reset link has been sent. Check your inbox and spam folder.",
+                collab_msg_password_set: "Password set successfully! You can now use your invited account.",
+                ph_email: "Email address",
+                ph_password: "Password",
+                ph_password_new: "New password (min 8 characters)",
+                ph_new_password_invite: "New password for invited account",
+                btn_signin: "Sign In",
+                btn_create_account: "Create Account",
+                btn_switch_signup: "Don't have an account? Sign Up",
+                btn_switch_signin: "Already have an account? Sign In",
+                btn_forgot_password: "Forgot password?",
+                btn_set_password: "Set Password",
+                btn_pending_reviews: "Pending review ({count})",
+                btn_migrate_images: "Migrate legacy photos to Storage",
+                btn_migrate_local: "Upload {count} local cats to cloud",
+                btn_signout: "Sign Out",
+                // Install App Dialog
+                btn_install_shortcut: "＋ Add to Home Screen",
+                install_help_title: "Add to Home Screen",
+                install_help_intro: "Quickly open Stray Cat Notebook right from your device home screen.",
+                install_help_browser_note: "If opened inside Zalo or Facebook, tap ⋯ and choose 'Open in Browser' first.",
+                install_help_url_label: "Application Link",
+                btn_got_it: "Got it",
+                map_selection_prompt: "Tap on the map to place the cat marker"
             }
         };
 
@@ -4242,6 +4330,8 @@
 
             // Cập nhật các view động
             updateWalletDisplay();
+            updateCollaborationControls();
+            if (window.updateInstallLanguage) window.updateInstallLanguage();
             renderCatList();
             updateDailyFortuneBadge();
             updateSosBadge();
@@ -4466,7 +4556,7 @@
             if (!currentUser || !supabaseClient) {
                 collaborationPanel.classList.add('expanded');
                 collaborationToggle.setAttribute('aria-expanded', 'true');
-                collaborationMessage.textContent = 'Đăng nhập để lưu yêu thích và đồng bộ giữa các thiết bị.';
+                collaborationMessage.textContent = t('collab_msg_fav_prompt');
                 collaborationEmail.focus();
                 return;
             }
@@ -5102,8 +5192,8 @@
         function updateCollaborationControls() {
             updateBackupControls();
             if (!isCloudConfigured) {
-                collaborationToggle.textContent = '☁️ Chưa cấu hình';
-                collaborationMessage.textContent = 'Ứng dụng đang lưu dữ liệu trên thiết bị này.';
+                collaborationToggle.textContent = t('collab_not_configured');
+                collaborationMessage.textContent = t('collab_msg_local');
                 collaborationSignInButton.disabled = true;
                 collaborationCreateAccountButton.disabled = true;
                 collaborationSignUpButton.disabled = true;
@@ -5114,8 +5204,8 @@
                 return;
             }
             if (!supabaseClient) {
-                collaborationToggle.textContent = '☁️ Không kết nối được';
-                collaborationMessage.textContent = 'Không tải được thư viện Supabase. Kiểm tra kết nối Internet rồi tải lại trang.';
+                collaborationToggle.textContent = t('collab_conn_failed');
+                collaborationMessage.textContent = t('collab_msg_supabase_err');
                 collaborationSignInButton.disabled = true;
                 collaborationCreateAccountButton.disabled = true;
                 collaborationSignUpButton.disabled = true;
@@ -5126,17 +5216,17 @@
             }
 
             collaborationToggle.textContent = isCatAdmin
-                ? '☁️ Admin toàn quyền'
+                ? t('collab_admin_access')
                 : isSignedIn
-                    ? '☁️ Đang đồng bộ'
-                : '☁️ Đăng nhập để thêm mèo';
+                    ? t('collab_syncing')
+                    : t('collab_login_to_add');
             collaborationMessage.textContent = !currentUser
-                ? 'Đăng nhập hoặc tạo tài khoản để thêm mèo và quản lý mèo do bạn tạo. Mèo mới sẽ hiện ngay trên bản đồ.'
+                ? t('collab_msg_guest')
                 : isCatAdmin
-                    ? `Đã đăng nhập admin: ${currentUser.email || 'quản trị viên'}.`
-                : isSignedIn
-                    ? `Đã đăng nhập: ${currentUser.email || 'người dùng'}. Bạn có thể thêm mèo và sửa/xóa mèo do mình tạo.`
-                    : `Tài khoản ${currentUser.email || ''} chưa đăng nhập.`;
+                    ? t('collab_msg_admin', { email: currentUser.email || (currentLang === 'en' ? 'admin' : 'quản trị viên') })
+                    : isSignedIn
+                        ? t('collab_msg_user', { email: currentUser.email || (currentLang === 'en' ? 'user' : 'người dùng') })
+                        : t('collab_msg_logged_out', { email: currentUser.email || '' });
             collaborationEmail.hidden = Boolean(currentUser);
             collaborationPassword.hidden = Boolean(currentUser) || passwordRecoveryMode;
             collaborationSignInButton.hidden = Boolean(currentUser) || passwordRecoveryMode || isSignUpMode;
@@ -5144,20 +5234,20 @@
             collaborationSignUpButton.hidden = Boolean(currentUser) || passwordRecoveryMode;
             collaborationResetPasswordButton.hidden = Boolean(currentUser) || passwordRecoveryMode || isSignUpMode;
             collaborationSignUpButton.textContent = isSignUpMode
-                ? 'Đã có tài khoản? Đăng nhập'
-                : 'Chưa có tài khoản? Tạo tài khoản';
+                ? t('btn_switch_signin')
+                : t('btn_switch_signup');
             collaborationPassword.autocomplete = isSignUpMode ? 'new-password' : 'current-password';
             collaborationPassword.placeholder = isSignUpMode
-                ? 'Mật khẩu mới (ít nhất 8 ký tự)'
-                : 'Mật khẩu';
+                ? t('ph_password_new')
+                : t('ph_password');
             collaborationNewPassword.hidden = !passwordRecoveryMode;
             collaborationSetPasswordButton.hidden = !passwordRecoveryMode;
             moderationQueueToggle.hidden = !isCatAdmin;
-            moderationQueueToggle.textContent = `Bài cũ chờ duyệt (${pendingCatSubmissions.length})`;
+            moderationQueueToggle.textContent = t('btn_pending_reviews', { count: pendingCatSubmissions.length });
             collaborationMigrateImagesButton.hidden = !isCatAdmin;
             collaborationMigrateLocalButton.hidden = !localCatsForMigration.length || localCatsMigrationComplete;
             collaborationMigrateLocalButton.disabled = !isSignedIn;
-            collaborationMigrateLocalButton.textContent = `Đưa ${localCatsForMigration.length} mèo trên thiết bị lên dữ liệu chung`;
+            collaborationMigrateLocalButton.textContent = t('btn_migrate_local', { count: localCatsForMigration.length });
             collaborationSignOutButton.hidden = !currentUser;
             collaborationSignInButton.disabled = false;
             collaborationCreateAccountButton.disabled = false;
@@ -7351,13 +7441,13 @@
                 updateCollaborationControls();
                 collaborationPanel.classList.add('expanded');
                 collaborationToggle.setAttribute('aria-expanded', 'true');
-                collaborationMessage.textContent = 'Bạn cần đăng nhập để thêm mèo. Nếu chưa có tài khoản, hãy chọn Tạo tài khoản bên dưới.';
+                collaborationMessage.textContent = t('collab_msg_add_cat_prompt');
                 collaborationEmail.focus();
                 return;
             }
             editingCatId = null;
-            modalTitle.textContent = 'Bắt được một bé! 🐾';
-            saveButton.textContent = isCloudConfigured ? 'Thêm lên bản đồ' : 'Lưu vị trí';
+            modalTitle.textContent = t('add_modal_title');
+            saveButton.textContent = isCloudConfigured ? t('btn_add_to_map') : (currentLang === 'en' ? 'Save Location' : 'Lưu vị trí');
             chooseMapLocationButton.style.display = 'block';
             editLocationFields.classList.remove('active');
             document.getElementById('catName').value = '';
@@ -7422,7 +7512,7 @@
                 if (isSignUpMode) {
                     const password = collaborationPassword.value;
                     if (password.length < 8) {
-                        collaborationMessage.textContent = 'Mật khẩu cần có ít nhất 8 ký tự.';
+                        collaborationMessage.textContent = currentLang === 'en' ? 'Password must be at least 8 characters.' : 'Mật khẩu cần có ít nhất 8 ký tự.';
                         return;
                     }
                     const { data, error } = await supabaseClient.auth.signUp({
@@ -7434,11 +7524,11 @@
                     if (data.session) {
                         await refreshEditorAccess();
                         await refreshCloudCats();
-                        collaborationMessage.textContent = 'Đã tạo tài khoản và đăng nhập. Bạn có thể thêm mèo lên bản đồ.';
+                        collaborationMessage.textContent = t('collab_msg_signup_success');
                     } else {
                         isSignUpMode = false;
                         updateCollaborationControls();
-                        collaborationMessage.textContent = 'Đã tạo tài khoản. Hãy kiểm tra email để xác nhận, sau đó đăng nhập.';
+                        collaborationMessage.textContent = t('collab_msg_signup_success_verify');
                     }
                 } else {
                     const { error } = await supabaseClient.auth.signInWithPassword({
@@ -7454,8 +7544,8 @@
             } catch (error) {
                 console.error(isSignUpMode ? 'Không thể tạo tài khoản:' : 'Không thể đăng nhập cộng tác:', error);
                 collaborationMessage.textContent = isSignUpMode
-                    ? `Tạo tài khoản thất bại: ${error.message}`
-                    : `Đăng nhập thất bại: ${error.message}`;
+                    ? (currentLang === 'en' ? `Account creation failed: ${error.message}` : `Tạo tài khoản thất bại: ${error.message}`)
+                    : (currentLang === 'en' ? `Sign in failed: ${error.message}` : `Đăng nhập thất bại: ${error.message}`);
             } finally {
                 collaborationSignInButton.disabled = false;
                 collaborationCreateAccountButton.disabled = false;
@@ -7466,8 +7556,8 @@
             collaborationPassword.value = '';
             updateCollaborationControls();
             collaborationMessage.textContent = isSignUpMode
-                ? 'Nhập email và mật khẩu mới để tạo tài khoản.'
-                : 'Nhập email và mật khẩu để đăng nhập.';
+                ? t('collab_msg_signup_mode')
+                : t('collab_msg_signin_mode');
             collaborationPassword.focus();
         };
         collaborationResetPasswordButton.onclick = async () => {
@@ -7480,10 +7570,10 @@
                     redirectTo: `${window.location.origin}${window.location.pathname}`
                 });
                 if (error) throw error;
-                collaborationMessage.textContent = 'Nếu email này có tài khoản, sẽ có thư đặt lại mật khẩu. Hãy kiểm tra hộp thư đến và thư rác.';
+                collaborationMessage.textContent = t('collab_msg_reset_sent');
             } catch (error) {
                 console.error('Không thể gửi email đặt lại mật khẩu:', error);
-                collaborationMessage.textContent = `Không thể gửi email đặt lại mật khẩu: ${error.message}`;
+                collaborationMessage.textContent = `${currentLang === 'en' ? 'Failed to send password reset email:' : 'Không thể gửi email đặt lại mật khẩu:'} ${error.message}`;
             } finally {
                 collaborationResetPasswordButton.disabled = false;
             }
@@ -7492,7 +7582,7 @@
             if (!supabaseClient) return;
             const password = collaborationNewPassword.value;
             if (password.length < 8) {
-                collaborationMessage.textContent = 'Mật khẩu mới cần có ít nhất 8 ký tự.';
+                collaborationMessage.textContent = currentLang === 'en' ? 'New password must be at least 8 characters.' : 'Mật khẩu mới cần có ít nhất 8 ký tự.';
                 return;
             }
             collaborationSetPasswordButton.disabled = true;
@@ -7502,10 +7592,10 @@
                 passwordRecoveryMode = false;
                 collaborationNewPassword.value = '';
                 await refreshEditorAccess();
-                collaborationMessage.textContent = 'Đã đặt mật khẩu. Bạn có thể sử dụng tài khoản được mời.';
+                collaborationMessage.textContent = t('collab_msg_password_set');
             } catch (error) {
                 console.error('Không thể đặt mật khẩu:', error);
-                collaborationMessage.textContent = `Không thể đặt mật khẩu: ${error.message}`;
+                collaborationMessage.textContent = `${currentLang === 'en' ? 'Failed to set password:' : 'Không thể đặt mật khẩu:'} ${error.message}`;
             } finally {
                 collaborationSetPasswordButton.disabled = false;
             }
