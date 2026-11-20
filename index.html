@@ -3462,7 +3462,7 @@
                 <div class="sighting-photo-preview-wrap" id="sightingPhotoPreviewWrap" style="display: none;">
                     <img id="sightingPhotoPreview" alt="Xem trước ảnh chụp lại" class="sighting-photo-preview">
                     <div>
-                        <button type="button" class="btn btn-cancel" id="sightingRemovePhotoBtn" style="margin-top: 6px; padding: 4px 10px; font-size: 11px;">✕ Bỏ ảnh này</button>
+                        <button type="button" class="btn btn-cancel" id="sightingRemovePhotoBtn" data-i18n="btn_remove_photo" style="margin-top: 6px; padding: 4px 10px; font-size: 11px;">✕ Bỏ ảnh này</button>
                     </div>
                 </div>
             </div>
@@ -3944,7 +3944,9 @@
                 btn_save_changes: "Lưu thay đổi",
                 // Sighting modal
                 sighting_modal_title: "📸 Gặp lại bé mèo!",
+                sighting_modal_title_cat: "📸 Gặp lại {name}!",
                 sighting_modal_desc: "Ghi lại khoảnh khắc hôm nay bạn gặp lại bé để lưu vào hành trình lớn lên theo từng tháng.",
+                sighting_modal_desc_cat: "Lưu lại khoảnh khắc hôm nay bạn gặp lại {name}. Ảnh sẽ được thêm vào dòng thời gian lớn lên theo từng tháng! 🐾",
                 sighting_photo_label: "Ảnh chụp hôm nay (rất nên có! 📸):",
                 sighting_date_label: "Ngày gặp lại:",
                 sighting_note_label: "Ghi chú khoảnh khắc:",
@@ -3952,9 +3954,22 @@
                 sighting_reporter_label: "Tên của bạn (Sen):",
                 sighting_ph_reporter: "Tên hoặc biệt danh của bạn",
                 btn_sighting_submit: "Lưu kỷ niệm gặp lại 🐾",
+                btn_remove_photo: "✕ Bỏ ảnh này",
                 // Timeline modal
                 timeline_modal_title: "📅 Hành trình lớn lên 🐾",
+                timeline_modal_title_cat: "📅 Hành trình lớn lên: {name} 🐾",
                 timeline_modal_subtitle: "Dòng thời gian các lần gặp gỡ của bé mèo",
+                timeline_modal_subtitle_cat: "Dòng thời gian ảnh và các lần gặp gỡ {name}",
+                timeline_loading: "Đang tải hành trình của bé... 🐾",
+                timeline_total_encounters: "Tổng cộng: {count} lần gặp 🐾",
+                timeline_first_encounter: "🌱 Lần đầu gặp · {month}",
+                timeline_encounter_item: "🐾 {month}",
+                timeline_old_memory: "Kỷ niệm xưa",
+                timeline_recorded_by: "Ghi nhận bởi: {name}",
+                timeline_initial_note: "Bé được phát hiện và lưu lên bản đồ lần đầu tiên 🐾",
+                timeline_first_discoverer: "Người phát hiện ban đầu",
+                timeline_spotting_hooman: "Một Sen ghi dấu",
+                timeline_kind_hooman: "Một Sen tốt bụng",
                 btn_timeline_add: "📸 Hôm nay lại gặp",
                 // QR modal
                 qr_title: "📱 Mở trên điện thoại",
@@ -4136,7 +4151,9 @@
                 btn_save_changes: "Save Changes",
                 // Sighting modal
                 sighting_modal_title: "📸 Met this cat again!",
+                sighting_modal_title_cat: "📸 Met {name} again!",
                 sighting_modal_desc: "Record today's encounter to capture their monthly growth journey.",
+                sighting_modal_desc_cat: "Save the moment you met {name} today. Photos will be added to the growing journey timeline! 🐾",
                 sighting_photo_label: "Today's photo (highly recommended! 📸):",
                 sighting_date_label: "Date encountered:",
                 sighting_note_label: "Moment notes:",
@@ -4144,9 +4161,22 @@
                 sighting_reporter_label: "Your name (Hooman):",
                 sighting_ph_reporter: "Your name or nickname",
                 btn_sighting_submit: "Save Encounter 🐾",
+                btn_remove_photo: "✕ Remove photo",
                 // Timeline modal
                 timeline_modal_title: "📅 Growth Journey 🐾",
+                timeline_modal_title_cat: "📅 Growth Journey: {name} 🐾",
                 timeline_modal_subtitle: "Timeline of encounters with this cat",
+                timeline_modal_subtitle_cat: "Photo timeline and encounters with {name}",
+                timeline_loading: "Loading kitty's journey... 🐾",
+                timeline_total_encounters: "Total: {count} encounters 🐾",
+                timeline_first_encounter: "🌱 First Encounter · {month}",
+                timeline_encounter_item: "🐾 {month}",
+                timeline_old_memory: "Old memory",
+                timeline_recorded_by: "Recorded by: {name}",
+                timeline_initial_note: "Cat first spotted and saved to the map 🐾",
+                timeline_first_discoverer: "Original discoverer",
+                timeline_spotting_hooman: "A spotting Hooman",
+                timeline_kind_hooman: "A kind Hooman",
                 btn_timeline_add: "📸 Met again today",
                 // QR modal
                 qr_title: "📱 Open on Mobile",
@@ -4361,6 +4391,17 @@
             // Nếu modal Dòng thời gian đang mở
             if (timelineModal && timelineModal.classList.contains('active') && currentTimelineCatId) {
                 openTimelineModal(currentTimelineCatId);
+            }
+
+            // Nếu modal Check-in Gặp lại đang mở
+            if (sightingModal && sightingModal.classList.contains('active') && currentSightingCatId) {
+                const preservedNote = sightingNoteInput ? sightingNoteInput.value : '';
+                const preservedReporter = sightingReporterInput ? sightingReporterInput.value : '';
+                const preservedDate = sightingDateInput ? sightingDateInput.value : '';
+                openSightingModal(currentSightingCatId);
+                if (sightingNoteInput && preservedNote) sightingNoteInput.value = preservedNote;
+                if (sightingReporterInput && preservedReporter) sightingReporterInput.value = preservedReporter;
+                if (sightingDateInput && preservedDate) sightingDateInput.value = preservedDate;
             }
 
             // Nếu có popup mèo đang mở trên bản đồ, làm mới nội dung theo ngôn ngữ mới
@@ -6968,8 +7009,9 @@
             currentSightingCatId = catId;
             currentSightingImageDataUrl = '';
 
-            sightingModalTitle.textContent = `📸 Gặp lại ${cat.name || 'bé mèo'}!`;
-            sightingModalDesc.textContent = `Lưu lại khoảnh khắc hôm nay bạn gặp lại ${cat.name || 'bé'}. Ảnh sẽ được thêm vào dòng thời gian lớn lên theo từng tháng! 🐾`;
+            const catName = cat.name || (currentLang === 'vi' ? 'bé mèo' : 'kitty');
+            sightingModalTitle.textContent = t('sighting_modal_title_cat', { name: catName });
+            sightingModalDesc.textContent = t('sighting_modal_desc_cat', { name: cat.name || (currentLang === 'vi' ? 'bé' : 'kitty') });
 
             if (sightingPhotoInput) sightingPhotoInput.value = '';
             if (sightingPhotoCamera) sightingPhotoCamera.value = '';
@@ -6985,7 +7027,7 @@
             sightingReporterInput.value = defaultReporter;
 
             sightingSubmitBtn.disabled = false;
-            sightingSubmitBtn.textContent = 'Lưu kỷ niệm gặp lại 🐾';
+            sightingSubmitBtn.textContent = t('btn_sighting_submit');
 
             sightingModal.classList.add('active');
         }
@@ -7007,7 +7049,7 @@
             if (!cat) return;
 
             const note = sightingNoteInput.value.trim().slice(0, 1000);
-            const reporterName = sightingReporterInput.value.trim().slice(0, 40) || 'Một Sen tốt bụng';
+            const reporterName = sightingReporterInput.value.trim().slice(0, 40) || t('timeline_kind_hooman');
             if (reporterName) {
                 localStorage.setItem('catMap_feeder_name', reporterName);
             }
@@ -7015,7 +7057,7 @@
             const seenAt = dateVal ? new Date(dateVal + 'T12:00:00').toISOString() : new Date().toISOString();
 
             sightingSubmitBtn.disabled = true;
-            sightingSubmitBtn.textContent = 'Đang lưu kỷ niệm...';
+            sightingSubmitBtn.textContent = currentLang === 'vi' ? 'Đang lưu kỷ niệm...' : 'Saving encounter...';
 
             try {
                 let imagePath = currentSightingImageDataUrl || null;
@@ -7094,15 +7136,15 @@
                     openSingleCatPopup(updatedCat);
                 }
 
-                showAppStatus(`🎉 Đã lưu kỷ niệm gặp lại! Bạn và cộng đồng đã gặp ${cat.name || 'bé'} ${updatedCount} lần 🐾📸`);
+                showAppStatus(t('toast_sighting_saved', { name: cat.name || (currentLang === 'vi' ? 'bé' : 'kitty'), count: updatedCount }));
                 setTimeout(() => {
                     openTimelineModal(catId);
                 }, 400);
             } catch (err) {
                 console.error('Không thể lưu kỷ niệm gặp lại:', err);
-                showAppStatus(`Không thể lưu: ${err.message}`);
+                showAppStatus(currentLang === 'vi' ? `Không thể lưu: ${err.message}` : `Failed to save: ${err.message}`);
                 sightingSubmitBtn.disabled = false;
-                sightingSubmitBtn.textContent = 'Thử lại';
+                sightingSubmitBtn.textContent = currentLang === 'vi' ? 'Thử lại' : 'Retry';
             }
         }
 
@@ -7111,14 +7153,16 @@
             if (!cat) return;
             currentTimelineCatId = catId;
 
-            timelineModalTitle.textContent = `📅 Hành trình lớn lên: ${cat.name || 'Bé mèo'} 🐾`;
-            timelineModalSubtitle.textContent = `Dòng thời gian ảnh và các lần gặp gỡ ${cat.name || 'bé'}`;
-            timelineBody.innerHTML = '<div style="text-align:center; padding: 24px; color:#8c7377;">Đang tải hành trình của bé... 🐾</div>';
+            const catName = cat.name || (currentLang === 'vi' ? 'Bé mèo' : 'Kitty');
+            timelineModalTitle.textContent = t('timeline_modal_title_cat', { name: catName });
+            timelineModalSubtitle.textContent = t('timeline_modal_subtitle_cat', { name: cat.name || (currentLang === 'vi' ? 'bé' : 'kitty') });
+            timelineBody.innerHTML = `<div style="text-align:center; padding: 24px; color:#8c7377;">${t('timeline_loading')}</div>`;
             timelineModal.classList.add('active');
 
             const sightings = await fetchCatSightings(catId);
             const totalCount = 1 + sightings.length;
-            timelineTotalCount.textContent = `Tổng cộng: ${Math.max(totalCount, Number(cat.sightings_count) || 1)} lần gặp 🐾`;
+            const countNum = Math.max(totalCount, Number(cat.sightings_count) || 1);
+            timelineTotalCount.textContent = t('timeline_total_encounters', { count: countNum });
 
             timelineBody.innerHTML = '';
 
@@ -7130,8 +7174,8 @@
                 isFirst: true,
                 date: initialDate,
                 image: cat.image,
-                note: getCatDisplayNote(cat) || (currentLang === 'vi' ? 'Bé được phát hiện và lưu lên bản đồ lần đầu tiên 🐾' : 'Cat first spotted and saved to the map 🐾'),
-                reporterName: cat.created_by ? (currentLang === 'vi' ? 'Người phát hiện ban đầu' : 'Original discoverer') : (currentLang === 'vi' ? 'Một Sen ghi dấu' : 'A spotting Hooman')
+                note: getCatDisplayNote(cat) || t('timeline_initial_note'),
+                reporterName: cat.created_by ? t('timeline_first_discoverer') : t('timeline_spotting_hooman')
             });
             listEl.appendChild(initialCard);
 
@@ -7142,7 +7186,7 @@
                     date: sightDate,
                     image: sighting.image,
                     note: sighting.note,
-                    reporterName: sighting.reporter_name || (currentLang === 'vi' ? 'Một Sen tốt bụng' : 'A kind Hooman')
+                    reporterName: sighting.reporter_name || t('timeline_kind_hooman')
                 });
                 listEl.appendChild(card);
             });
@@ -7163,15 +7207,17 @@
             header.className = 'timeline-card-header';
 
             const monthStr = date && Number.isFinite(date.getTime())
-                ? `Tháng ${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`
-                : 'Kỷ niệm xưa';
+                ? (currentLang === 'vi'
+                    ? `Tháng ${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`
+                    : date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }))
+                : t('timeline_old_memory');
             const dateStr = date && Number.isFinite(date.getTime())
-                ? date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                ? date.toLocaleDateString(currentLang === 'vi' ? 'vi-VN' : 'en-US', { day: '2-digit', month: '2-digit', year: 'numeric' })
                 : '';
 
             const monthTag = document.createElement('span');
             monthTag.className = 'timeline-month-tag';
-            monthTag.textContent = isFirst ? `🌱 Lần đầu gặp · ${monthStr}` : `🐾 ${monthStr}`;
+            monthTag.textContent = isFirst ? t('timeline_first_encounter', { month: monthStr }) : t('timeline_encounter_item', { month: monthStr });
 
             const dateLabel = document.createElement('span');
             dateLabel.className = 'timeline-date-time';
@@ -7184,7 +7230,7 @@
                 const imgEl = document.createElement('img');
                 imgEl.className = 'timeline-card-image';
                 imgEl.src = getCatImageUrl(image);
-                imgEl.alt = note || 'Ảnh bé mèo';
+                imgEl.alt = note || (currentLang === 'vi' ? 'Ảnh bé mèo' : 'Cat photo');
                 imgEl.tabIndex = 0;
                 imgEl.addEventListener('click', () => openImageViewer(imgEl));
                 imgEl.addEventListener('keydown', event => {
@@ -7206,7 +7252,7 @@
             if (reporterName) {
                 const repEl = document.createElement('div');
                 repEl.className = 'timeline-card-reporter';
-                repEl.textContent = `Ghi nhận bởi: ${reporterName}`;
+                repEl.textContent = t('timeline_recorded_by', { name: reporterName });
                 card.appendChild(repEl);
             }
 
