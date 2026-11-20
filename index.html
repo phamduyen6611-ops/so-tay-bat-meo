@@ -1466,6 +1466,7 @@
                 pointer-events: auto;
             }
 
+            .lang-toggle-btn,
             .fortune-pill-btn,
             .sen-wallet-btn,
             .leaderboard-pill-btn,
@@ -2694,6 +2695,34 @@
             transform: scale(0.96);
         }
 
+        .lang-toggle-btn {
+            min-height: 40px;
+            padding: 8px 12px;
+            border: 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+            font: inherit;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .lang-toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5);
+        }
+
+        .lang-toggle-btn:active {
+            transform: scale(0.96);
+        }
+
         .game-modal-content {
             max-width: 400px;
             text-align: center;
@@ -2903,6 +2932,7 @@
                 pointer-events: auto !important;
             }
 
+            .lang-toggle-btn,
             .fortune-pill-btn,
             .sen-wallet-btn,
             .leaderboard-pill-btn,
@@ -3074,57 +3104,60 @@
             aria-controls="catListContent">🐾 Danh sách mèo (0)</button>
         <div class="cat-list-content" id="catListContent">
             <div class="cat-list-tabs" role="group" aria-label="Chọn danh sách mèo">
-                <button type="button" id="catAllTab" aria-pressed="true" aria-controls="catSearchResults">Tất cả (0)</button>
-                <button type="button" id="catFavoritesTab" aria-pressed="false" aria-controls="catSearchResults">♥ Yêu thích (0)</button>
+                <button type="button" id="catAllTab" aria-pressed="true" aria-controls="catSearchResults" data-i18n="cat_all">Tất cả (0)</button>
+                <button type="button" id="catFavoritesTab" aria-pressed="false" aria-controls="catSearchResults" data-i18n="cat_fav">♥ Yêu thích (0)</button>
             </div>
             <input type="search" class="cat-search-input" id="catSearchInput"
-                placeholder="Tìm tên, ghi chú, vị trí" autocomplete="off" aria-label="Tìm mèo theo tên, ghi chú hoặc vị trí">
+                placeholder="Tìm tên, ghi chú, vị trí" data-i18n-placeholder="search_placeholder" autocomplete="off" aria-label="Tìm mèo theo tên, ghi chú hoặc vị trí">
             <details class="cat-list-filters" id="catListFilters" open>
-                <summary id="catFiltersSummary">Bộ lọc</summary>
+                <summary id="catFiltersSummary" data-i18n="filter_summary">Bộ lọc</summary>
             <div class="cat-filters">
-                <label for="catStatusFilter">Tình trạng
+                <label for="catStatusFilter" id="catStatusFilterLabel"><span data-i18n="filter_status">Tình trạng</span>
                     <select id="catStatusFilter">
-                        <option value="">Tất cả</option>
-                        <option value="seen">Vẫn thấy</option>
-                        <option value="sos">🚨 Cần hỗ trợ (SOS)</option>
-                        <option value="hungry">🥣 Chưa ăn hôm nay</option>
-                        <option value="helped">Đã được giúp đỡ</option>
-                        <option value="not_found">Không còn ở đây</option>
-                        <option value="other">Khác</option>
-                        <option value="unknown">Chưa cập nhật</option>
+                        <option value="" data-i18n="filter_all">Tất cả</option>
+                        <option value="seen" data-i18n="status_seen">Vẫn thấy</option>
+                        <option value="sos" data-i18n="status_sos">🚨 Cần hỗ trợ (SOS)</option>
+                        <option value="hungry" data-i18n="status_hungry">🥣 Chưa ăn hôm nay</option>
+                        <option value="helped" data-i18n="status_helped">Đã được giúp đỡ</option>
+                        <option value="not_found" data-i18n="status_not_found">Không còn ở đây</option>
+                        <option value="other" data-i18n="status_other">Khác</option>
+                        <option value="unknown" data-i18n="status_unknown">Chưa cập nhật</option>
                     </select>
                 </label>
-                <label for="catDistanceFilter">Khoảng cách
+                <label for="catDistanceFilter" id="catDistanceFilterLabel"><span data-i18n="filter_distance">Khoảng cách</span>
                     <select id="catDistanceFilter" aria-describedby="catLocationNote">
-                        <option value="">Tất cả</option>
-                        <option value="500">Trong 500 m</option>
-                        <option value="1000">Trong 1 km</option>
-                        <option value="3000">Trong 3 km</option>
-                        <option value="5000">Trong 5 km</option>
-                        <option value="10000">Trong 10 km</option>
+                        <option value="" data-i18n="filter_all">Tất cả</option>
+                        <option value="500" data-i18n="dist_500m">Trong 500 m</option>
+                        <option value="1000" data-i18n="dist_1km">Trong 1 km</option>
+                        <option value="3000" data-i18n="dist_3km">Trong 3 km</option>
+                        <option value="5000" data-i18n="dist_5km">Trong 5 km</option>
+                        <option value="10000" data-i18n="dist_10km">Trong 10 km</option>
                     </select>
                 </label>
             </div>
             <div class="cat-filter-actions">
-                <button type="button" id="catLocationBtn">Dùng vị trí của tôi</button>
-                <button type="button" id="catClearFiltersBtn" disabled>Xóa bộ lọc</button>
+                <button type="button" id="catLocationBtn" data-i18n="btn_use_location">Dùng vị trí của tôi</button>
+                <button type="button" id="catClearFiltersBtn" data-i18n="btn_clear_filters" disabled>Xóa bộ lọc</button>
             </div>
-            <p class="cat-location-note" id="catLocationNote" role="status" aria-live="polite">Dùng vị trí của bạn để tìm mèo gần nhất.</p>
+            <p class="cat-location-note" id="catLocationNote" data-i18n="location_note" role="status" aria-live="polite">Dùng vị trí của bạn để tìm mèo gần nhất.</p>
             </details>
             <p class="cat-filter-summary" id="catFilterSummary" role="status" aria-live="polite"></p>
-            <p class="cat-favorites-note" id="catFavoritesNote" hidden>Đăng nhập để lưu và đồng bộ yêu thích theo tài khoản.</p>
+            <p class="cat-favorites-note" id="catFavoritesNote" data-i18n="fav_login_note" hidden>Đăng nhập để lưu và đồng bộ yêu thích theo tài khoản.</p>
             <div class="cat-search-results" id="catSearchResults" role="list"></div>
             <nav class="app-info-links" aria-label="Thông tin dự án">
-                <a href="https://phamduyen6611-ops.github.io/huong-dan.html" target="_blank" rel="noopener noreferrer">Hướng dẫn ↗</a>
-                <a href="https://phamduyen6611-ops.github.io/quyen-rieng-tu.html" target="_blank" rel="noopener noreferrer">Quyền riêng tư ↗</a>
-                <a href="https://phamduyen6611-ops.github.io/lien-he.html" target="_blank" rel="noopener noreferrer">Liên hệ / báo nội dung ↗</a>
+                <a href="https://phamduyen6611-ops.github.io/huong-dan.html" target="_blank" rel="noopener noreferrer" data-i18n="guide_link">Hướng dẫn ↗</a>
+                <a href="https://phamduyen6611-ops.github.io/quyen-rieng-tu.html" target="_blank" rel="noopener noreferrer" data-i18n="privacy_link">Quyền riêng tư ↗</a>
+                <a href="https://phamduyen6611-ops.github.io/lien-he.html" target="_blank" rel="noopener noreferrer" data-i18n="contact_link">Liên hệ / báo nội dung ↗</a>
             </nav>
         </div>
     </section>
     <div class="top-left-actions">
+        <button type="button" class="lang-toggle-btn" id="langToggleBtn" aria-label="Chuyển ngôn ngữ / Switch language" title="Tiếng Việt / English">
+            <span>🌐</span> <span id="langToggleText">EN</span>
+        </button>
         <button type="button" class="fortune-pill-btn" id="fortunePillBtn" aria-label="Quẻ Mèo May Mắn Hôm Nay">
             <span class="fortune-pill-icon">🔮</span>
-            <span class="fortune-pill-text">Quẻ Mèo</span>
+            <span class="fortune-pill-text" data-i18n="pill_fortune">Quẻ Mèo</span>
             <span class="fortune-pill-badge" id="fortunePillBadge" title="Hôm nay bạn chưa bốc quẻ!"></span>
         </button>
         <button type="button" class="sen-wallet-btn" id="senWalletBtn" aria-label="Túi đồ của Sen & Chuỗi điểm danh">
@@ -3133,16 +3166,16 @@
             <span>🐟</span> <span id="pateCountText">3</span>
         </button>
         <button type="button" class="leaderboard-pill-btn" id="leaderboardPillBtn" aria-label="Bảng Vàng Mèo Idol & Radar SOS">
-            <span>🏆</span> <span>Bảng Vàng</span>
+            <span>🏆</span> <span data-i18n="pill_leaderboard">Bảng Vàng</span>
         </button>
         <button type="button" class="game-pill-btn" id="gamePillBtn" aria-label="Chơi Mini-game Hứng Pate">
-            <span>🎮</span> <span>Hứng Pate</span>
+            <span>🎮</span> <span data-i18n="pill_game">Hứng Pate</span>
         </button>
         <button type="button" class="qr-pill-btn" id="qrPillBtn" aria-label="Xem trên điện thoại">
-            <span>📱 Xem trên ĐT</span>
+            <span data-i18n="pill_phone">📱 Xem trên ĐT</span>
         </button>
         <button type="button" class="pwa-install-btn" id="pwaInstallBtn" aria-label="Cài đặt ứng dụng lên màn hình chính" style="display: none;">
-            <span>📲 Cài App</span>
+            <span data-i18n="pill_install">📲 Cài App</span>
         </button>
     </div>
     <section class="collaboration-panel" id="collaborationPanel" aria-label="Tài khoản cộng tác">
@@ -3177,7 +3210,7 @@
         <span>Chạm vào bản đồ để đặt vị trí mèo</span>
         <button type="button" id="cancelMapSelectionBtn">Hủy</button>
     </div>
-    <button class="fab-btn" id="openModalBtn">😻 Thấy Mèo!</button>
+    <button class="fab-btn" id="openModalBtn" data-i18n="fab_spot_cat">😻 Thấy Mèo!</button>
     <button type="button" class="install-shortcut" id="installAppButton" aria-haspopup="dialog" hidden>＋ Thêm vào màn hình chính</button>
     <dialog class="install-help-dialog" id="installHelpDialog" aria-labelledby="installHelpTitle" aria-describedby="installHelpIntro">
         <button type="button" class="install-help-close" id="installHelpClose" aria-label="Đóng hướng dẫn">×</button>
@@ -3198,15 +3231,15 @@
     <!-- Hộp thoại thêm dữ liệu -->
     <div class="modal" id="addCatModal">
         <div class="modal-content">
-            <h2 id="modalTitle">Bắt được một bé! 🐾</h2>
+            <h2 id="modalTitle" data-i18n="add_modal_title">Bắt được một bé! 🐾</h2>
 
             <div class="photo-upload-options">
                 <label class="file-upload-btn upload-camera-btn">
-                    <span>📸 Chụp ảnh ngay</span>
+                    <span data-i18n="btn_camera">📸 Chụp ảnh ngay</span>
                     <input type="file" id="catPhotoCamera" accept="image/*" capture="environment">
                 </label>
                 <label class="file-upload-btn upload-gallery-btn">
-                    <span>🖼️ Tải ảnh từ thư viện</span>
+                    <span data-i18n="btn_gallery">🖼️ Tải ảnh từ thư viện</span>
                     <input type="file" id="catPhotoGallery" accept="image/*">
                 </label>
             </div>
@@ -3253,11 +3286,11 @@
             </div>
 
             <input id="catName" class="cat-name-input" type="text" maxlength="40"
-                placeholder="Tên bé mèo (ví dụ: Mimi)" autocomplete="off">
+                placeholder="Tên bé mèo (ví dụ: Mimi)" data-i18n-placeholder="ph_name" autocomplete="off">
             <input id="catLocationName" class="cat-name-input" type="text" maxlength="120"
-                placeholder="Tên vị trí nếu muốn tự đặt" autocomplete="off">
+                placeholder="Tên vị trí nếu muốn tự đặt" data-i18n-placeholder="ph_location_name" autocomplete="off">
             <small class="location-lookup-note">Để trống để tự tra cứu gần nhất qua OpenStreetMap. Tọa độ sẽ được gửi cho dịch vụ này.</small>
-            <textarea id="catNote" maxlength="2000" placeholder="Mèo tam thể, đang ngủ gật..."></textarea>
+            <textarea id="catNote" maxlength="2000" placeholder="Mèo tam thể, đang ngủ gật..." data-i18n-placeholder="ph_note"></textarea>
 
             <button type="button" class="btn btn-location" id="chooseMapLocationBtn">
                 📍 Chọn vị trí trên bản đồ
@@ -3273,8 +3306,8 @@
             </div>
 
             <div class="btn-group">
-                <button class="btn btn-cancel" id="closeModalBtn">Hủy</button>
-                <button class="btn btn-save" id="saveCatBtn">Lưu vị trí</button>
+                <button class="btn btn-cancel" id="closeModalBtn" data-i18n="btn_cancel">Hủy</button>
+                <button class="btn btn-save" id="saveCatBtn" data-i18n="btn_add_to_map">Thêm lên bản đồ</button>
             </div>
         </div>
     </div>
@@ -3283,7 +3316,7 @@
     <div class="modal" id="fortuneModal" role="dialog" aria-modal="true" aria-labelledby="fortuneModalTitle">
         <div class="modal-content fortune-modal-content">
             <div class="fortune-card">
-                <div class="fortune-badge" id="fortuneModalTitle">✨ Quẻ Mèo May Mắn ✨</div>
+                <div class="fortune-badge" id="fortuneModalTitle" data-i18n="fortune_badge">✨ Quẻ Mèo May Mắn ✨</div>
                 <div class="fortune-date" id="fortuneDate">Hôm nay</div>
                 <div class="fortune-cat-avatar-wrap">
                     <img id="fortuneCatImg" class="fortune-cat-img" alt="Ảnh mèo may mắn" style="display:none;">
@@ -3296,9 +3329,9 @@
                     <p class="fortune-message-text" id="fortuneMessage">Tài lộc hôm nay rủng rỉnh như chiếc bụng mỡ của mèo sau bữa tiệc pate thượng hạng!</p>
                 </div>
                 <div class="fortune-card-actions">
-                    <button type="button" class="btn btn-save" id="fortuneGoToCatBtn">🐾 Ghé thăm bé trên bản đồ</button>
-                    <button type="button" class="btn btn-location" id="fortuneRedrawBtn">🎲 Bốc quẻ khác</button>
-                    <button type="button" class="btn btn-cancel" id="closeFortuneModalBtn">Đóng</button>
+                    <button type="button" class="btn btn-save" id="fortuneGoToCatBtn" data-i18n="fortune_goto">🐾 Ghé thăm bé trên bản đồ</button>
+                    <button type="button" class="btn btn-location" id="fortuneRedrawBtn" data-i18n="fortune_redraw">🎲 Bốc quẻ khác</button>
+                    <button type="button" class="btn btn-cancel" id="closeFortuneModalBtn" data-i18n="btn_close">Đóng</button>
                 </div>
             </div>
         </div>
@@ -3307,9 +3340,9 @@
     <!-- Hộp thoại Túi Đồ Của Sen & Điểm danh -->
     <div class="modal" id="senWalletModal" role="dialog" aria-modal="true" aria-labelledby="senWalletModalTitle">
         <div class="modal-content sen-wallet-modal-content">
-            <div class="fortune-badge" id="senWalletModalTitle">🎒 Túi Đồ Của Sen 🐾</div>
-            <h3 style="margin: 10px 0 4px; color: #4a3336;">Chuỗi Tuần Tra & Quà Tặng</h3>
-            <p style="margin: 0; font-size: 13px; color: #8c7377;">Điểm danh mỗi ngày, tích lũy pate để thăng cấp danh hiệu!</p>
+            <div class="fortune-badge" id="senWalletModalTitle" data-i18n="wallet_badge">🎒 Túi Đồ Của Sen 🐾</div>
+            <h3 style="margin: 10px 0 4px; color: #4a3336;" data-i18n="wallet_title">Chuỗi Tuần Tra & Quà Tặng</h3>
+            <p style="margin: 0; font-size: 13px; color: #8c7377;" data-i18n="wallet_desc">Điểm danh mỗi ngày, tích lũy pate để thăng cấp danh hiệu!</p>
 
             <!-- Thẻ Danh Hiệu Sen Hoàng Gia -->
             <div class="sen-rank-card" id="senRankCard">
@@ -3317,7 +3350,7 @@
                     <div class="sen-rank-icon" id="senRankIcon">🌱</div>
                     <div class="sen-rank-info">
                         <div class="sen-rank-tag-row">
-                            <span class="sen-rank-tag-label">Danh hiệu hiện tại</span>
+                            <span class="sen-rank-tag-label" data-i18n="rank_current">Danh hiệu hiện tại</span>
                         </div>
                         <div class="sen-rank-badge-title" id="senRankTitle">Sen Tập Sự</div>
                         <div class="sen-rank-badge-desc" id="senRankDesc">Mới vào nghề, thấy bé mèo nào cũng muốn lại gần làm quen.</div>
@@ -3337,20 +3370,20 @@
             <div class="wallet-stats-grid">
                 <div class="wallet-stat-card">
                     <span class="wallet-stat-value" id="walletStreakValue">1 ngày</span>
-                    <span class="wallet-stat-label">🔥 Chuỗi ngày</span>
+                    <span class="wallet-stat-label" data-i18n="stat_streak">🔥 Chuỗi ngày</span>
                 </div>
                 <div class="wallet-stat-card">
                     <span class="wallet-stat-value" id="walletPateValue">3 lon</span>
-                    <span class="wallet-stat-label">🐟 Pate có sẵn</span>
+                    <span class="wallet-stat-label" data-i18n="stat_pate">🐟 Pate có sẵn</span>
                 </div>
                 <div class="wallet-stat-card">
                     <span class="wallet-stat-value" id="walletTotalGivenValue">0 lon</span>
-                    <span class="wallet-stat-label">💖 Đã tặng mèo</span>
+                    <span class="wallet-stat-label" data-i18n="stat_given">💖 Đã tặng mèo</span>
                 </div>
             </div>
 
             <div class="streak-track">
-                <div class="streak-track-title">Tiến trình nhận quà 7 ngày (Mỗi ngày +1 🐟, ngày 7 +3 🎁)</div>
+                <div class="streak-track-title" data-i18n="streak_title">Tiến trình nhận quà 7 ngày (Mỗi ngày +1 🐟, ngày 7 +3 🎁)</div>
                 <div class="streak-days-row" id="streakDaysRow">
                     <div class="streak-day-badge" data-day="1">N1<span>+1🐟</span></div>
                     <div class="streak-day-badge" data-day="2">N2<span>+1🐟</span></div>
@@ -3362,14 +3395,14 @@
                 </div>
             </div>
 
-            <div class="wallet-guide-text">
+            <div class="wallet-guide-text" data-i18n-html="wallet_guide">
                 • <strong>Mỗi ngày vào app:</strong> Tự động nhận ngay 1 lon pate ảo 🐟 để giữ chuỗi.<br>
                 • <strong>Tặng pate cho mèo:</strong> Bấm vào bất kỳ bé mèo nào trên bản đồ và nhấn <em>"🐟 Tặng 1 lon pate"</em> để tiếp tế yêu thương!<br>
                 • <strong>Cài App:</strong> Thêm Sổ Tay Bắt Mèo vào màn hình chính để mở app chỉ với 1 chạm.
             </div>
 
-            <button type="button" class="btn btn-save" id="walletPlayGameBtn" style="width: 100%; margin-bottom: 8px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">🎮 Chơi game Hứng Pate kiếm thưởng</button>
-            <button type="button" class="btn btn-cancel" id="closeSenWalletModalBtn" style="width: 100%;">Đóng</button>
+            <button type="button" class="btn btn-save" id="walletPlayGameBtn" data-i18n="btn_play_game" style="width: 100%; margin-bottom: 8px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">🎮 Chơi game Hứng Pate kiếm thưởng</button>
+            <button type="button" class="btn btn-cancel" id="closeSenWalletModalBtn" data-i18n="btn_close" style="width: 100%;">Đóng</button>
         </div>
     </div>
 
@@ -3377,44 +3410,44 @@
     <div class="modal" id="leaderboardModal" role="dialog" aria-modal="true" aria-labelledby="leaderboardModalTitle">
         <div class="modal-content leaderboard-modal-content">
             <div class="leaderboard-header">
-                <div class="fortune-badge" id="leaderboardModalTitle">🏆 Bảng Vàng & Radar SOS 🐾</div>
+                <div class="fortune-badge" id="leaderboardModalTitle" data-i18n="leaderboard_badge">🏆 Bảng Vàng & Radar SOS 🐾</div>
                 <div class="leaderboard-tabs">
-                    <button type="button" class="leaderboard-tab-btn active" id="tabIdolBtn">👑 Mèo Idol</button>
+                    <button type="button" class="leaderboard-tab-btn active" id="tabIdolBtn" data-i18n="tab_idol">👑 Mèo Idol</button>
                     <button type="button" class="leaderboard-tab-btn" id="tabSosBtn">🚨 Radar SOS (<span id="sosBadgeCount">0</span>)</button>
                 </div>
             </div>
 
             <!-- Tab 1: Mèo Idol -->
             <div class="leaderboard-tab-panel" id="panelIdol">
-                <p class="leaderboard-subtitle">Top các bé mèo được yêu thích và nhận nhiều pate nhất bản đồ 💖</p>
+                <p class="leaderboard-subtitle" id="idolSubtitle" data-i18n="idol_subtitle">Top các bé mèo được yêu thích và nhận nhiều pate nhất bản đồ 💖</p>
                 <div class="leaderboard-list" id="idolList"></div>
             </div>
 
             <!-- Tab 2: Radar SOS -->
             <div class="leaderboard-tab-panel" id="panelSos" style="display: none;">
-                <p class="leaderboard-subtitle">Danh sách mèo đang cần hỗ trợ y tế, thức ăn hoặc trạm cứu hộ 🚨</p>
+                <p class="leaderboard-subtitle" id="sosSubtitle" data-i18n="sos_subtitle">Danh sách mèo đang cần hỗ trợ y tế, thức ăn hoặc trạm cứu hộ 🚨</p>
                 <div class="leaderboard-list" id="sosList"></div>
             </div>
 
-            <button type="button" class="btn btn-cancel" id="closeLeaderboardModalBtn" style="margin-top: 14px; width: 100%;">Đóng</button>
+            <button type="button" class="btn btn-cancel" id="closeLeaderboardModalBtn" data-i18n="btn_close" style="margin-top: 14px; width: 100%;">Đóng</button>
         </div>
     </div>
 
     <!-- Hộp thoại Check-in Gặp lại bé -->
     <div class="modal" id="sightingModal" role="dialog" aria-modal="true" aria-labelledby="sightingModalTitle">
         <div class="modal-content sighting-modal-content">
-            <h3 id="sightingModalTitle" style="margin: 0 0 8px; color: #4a3336; font-size: 18px;">📸 Gặp lại bé mèo!</h3>
-            <p class="sighting-modal-desc" id="sightingModalDesc">Ghi lại khoảnh khắc hôm nay bạn gặp lại bé để lưu vào hành trình lớn lên theo từng tháng.</p>
+            <h3 id="sightingModalTitle" data-i18n="sighting_modal_title" style="margin: 0 0 8px; color: #4a3336; font-size: 18px;">📸 Gặp lại bé mèo!</h3>
+            <p class="sighting-modal-desc" id="sightingModalDesc" data-i18n="sighting_modal_desc">Ghi lại khoảnh khắc hôm nay bạn gặp lại bé để lưu vào hành trình lớn lên theo từng tháng.</p>
 
             <div class="form-group">
-                <label style="font-weight: 700; font-size: 13px; color: #634347; display: block; margin-bottom: 6px;">Ảnh chụp hôm nay (rất nên có! 📸):</label>
+                <label style="font-weight: 700; font-size: 13px; color: #634347; display: block; margin-bottom: 6px;" data-i18n="sighting_photo_label">Ảnh chụp hôm nay (rất nên có! 📸):</label>
                 <div class="photo-upload-options" style="margin-bottom: 8px;">
                     <label class="file-upload-btn upload-camera-btn" style="padding: 10px 6px; font-size: 12.5px;">
-                        <span>📸 Chụp ảnh ngay</span>
+                        <span data-i18n="btn_camera">📸 Chụp ảnh ngay</span>
                         <input type="file" id="sightingPhotoCamera" accept="image/*" capture="environment">
                     </label>
                     <label class="file-upload-btn upload-gallery-btn" style="padding: 10px 6px; font-size: 12.5px;">
-                        <span>🖼️ Chọn từ thư viện</span>
+                        <span data-i18n="btn_gallery">🖼️ Chọn từ thư viện</span>
                         <input type="file" id="sightingPhotoInput" accept="image/*">
                     </label>
                 </div>
@@ -3427,23 +3460,23 @@
             </div>
 
             <div class="form-group" style="margin-top: 10px;">
-                <label for="sightingDateInput" style="font-weight: 700; font-size: 13px; color: #634347;">Ngày gặp lại:</label>
+                <label for="sightingDateInput" style="font-weight: 700; font-size: 13px; color: #634347;" data-i18n="sighting_date_label">Ngày gặp lại:</label>
                 <input type="date" id="sightingDateInput" class="text-input" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; border: 1px solid #fed7aa; margin-top: 4px;">
             </div>
 
             <div class="form-group" style="margin-top: 10px;">
-                <label for="sightingNoteInput" style="font-weight: 700; font-size: 13px; color: #634347;">Ghi chú khoảnh khắc:</label>
-                <textarea id="sightingNoteInput" rows="2" placeholder="VD: Bé mập hơn nhiều, đang ngủ ngoan trên ghế đá, rất quấn người..." style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; border: 1px solid #fed7aa; margin-top: 4px; font-family: inherit; font-size: 13px; resize: vertical;"></textarea>
+                <label for="sightingNoteInput" style="font-weight: 700; font-size: 13px; color: #634347;" data-i18n="sighting_note_label">Ghi chú khoảnh khắc:</label>
+                <textarea id="sightingNoteInput" rows="2" placeholder="VD: Bé mập hơn nhiều, đang ngủ ngoan trên ghế đá, rất quấn người..." data-i18n-placeholder="sighting_ph_note" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; border: 1px solid #fed7aa; margin-top: 4px; font-family: inherit; font-size: 13px; resize: vertical;"></textarea>
             </div>
 
             <div class="form-group" style="margin-top: 10px;">
-                <label for="sightingReporterInput" style="font-weight: 700; font-size: 13px; color: #634347;">Tên của bạn (Sen):</label>
-                <input type="text" id="sightingReporterInput" maxlength="40" placeholder="Tên hoặc biệt danh của bạn" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; border: 1px solid #fed7aa; margin-top: 4px; font-family: inherit; font-size: 13px;">
+                <label for="sightingReporterInput" style="font-weight: 700; font-size: 13px; color: #634347;" data-i18n="sighting_reporter_label">Tên của bạn (Sen):</label>
+                <input type="text" id="sightingReporterInput" maxlength="40" placeholder="Tên hoặc biệt danh của bạn" data-i18n-placeholder="sighting_ph_reporter" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; border: 1px solid #fed7aa; margin-top: 4px; font-family: inherit; font-size: 13px;">
             </div>
 
             <div class="modal-buttons" style="margin-top: 16px; display: flex; gap: 8px;">
-                <button type="button" class="btn btn-save" id="sightingSubmitBtn" style="flex: 2; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);">Lưu kỷ niệm gặp lại 🐾</button>
-                <button type="button" class="btn btn-cancel" id="sightingCancelBtn" style="flex: 1;">Đóng</button>
+                <button type="button" class="btn btn-save" id="sightingSubmitBtn" data-i18n="btn_sighting_submit" style="flex: 2; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);">Lưu kỷ niệm gặp lại 🐾</button>
+                <button type="button" class="btn btn-cancel" id="sightingCancelBtn" data-i18n="btn_close" style="flex: 1;">Đóng</button>
             </div>
         </div>
     </div>
@@ -3452,37 +3485,37 @@
     <div class="modal" id="timelineModal" role="dialog" aria-modal="true" aria-labelledby="timelineModalTitle">
         <div class="modal-content timeline-modal-content">
             <div class="timeline-header">
-                <h3 id="timelineModalTitle" style="margin: 0; font-size: 19px; color: #4a3336;">📅 Hành trình lớn lên 🐾</h3>
-                <p id="timelineModalSubtitle" style="margin: 4px 0 0; font-size: 13px; color: #8c7377;">Dòng thời gian các lần gặp gỡ của bé mèo</p>
+                <h3 id="timelineModalTitle" data-i18n="timeline_modal_title" style="margin: 0; font-size: 19px; color: #4a3336;">📅 Hành trình lớn lên 🐾</h3>
+                <p id="timelineModalSubtitle" data-i18n="timeline_modal_subtitle" style="margin: 4px 0 0; font-size: 13px; color: #8c7377;">Dòng thời gian các lần gặp gỡ của bé mèo</p>
             </div>
 
             <div class="timeline-quick-bar">
                 <span id="timelineTotalCount" class="timeline-count-badge">Tổng cộng: 1 lần gặp</span>
-                <button type="button" class="btn-timeline-add" id="timelineAddNowBtn">📸 Hôm nay lại gặp</button>
+                <button type="button" class="btn-timeline-add" id="timelineAddNowBtn" data-i18n="btn_timeline_add">📸 Hôm nay lại gặp</button>
             </div>
 
             <div class="timeline-body" id="timelineBody">
                 <!-- Timeline items rendered dynamically -->
             </div>
 
-            <button type="button" class="btn btn-cancel" id="timelineCloseBtn" style="width: 100%; margin-top: 14px;">Đóng</button>
+            <button type="button" class="btn btn-cancel" id="timelineCloseBtn" data-i18n="btn_close" style="width: 100%; margin-top: 14px;">Đóng</button>
         </div>
     </div>
 
     <!-- Hộp thoại Quét QR mở trên điện thoại -->
     <div class="modal" id="qrModal" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle">
         <div class="modal-content" style="max-width: 360px; text-align: center; border-radius: 24px; padding: 22px;">
-            <h3 id="qrModalTitle" style="margin: 0 0 6px; font-size: 18px; color: #4a3336;">📱 Mở trên điện thoại</h3>
-            <p style="margin: 0 0 16px; font-size: 13px; color: #78716c;">Mở camera điện thoại (iPhone hoặc Android) quét mã QR bên dưới để xem ngay:</p>
+            <h3 id="qrModalTitle" data-i18n="qr_title" style="margin: 0 0 6px; font-size: 18px; color: #4a3336;">📱 Mở trên điện thoại</h3>
+            <p id="qrDesc" data-i18n="qr_desc" style="margin: 0 0 16px; font-size: 13px; color: #78716c;">Mở camera điện thoại (iPhone hoặc Android) quét mã QR bên dưới để xem ngay:</p>
             <div style="background: white; padding: 12px; border-radius: 16px; display: inline-block; box-shadow: 0 4px 14px rgba(0,0,0,0.08); border: 1px solid #fed7aa;">
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://phamduyen6611-ops.github.io/so-tay-bat-meo/" alt="Mã QR mở Sổ Tay Bắt Mèo" width="200" height="200" style="display: block; border-radius: 8px;">
             </div>
-            <p style="margin: 12px 0 16px; font-size: 12px; color: #8c7377; line-height: 1.4;">
+            <p id="qrTip" data-i18n-html="qr_tip" style="margin: 12px 0 16px; font-size: 12px; color: #8c7377; line-height: 1.4;">
                 💡 <b>Mẹo:</b> Khi mở trên điện thoại, bấm vào biểu tượng <b>Chia sẻ / Menu ⋯</b> rồi chọn <b>"Thêm vào Màn hình chính"</b> để dùng như một ứng dụng độc lập nhé!
             </p>
             <div style="display: flex; gap: 8px;">
-                <button type="button" class="btn btn-save" id="copyAppUrlBtn" style="flex: 1; font-size: 12px;">📋 Sao chép Link</button>
-                <button type="button" class="btn btn-cancel" id="closeQrModalBtn" style="flex: 1; font-size: 12px;">Đóng</button>
+                <button type="button" class="btn btn-save" id="copyAppUrlBtn" data-i18n="btn_copy_link" style="flex: 1; font-size: 12px;">📋 Sao chép Link</button>
+                <button type="button" class="btn btn-cancel" id="closeQrModalBtn" data-i18n="btn_close" style="flex: 1; font-size: 12px;">Đóng</button>
             </div>
         </div>
     </div>
@@ -3492,9 +3525,9 @@
         <div class="modal-content game-modal-content">
             <button type="button" class="game-modal-close" id="closeGameModalBtn" aria-label="Đóng trò chơi">×</button>
             <div class="game-header">
-                <div class="fortune-badge" id="gameModalTitle">🎮 Mini-Game 🐾</div>
-                <h3 style="margin: 6px 0 2px; color: #065f46; font-size: 19px;">Hứng Pate Cho Mèo 🐟🥫</h3>
-                <p style="margin: 0; font-size: 12px; color: #047857;">Kéo bé mèo qua lại hứng cá và pate, né bom cay!</p>
+                <div class="fortune-badge" id="gameModalTitle" data-i18n="game_badge">🎮 Mini-Game 🐾</div>
+                <h3 id="gameHeading" data-i18n="game_title" style="margin: 6px 0 2px; color: #065f46; font-size: 19px;">Hứng Pate Cho Mèo 🐟🥫</h3>
+                <p id="gameSubheading" data-i18n="game_subtitle" style="margin: 0; font-size: 12px; color: #047857;">Kéo bé mèo qua lại hứng cá và pate, né bom cay!</p>
             </div>
             <div class="game-hud" id="gameHud">
                 <div class="hud-item hud-score">⭐ <span id="gameScoreText">0</span></div>
@@ -3505,12 +3538,12 @@
                 <canvas id="gameCanvas" width="360" height="420"></canvas>
                 <div class="game-overlay" id="gameStartOverlay">
                     <div class="game-overlay-icon">🐱🥣</div>
-                    <h4 style="margin: 8px 0; color: #065f46; font-size: 18px;">Sẵn sàng chưa Sen?</h4>
-                    <p style="font-size: 12.5px; color: #4b5563; margin-bottom: 14px; line-height: 1.5;">
+                    <h4 id="gameReadyTitle" data-i18n="game_ready_title" style="margin: 8px 0; color: #065f46; font-size: 18px;">Sẵn sàng chưa Sen?</h4>
+                    <p id="gameReadyDesc" data-i18n-html="game_ready_desc" style="font-size: 12.5px; color: #4b5563; margin-bottom: 14px; line-height: 1.5;">
                         🐟 Cá: <b>+5đ</b> • 🥫 Pate: <b>+10đ</b> • 🥣 Hạt: <b>+15đ</b><br>
                         💣 Bom: <b>-1 tim & -15đ</b> • Đạt <b>50đ</b> nhận ngay <b>1 lon pate</b>!
                     </p>
-                    <button type="button" class="btn btn-save" id="startGameBtn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 12px 24px; font-size: 15px; border-radius: 16px;">▶ Chơi Ngay!</button>
+                    <button type="button" class="btn btn-save" id="startGameBtn" data-i18n="btn_play_now" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 12px 24px; font-size: 15px; border-radius: 16px;">▶ Chơi Ngay!</button>
                 </div>
                 <div class="game-overlay" id="gameOverOverlay" style="display: none;">
                     <div class="game-overlay-icon" id="gameOverIcon">🎉</div>
@@ -3519,12 +3552,12 @@
                     <div class="game-high-score" id="gameHighScore">Kỷ lục: 0</div>
                     <p id="gameRewardText" style="font-size: 13px; color: #047857; font-weight: 700; margin: 8px 0 14px;"></p>
                     <div style="display: flex; gap: 8px; width: 100%; justify-content: center;">
-                        <button type="button" class="btn btn-save" id="playAgainBtn" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); flex: 2;">🔄 Chơi lại</button>
-                        <button type="button" class="btn btn-cancel" id="gameDoneBtn" style="flex: 1;">Xong</button>
+                        <button type="button" class="btn btn-save" id="playAgainBtn" data-i18n="btn_play_again" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); flex: 2;">🔄 Chơi lại</button>
+                        <button type="button" class="btn btn-cancel" id="gameDoneBtn" data-i18n="btn_done" style="flex: 1;">Xong</button>
                     </div>
                 </div>
             </div>
-            <div class="game-footer-tip">
+            <div class="game-footer-tip" data-i18n-html="game_tip">
                 👆 <em>Kéo ngón tay trên màn hình hoặc rê chuột để di chuyển bé mèo</em>
             </div>
         </div>
@@ -3784,6 +3817,8 @@
         const timelineCloseBtn = document.getElementById('timelineCloseBtn');
         let currentTimelineCatId = null;
 
+        const langToggleBtn = document.getElementById('langToggleBtn');
+        const langToggleText = document.getElementById('langToggleText');
         const qrPillBtn = document.getElementById('qrPillBtn');
         const qrModal = document.getElementById('qrModal');
         const closeQrModalBtn = document.getElementById('closeQrModalBtn');
@@ -3807,6 +3842,418 @@
         const gameRewardText = document.getElementById('gameRewardText');
         const playAgainBtn = document.getElementById('playAgainBtn');
         const gameDoneBtn = document.getElementById('gameDoneBtn');
+
+        /* ========================================================
+           Song ngữ Tiếng Việt 🇻🇳 / English 🇬🇧 (I18N)
+           ======================================================== */
+        let currentLang = 'vi';
+        try {
+            currentLang = localStorage.getItem('catMap_lang') || (navigator.language && navigator.language.startsWith('en') ? 'en' : 'vi');
+        } catch (e) {}
+
+        const I18N = {
+            vi: {
+                app_title: "Sổ Tay Bắt Mèo 🐾",
+                cat_list_btn: "🐾 Danh sách mèo",
+                cat_all: "Tất cả",
+                cat_fav: "♥ Yêu thích",
+                search_placeholder: "Tìm tên, ghi chú, vị trí",
+                filter_summary: "Bộ lọc",
+                filter_status: "Tình trạng",
+                filter_distance: "Khoảng cách",
+                filter_all: "Tất cả",
+                status_seen: "Vẫn thấy",
+                status_sos: "🚨 Cần hỗ trợ (SOS)",
+                status_hungry: "🥣 Chưa ăn hôm nay",
+                status_helped: "Đã được giúp đỡ",
+                status_not_found: "Không còn ở đây",
+                status_other: "Khác",
+                status_unknown: "Chưa cập nhật",
+                dist_500m: "Trong 500 m",
+                dist_1km: "Trong 1 km",
+                dist_3km: "Trong 3 km",
+                dist_5km: "Trong 5 km",
+                dist_10km: "Trong 10 km",
+                btn_use_location: "Dùng vị trí của tôi",
+                btn_clear_filters: "Xóa bộ lọc",
+                location_note: "Dùng vị trí của bạn để tìm mèo gần nhất.",
+                fav_login_note: "Đăng nhập để lưu và đồng bộ yêu thích theo tài khoản.",
+                guide_link: "Hướng dẫn ↗",
+                privacy_link: "Quyền riêng tư ↗",
+                contact_link: "Liên hệ / báo nội dung ↗",
+                pill_fortune: "Quẻ Mèo",
+                pill_leaderboard: "Bảng Vàng",
+                pill_game: "Hứng Pate",
+                pill_phone: "📱 Xem trên ĐT",
+                pill_install: "📲 Cài App",
+                fab_spot_cat: "🐾 Thấy Mèo!",
+                // Fortune modal
+                fortune_badge: "✨ Quẻ Mèo May Mắn ✨",
+                fortune_redraw: "🎲 Bốc quẻ khác",
+                fortune_goto: "🐾 Ghé thăm bé trên bản đồ",
+                // Wallet modal
+                wallet_badge: "🎒 Túi Đồ Của Sen 🐾",
+                wallet_title: "Chuỗi Tuần Tra & Quà Tặng",
+                wallet_desc: "Điểm danh mỗi ngày, tích lũy pate để thăng cấp danh hiệu!",
+                rank_current: "Danh hiệu hiện tại",
+                rank_progress_next: "Tiến trình lên Cấp {level}",
+                rank_max: "Đã đạt cấp tối đa! 👑",
+                stat_streak: "🔥 Chuỗi ngày",
+                stat_pate: "🐟 Pate có sẵn",
+                stat_given: "💖 Đã tặng mèo",
+                streak_title: "Tiến trình nhận quà 7 ngày (Mỗi ngày +1 🐟, ngày 7 +3 🎁)",
+                wallet_guide: "• <strong>Mỗi ngày vào app:</strong> Tự động nhận ngay 1 lon pate ảo 🐟 để giữ chuỗi.<br>• <strong>Tặng pate cho mèo:</strong> Bấm vào bất kỳ bé mèo nào trên bản đồ và nhấn <em>\"🐟 Tặng 1 lon pate\"</em> để tiếp tế yêu thương!<br>• <strong>Cài App:</strong> Thêm Sổ Tay Bắt Mèo vào màn hình chính để mở app chỉ với 1 chạm.",
+                btn_play_game: "🎮 Chơi game Hứng Pate kiếm thưởng",
+                btn_close: "Đóng",
+                btn_cancel: "Hủy",
+                // Leaderboard modal
+                leaderboard_badge: "🏆 Bảng Vàng & Radar SOS 🐾",
+                tab_idol: "👑 Mèo Idol",
+                idol_subtitle: "Top các bé mèo được yêu thích và nhận nhiều pate nhất bản đồ 💖",
+                sos_subtitle: "Danh sách mèo đang cần hỗ trợ y tế, thức ăn hoặc trạm cứu hộ 🚨",
+                // Mini game
+                game_badge: "🎮 Mini-Game 🐾",
+                game_title: "Hứng Pate Cho Mèo 🐟🥫",
+                game_subtitle: "Kéo bé mèo qua lại hứng cá và pate, né bom cay!",
+                game_ready_title: "Sẵn sàng chưa Sen?",
+                game_ready_desc: "🐟 Cá: <b>+5đ</b> • 🥫 Pate: <b>+10đ</b> • 🥣 Hạt: <b>+15đ</b><br>💣 Bom: <b>-1 tim & -15đ</b> • Đạt <b>50đ</b> nhận ngay <b>1 lon pate</b>!",
+                btn_play_now: "▶ Chơi Ngay!",
+                btn_play_again: "🔄 Chơi lại",
+                btn_done: "Xong",
+                game_tip: "👆 <em>Kéo ngón tay trên màn hình hoặc rê chuột để di chuyển bé mèo</em>",
+                // Add/Edit modal
+                add_modal_title: "Bắt được một bé! 🐾",
+                edit_modal_title: "Chỉnh sửa thông tin mèo 🐾",
+                btn_camera: "📸 Chụp ảnh ngay",
+                btn_gallery: "🖼️ Tải ảnh từ thư viện",
+                ph_name: "Tên bé mèo (ví dụ: Mimi)",
+                ph_location_name: "Tên vị trí nếu muốn tự đặt",
+                ph_note: "Mèo tam thể, đang ngủ gật...",
+                btn_add_to_map: "Thêm lên bản đồ",
+                btn_save_changes: "Lưu thay đổi",
+                // Sighting modal
+                sighting_modal_title: "📸 Gặp lại bé mèo!",
+                sighting_modal_desc: "Ghi lại khoảnh khắc hôm nay bạn gặp lại bé để lưu vào hành trình lớn lên theo từng tháng.",
+                sighting_photo_label: "Ảnh chụp hôm nay (rất nên có! 📸):",
+                sighting_date_label: "Ngày gặp lại:",
+                sighting_note_label: "Ghi chú khoảnh khắc:",
+                sighting_ph_note: "VD: Bé mập hơn nhiều, đang ngủ ngoan trên ghế đá, rất quấn người...",
+                sighting_reporter_label: "Tên của bạn (Sen):",
+                sighting_ph_reporter: "Tên hoặc biệt danh của bạn",
+                btn_sighting_submit: "Lưu kỷ niệm gặp lại 🐾",
+                // Timeline modal
+                timeline_modal_title: "📅 Hành trình lớn lên 🐾",
+                timeline_modal_subtitle: "Dòng thời gian các lần gặp gỡ của bé mèo",
+                btn_timeline_add: "📸 Hôm nay lại gặp",
+                // QR modal
+                qr_title: "📱 Mở trên điện thoại",
+                qr_desc: "Mở camera điện thoại (iPhone hoặc Android) quét mã QR bên dưới để xem ngay:",
+                qr_tip: "💡 <b>Mẹo:</b> Khi mở trên điện thoại, bấm vào biểu tượng <b>Chia sẻ / Menu ⋯</b> rồi chọn <b>\"Thêm vào Màn hình chính\"</b> để dùng như một ứng dụng độc lập nhé!",
+                btn_copy_link: "📋 Sao chép Link",
+                btn_copied: "✅ Đã chép link!",
+                // Units
+                unit_days: "ngày",
+                unit_cans: "lon",
+                // Ranks
+                rank_1_title: "Sen Tập Sự",
+                rank_1_desc: "Mới vào nghề, thấy bé mèo nào cũng muốn lại gần làm quen.",
+                rank_2_title: "Sen Chu Đáo",
+                rank_2_desc: "Đã quen mặt các bé mèo trong xóm, luôn có sẵn đồ ăn mang theo.",
+                rank_3_title: "Sen Cần Mẫn",
+                rank_3_desc: "Tuần tra chăm chỉ mỗi ngày, mèo từ xa nghe tiếng bước chân là ra đón.",
+                rank_4_title: "Đại Gia Pate",
+                rank_4_desc: "Đại gia hào phóng tiếp tế no ấm, mèo cả khu phố đều nhận mặt Sen!",
+                rank_5_title: "Bảo Mẫu Hoàng Gia",
+                rank_5_desc: "Danh xưng tối thượng! Mèo cả thành phố đồng lòng tôn làm Hoàng Thượng Phụ!",
+                // Popup & Actions
+                popup_feeding_title: "Nhật ký bữa ăn hôm nay:",
+                popup_fed_today: "✅ Đã được cho ăn hôm nay! 🐟",
+                popup_fed_none: "🥣 Hôm nay chưa ghi nhận ai cho ăn",
+                btn_feed_more: "🥣 Mình vừa cho bé ăn thêm!",
+                btn_feed_now: "🥣 Mình vừa cho bé ăn!",
+                popup_pate_count: "💖 {count} lon pate đã nhận",
+                btn_give_pate: "🐟 Tặng 1 lon pate",
+                popup_sightings_count: "🐾 Đã gặp bé: <b>{count} lần</b>",
+                btn_meet_again: "📸 Hôm nay lại gặp bé!",
+                btn_view_timeline: "📅 Xem hành trình ảnh",
+                popup_sos_alert: "🚨 BÉ ĐANG CẦN HỖ TRỢ KHẨN CẤP",
+                btn_resolve_sos: "✅ Đánh dấu bé đã an toàn / Đã được cứu",
+                btn_report_sos: "🚨 Báo bé này cần hỗ trợ khẩn cấp (SOS)",
+                btn_edit: "Sửa",
+                btn_delete: "Xóa",
+                login_to_update_status: "Đăng nhập để cập nhật tình trạng.",
+                // Toasts & Alerts
+                toast_welcome_new_sen: "🎒 Chào mừng Sen mới! Bạn được tặng 3 lon pate yêu thương 🐟",
+                toast_streak_milestone: "🌟 Xuất sắc! Chuỗi {streak} ngày tuần tra! Thưởng lớn +{bonus} lon pate 🐟",
+                toast_daily_checkin: "🎉 Điểm danh ngày mới! Bạn nhận được +{bonus} lon pate 🐟 (Chuỗi {streak} ngày 🔥)",
+                toast_rank_up: "🎉 CHÚC MỪNG BẠN ĐÃ THĂNG CẤP: {icon} {title}! 🐾👑",
+                toast_pate_empty: "😿 Bạn đã hết pate rồi! Hãy quay lại điểm danh vào ngày mai để nhận thêm nhé 🐟",
+                toast_pate_given: "🐟 Bạn vừa tặng 1 lon pate cho {name}! Cảm ơn tấm lòng của Sen ❤️ (Còn {remain} lon)",
+                toast_sos_on: "🚨 Đã bật cảnh báo cứu trợ SOS cho {name}!",
+                toast_sos_off: "✅ Đã đánh dấu {name} đã an toàn!",
+                toast_feed_thanks: "🥣 Cảm ơn Sen {feeder} đã tiếp tế cho {name}! 🐾🐟",
+                toast_sighting_saved: "🎉 Đã lưu kỷ niệm gặp lại! Bạn và cộng đồng đã gặp {name} {count} lần 🐾📸",
+                toast_game_win_reward: "🎮 Tuyệt vời! Bạn ghi được {score}đ và nhận ngay 1 lon pate vào Ví Sen 🐟",
+                toast_status_updated: "Đã cập nhật tình trạng: {status}."
+            },
+            en: {
+                app_title: "Stray Cat Notebook 🐾",
+                cat_list_btn: "🐾 Cat List",
+                cat_all: "All",
+                cat_fav: "♥ Favorites",
+                search_placeholder: "Search name, notes, location",
+                filter_summary: "Filters",
+                filter_status: "Status",
+                filter_distance: "Distance",
+                filter_all: "All",
+                status_seen: "Seen",
+                status_sos: "🚨 Needs Help (SOS)",
+                status_hungry: "🥣 Hungry today",
+                status_helped: "Helped",
+                status_not_found: "Not here anymore",
+                status_other: "Other",
+                status_unknown: "Unknown",
+                dist_500m: "Within 500 m",
+                dist_1km: "Within 1 km",
+                dist_3km: "Within 3 km",
+                dist_5km: "Within 5 km",
+                dist_10km: "Within 10 km",
+                btn_use_location: "Use my location",
+                btn_clear_filters: "Clear filters",
+                location_note: "Use your location to find the nearest cats.",
+                fav_login_note: "Sign in to sync your favorites across devices.",
+                guide_link: "Guide ↗",
+                privacy_link: "Privacy ↗",
+                contact_link: "Contact & Report ↗",
+                pill_fortune: "Cat Fortune",
+                pill_leaderboard: "Leaderboard",
+                pill_game: "Catch Pate",
+                pill_phone: "📱 On Phone",
+                pill_install: "📲 Install App",
+                fab_spot_cat: "🐾 Spotted a Cat!",
+                // Fortune modal
+                fortune_badge: "✨ Daily Cat Fortune ✨",
+                fortune_redraw: "🎲 Draw another",
+                fortune_goto: "🐾 Visit this cat on map",
+                // Wallet modal
+                wallet_badge: "🎒 Hooman's Bag 🐾",
+                wallet_title: "Patrol Streak & Gifts",
+                wallet_desc: "Check in daily, collect pate and level up your caregiver rank!",
+                rank_current: "Current Rank",
+                rank_progress_next: "Progress to Level {level}",
+                rank_max: "Max rank reached! 👑",
+                stat_streak: "🔥 Daily Streak",
+                stat_pate: "🐟 Pate Cans",
+                stat_given: "💖 Given to Cats",
+                streak_title: "7-Day Reward Track (Daily +1 🐟, Day 7 +3 🎁)",
+                wallet_guide: "• <strong>Daily check-in:</strong> Automatically receive 1 virtual pate 🐟 each day to keep your streak.<br>• <strong>Give pate to cats:</strong> Tap any cat on the map and hit <em>\"🐟 Give 1 pate\"</em> to send love!<br>• <strong>Install App:</strong> Add Stray Cat Notebook to your home screen for instant 1-tap access.",
+                btn_play_game: "🎮 Play Catch Pate Mini-Game",
+                btn_close: "Close",
+                btn_cancel: "Cancel",
+                // Leaderboard modal
+                leaderboard_badge: "🏆 Leaderboard & SOS Radar 🐾",
+                tab_idol: "👑 Idol Cats",
+                idol_subtitle: "Most loved cats receiving the most pate on the map 💖",
+                sos_subtitle: "Cats needing medical attention, food, or shelter rescue 🚨",
+                // Mini game
+                game_badge: "🎮 Mini-Game 🐾",
+                game_title: "Catch Pate For Cats 🐟🥫",
+                game_subtitle: "Drag the cat to catch fish & pate, avoid bombs!",
+                game_ready_title: "Ready, Hooman?",
+                game_ready_desc: "🐟 Fish: <b>+5pts</b> • 🥫 Pate: <b>+10pts</b> • 🥣 Bowl: <b>+15pts</b><br>💣 Bomb: <b>-1 life & -15pts</b> • Score <b>50pts</b> for <b>1 pate</b>!",
+                btn_play_now: "▶ Play Now!",
+                btn_play_again: "🔄 Play Again",
+                btn_done: "Done",
+                game_tip: "👆 <em>Drag finger on screen or move mouse to control the cat</em>",
+                // Add/Edit modal
+                add_modal_title: "Spotted a Cat! 🐾",
+                edit_modal_title: "Edit Cat Details 🐾",
+                btn_camera: "📸 Take Photo",
+                btn_gallery: "🖼️ Choose from Gallery",
+                ph_name: "Cat name (e.g., Mimi, Whiskers)",
+                ph_location_name: "Location name (optional)",
+                ph_note: "Calico cat, taking a nap...",
+                btn_add_to_map: "Add to Map",
+                btn_save_changes: "Save Changes",
+                // Sighting modal
+                sighting_modal_title: "📸 Met this cat again!",
+                sighting_modal_desc: "Record today's encounter to capture their monthly growth journey.",
+                sighting_photo_label: "Today's photo (highly recommended! 📸):",
+                sighting_date_label: "Date encountered:",
+                sighting_note_label: "Moment notes:",
+                sighting_ph_note: "e.g., Looking chunkier, napping on the park bench, super cuddly...",
+                sighting_reporter_label: "Your name (Hooman):",
+                sighting_ph_reporter: "Your name or nickname",
+                btn_sighting_submit: "Save Encounter 🐾",
+                // Timeline modal
+                timeline_modal_title: "📅 Growth Journey 🐾",
+                timeline_modal_subtitle: "Timeline of encounters with this cat",
+                btn_timeline_add: "📸 Met again today",
+                // QR modal
+                qr_title: "📱 Open on Mobile",
+                qr_desc: "Scan this QR code with your phone camera (iPhone or Android) to open instantly:",
+                qr_tip: "💡 <b>Tip:</b> On mobile, tap <b>Share / Menu ⋯</b> then choose <b>\"Add to Home Screen\"</b> to use as a standalone app!",
+                btn_copy_link: "📋 Copy Link",
+                btn_copied: "✅ Link copied!",
+                // Units
+                unit_days: "days",
+                unit_cans: "cans",
+                // Ranks
+                rank_1_title: "Novice Hooman",
+                rank_1_desc: "A beginner cat lover eager to befriend every furry neighbor.",
+                rank_2_title: "Caring Hooman",
+                rank_2_desc: "Familiar with local felines, always carrying snacks for visits.",
+                rank_3_title: "Dedicated Hooman",
+                rank_3_desc: "Patrols daily; cats hear footsteps and run out to greet you.",
+                rank_4_title: "Pate Tycoon",
+                rank_4_desc: "Generous food provider; meows erupt whenever you arrive.",
+                rank_5_title: "Royal Caregiver",
+                rank_5_desc: "Ultimate rank! Revered by cats and showered with royal blessings.",
+                // Popup & Actions
+                popup_feeding_title: "Today's Meal Log:",
+                popup_fed_today: "✅ Fed today! 🐟",
+                popup_fed_none: "🥣 No feedings recorded yet today",
+                btn_feed_more: "🥣 Fed them again just now!",
+                btn_feed_now: "🥣 I just fed this cat!",
+                popup_pate_count: "💖 {count} pate cans received",
+                btn_give_pate: "🐟 Give 1 pate",
+                popup_sightings_count: "🐾 Encounters: <b>{count} times</b>",
+                btn_meet_again: "📸 Met again today!",
+                btn_view_timeline: "📅 View Photo Journey",
+                popup_sos_alert: "🚨 THIS CAT NEEDS URGENT HELP",
+                btn_resolve_sos: "✅ Mark safe / Rescued",
+                btn_report_sos: "🚨 Report urgent assistance needed (SOS)",
+                btn_edit: "Edit",
+                btn_delete: "Delete",
+                login_to_update_status: "Sign in to update status.",
+                // Toasts & Alerts
+                toast_welcome_new_sen: "🎒 Welcome new Hooman! You received 3 starter pate cans 🐟",
+                toast_streak_milestone: "🌟 Awesome! {streak}-day patrol streak! Big reward +{bonus} pate cans 🐟",
+                toast_daily_checkin: "🎉 Daily check-in! You received +{bonus} pate can 🐟 ({streak}-day streak 🔥)",
+                toast_rank_up: "🎉 CONGRATULATIONS! YOU LEVELED UP: {icon} {title}! 🐾👑",
+                toast_pate_empty: "😿 You're out of pate! Check in tomorrow to get more 🐟",
+                toast_pate_given: "🐟 You gave 1 pate can to {name}! Thank you Hooman ❤️ ({remain} left)",
+                toast_sos_on: "🚨 SOS rescue alert turned on for {name}!",
+                toast_sos_off: "✅ {name} marked safe!",
+                toast_feed_thanks: "🥣 Thank you {feeder} for feeding {name}! 🐾🐟",
+                toast_sighting_saved: "🎉 Encounter saved! You and the community have met {name} {count} times 🐾📸",
+                toast_game_win_reward: "🎮 Awesome! You scored {score}pts and earned 1 pate can into your Bag 🐟",
+                toast_status_updated: "Status updated: {status}."
+            }
+        };
+
+        const CAT_FORTUNES_EN = [
+            { title: "Plump Belly Fortune", desc: "Wealth is flowing smoothly, just like a well-fed cat's soft and round belly after a feast!" },
+            { title: "Effortlessly Cool", desc: "Peak chill vibes today! If anything bothers you, give a gentle meow and strut away." },
+            { title: "Four-Legged Benefactor", desc: "Watch your step today — you might encounter a super adorable four-legged friend bringing good luck." },
+            { title: "Deep Sleep & Feast", desc: "Daily forecast: Full energy! Take a long stretch and a big yawn before conquering the day." },
+            { title: "Pamper Yourself", desc: "A great day to treat yourself! Enjoy a tasty meal just like giving a cat their favorite purée treat." },
+            { title: "Super Cat Intuition", desc: "Your intuition is as sharp as a cat hearing a snack bag tear open in the middle of the night!" },
+            { title: "Pink Paw Pad Blessings", desc: "Everything will be smooth, gentle, and comforting today like soft pink cat paw pads." },
+            { title: "Royal Feline Philosophy", desc: "When facing a challenge, don't fret — take a power nap first. Things will work out wonderfully!" },
+            { title: "Charming Sweetheart", desc: "Your charm is at max level today; everyone you meet will find you delightful and kind." },
+            { title: "Sumptuous Feast", desc: "Top fortune: Good food fuels good vibes! Eat heartily and stay cozy like a content kitten." },
+            { title: "Laser Leap", desc: "You're bound to make an impressive breakthrough today, as precise as a cat pouncing on a laser dot." },
+            { title: "Sunbathing Peace", desc: "Peace of mind amidst the hustle. Relax and watch the clouds drift by like a cat basking in the window sun." },
+            { title: "Blossoming Connection", desc: "Warm care is coming your way... from a dear friend or an affectionate cat bumping their head on your shoe!" },
+            { title: "Noble Demeanor", desc: "Hold your head high with pride! You radiate elegance and royal feline poise today." },
+            { title: "Alleyway Explorer", desc: "A lovely day to wander familiar corners — you'll uncover delightful little surprises." },
+            { title: "Fearless Rooftop Climb", desc: "Brave like a cat on the rooftop! Any hurdles today will be cleared with effortless grace." },
+            { title: "Purr Frequency", desc: "Your happiness frequency is peaking. Spread smiles and gentle warmth to everyone around you today." }
+        ];
+
+        function t(key, params = {}) {
+            const langDict = I18N[currentLang] || I18N['vi'];
+            let text = langDict[key] || I18N['vi'][key] || key;
+            if (params && typeof params === 'object') {
+                for (const [k, v] of Object.entries(params)) {
+                    text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+                }
+            }
+            return text;
+        }
+
+        function applyLanguage(newLang) {
+            currentLang = newLang === 'en' ? 'en' : 'vi';
+            try {
+                localStorage.setItem('catMap_lang', currentLang);
+            } catch (e) {}
+            document.documentElement.lang = currentLang;
+
+            if (langToggleText) {
+                langToggleText.textContent = currentLang === 'vi' ? 'EN' : 'VI';
+            }
+            if (langToggleBtn) {
+                langToggleBtn.title = currentLang === 'vi' ? 'Chuyển sang Tiếng Anh / Switch to English' : 'Chuyển sang Tiếng Việt / Switch to Vietnamese';
+            }
+            document.title = t('app_title');
+
+            // Cập nhật text content
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (key) el.textContent = t(key);
+            });
+
+            // Cập nhật innerHTML
+            document.querySelectorAll('[data-i18n-html]').forEach(el => {
+                const key = el.dataset.i18nHtml;
+                if (key) el.innerHTML = t(key);
+            });
+
+            // Cập nhật placeholder
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.dataset.i18nPlaceholder;
+                if (key) el.placeholder = t(key);
+            });
+
+            // Cập nhật các lựa chọn bộ lọc tình trạng
+            if (catStatusFilter) {
+                const curVal = catStatusFilter.value;
+                catStatusFilter.options[0].textContent = t('filter_all');
+                catStatusFilter.options[1].textContent = t('status_seen');
+                catStatusFilter.options[2].textContent = t('status_sos');
+                catStatusFilter.options[3].textContent = t('status_hungry');
+                catStatusFilter.options[4].textContent = t('status_helped');
+                catStatusFilter.options[5].textContent = t('status_not_found');
+                catStatusFilter.options[6].textContent = t('status_other');
+                catStatusFilter.options[7].textContent = t('status_unknown');
+                catStatusFilter.value = curVal;
+            }
+
+            // Cập nhật bộ lọc khoảng cách
+            if (catDistanceFilter) {
+                const curVal = catDistanceFilter.value;
+                catDistanceFilter.options[0].textContent = t('filter_all');
+                catDistanceFilter.options[1].textContent = t('dist_500m');
+                catDistanceFilter.options[2].textContent = t('dist_1km');
+                catDistanceFilter.options[3].textContent = t('dist_3km');
+                catDistanceFilter.options[4].textContent = t('dist_5km');
+                catDistanceFilter.options[5].textContent = t('dist_10km');
+                catDistanceFilter.value = curVal;
+            }
+
+            // Cập nhật các view động
+            updateWalletDisplay();
+            renderCatList();
+            updateDailyFortuneBadge();
+            updateSosBadge();
+
+            // Nếu modal Bảng Vàng đang mở
+            if (leaderboardModal && leaderboardModal.classList.contains('active')) {
+                if (tabIdolBtn && tabIdolBtn.classList.contains('active')) renderIdolList();
+                else renderSosList();
+            }
+
+            // Nếu modal Quẻ Mèo đang mở
+            if (fortuneModal && fortuneModal.classList.contains('active')) {
+                openFortuneModal(false);
+            }
+
+            // Nếu modal Dòng thời gian đang mở
+            if (timelineModal && timelineModal.classList.contains('active') && currentTimelineCatId) {
+                openTimelineModal(currentTimelineCatId);
+            }
+        }
 
         const CAT_FORTUNES = [
             { title: "Đại Cát Bụng Mỡ", desc: "Tài lộc hôm nay rủng rỉnh như chiếc bụng mỡ của mèo sau bữa tiệc pate thượng hạng!" },
@@ -3841,13 +4288,14 @@
             const diffSec = Math.floor(diffMs / 1000);
             const diffMin = Math.floor(diffSec / 60);
             const diffHour = Math.floor(diffMin / 60);
-            const timeStr = date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            const locale = currentLang === 'vi' ? 'vi-VN' : 'en-US';
+            const timeStr = date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
 
-            if (diffMin < 1) return 'Vừa mới xong';
-            if (diffMin < 60) return `${diffMin} phút trước (${timeStr})`;
-            if (diffHour < 24 && isSameDay(date, now)) return `${diffHour} giờ trước (${timeStr})`;
-            const dateStr = date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
-            return `${dateStr} lúc ${timeStr}`;
+            if (diffMin < 1) return currentLang === 'vi' ? 'Vừa mới xong' : 'Just now';
+            if (diffMin < 60) return currentLang === 'vi' ? `${diffMin} phút trước (${timeStr})` : `${diffMin}m ago (${timeStr})`;
+            if (diffHour < 24 && isSameDay(date, now)) return currentLang === 'vi' ? `${diffHour} giờ trước (${timeStr})` : `${diffHour}h ago (${timeStr})`;
+            const dateStr = date.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' });
+            return currentLang === 'vi' ? `${dateStr} lúc ${timeStr}` : `${dateStr} at ${timeStr}`;
         }
         const previewContext = photoPreviewCanvas.getContext('2d');
         let sourceImage = null;
@@ -3983,9 +4431,11 @@
             const selected = favoriteCatIds.has(button.dataset.catFavorite);
             button.disabled = favoriteLoading || favoriteSaving || Boolean(currentUser && favoriteSyncError);
             button.setAttribute('aria-busy', String(favoriteLoading || favoriteSaving));
-            button.textContent = selected ? '♥ Yêu thích' : '♡ Yêu thích';
+            button.textContent = selected
+                ? (currentLang === 'vi' ? '♥ Yêu thích' : '♥ Favorited')
+                : (currentLang === 'vi' ? '♡ Yêu thích' : '♡ Favorite');
             button.setAttribute('aria-pressed', String(selected));
-            button.setAttribute('aria-label', `${selected ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}: ${button.dataset.catName}`);
+            button.setAttribute('aria-label', `${selected ? (currentLang === 'vi' ? 'Bỏ yêu thích' : 'Unfavorite') : (currentLang === 'vi' ? 'Thêm vào yêu thích' : 'Favorite')}: ${button.dataset.catName}`);
         }
 
         function refreshCatFavoriteViews() {
@@ -4140,14 +4590,14 @@
                 note.className = 'cat-popup-note';
                 const label = document.createElement('b');
                 label.className = 'cat-popup-note-label';
-                label.textContent = 'Ghi chú: ';
+                label.textContent = currentLang === 'vi' ? 'Ghi chú: ' : 'Notes: ';
                 note.append(label, document.createTextNode(cat.note));
                 entry.appendChild(note);
 
                 if (cat.approximate) {
                     const locationNote = document.createElement('div');
                     locationNote.className = 'cat-popup-approximate';
-                    locationNote.textContent = 'Vị trí ước lượng (tâm bản đồ, không phải GPS).';
+                    locationNote.textContent = currentLang === 'vi' ? 'Vị trí ước lượng (tâm bản đồ, không phải GPS).' : 'Approximate location (map center, not GPS).';
                     entry.appendChild(locationNote);
                 }
 
@@ -4160,7 +4610,7 @@
                 const feedingIcon = document.createElement('span');
                 feedingIcon.textContent = '🥣 ';
                 const feedingTitle = document.createElement('b');
-                feedingTitle.textContent = 'Nhật ký bữa ăn hôm nay:';
+                feedingTitle.textContent = t('popup_feeding_title');
                 feedingHeader.append(feedingIcon, feedingTitle);
                 feedingSection.appendChild(feedingHeader);
 
@@ -4172,17 +4622,21 @@
 
                 const statusTag = document.createElement('div');
                 statusTag.className = 'feeding-status-tag ' + (isFedToday ? 'fed-today' : 'fed-none');
-                statusTag.textContent = isFedToday ? '✅ Đã được cho ăn hôm nay! 🐟' : '🥣 Hôm nay chưa ghi nhận ai cho ăn';
+                statusTag.textContent = isFedToday ? t('popup_fed_today') : t('popup_fed_none');
                 feedingInfo.appendChild(statusTag);
 
                 const detail = document.createElement('div');
                 detail.className = 'feeding-detail';
                 if (isFedToday) {
-                    detail.textContent = `Lần gần nhất: ${formatRelativeTime(lastFedTime)} bởi ${cat.last_fed_by || 'Một Sen tốt bụng'}${cat.fed_count ? ` (${cat.fed_count} lần tiếp tế)` : ''}`;
+                    detail.textContent = currentLang === 'vi'
+                        ? `Lần gần nhất: ${formatRelativeTime(lastFedTime)} bởi ${cat.last_fed_by || 'Một Sen tốt bụng'}${cat.fed_count ? ` (${cat.fed_count} lần tiếp tế)` : ''}`
+                        : `Most recent: ${formatRelativeTime(lastFedTime)} by ${cat.last_fed_by || 'A kind Hooman'}${cat.fed_count ? ` (${cat.fed_count} feedings)` : ''}`;
                 } else if (lastFedTime && Number.isFinite(lastFedTime.getTime())) {
-                    detail.textContent = `Lần ăn trước: ${formatRelativeTime(lastFedTime)}${cat.last_fed_by ? ` (bởi ${cat.last_fed_by})` : ''}`;
+                    detail.textContent = currentLang === 'vi'
+                        ? `Lần ăn trước: ${formatRelativeTime(lastFedTime)}${cat.last_fed_by ? ` (bởi ${cat.last_fed_by})` : ''}`
+                        : `Previous meal: ${formatRelativeTime(lastFedTime)}${cat.last_fed_by ? ` (by ${cat.last_fed_by})` : ''}`;
                 } else {
-                    detail.textContent = 'Bé đang đợi một Sen ghé thăm tiếp tế!';
+                    detail.textContent = currentLang === 'vi' ? 'Bé đang đợi một Sen ghé thăm tiếp tế!' : 'Waiting for a kind Hooman to visit and feed!';
                 }
                 feedingInfo.appendChild(detail);
                 feedingSection.appendChild(feedingInfo);
@@ -4191,7 +4645,7 @@
                 feedButton.type = 'button';
                 feedButton.className = 'cat-feed-btn';
                 feedButton.dataset.catFeed = cat.id;
-                feedButton.textContent = isFedToday ? '🥣 Mình vừa cho bé ăn thêm!' : '🥣 Mình vừa cho bé ăn!';
+                feedButton.textContent = isFedToday ? t('btn_feed_more') : t('btn_feed_now');
                 feedingSection.appendChild(feedButton);
 
                 // Hàng tặng pate yêu thương
@@ -4200,13 +4654,13 @@
 
                 const pateCountText = document.createElement('span');
                 pateCountText.className = 'cat-pate-badge';
-                pateCountText.textContent = `💖 ${cat.pate_count || 0} lon pate đã nhận`;
+                pateCountText.textContent = t('popup_pate_count', { count: cat.pate_count || 0 });
 
                 const givePateBtn = document.createElement('button');
                 givePateBtn.type = 'button';
                 givePateBtn.className = 'cat-give-pate-btn';
                 givePateBtn.dataset.catPate = cat.id;
-                givePateBtn.textContent = '🐟 Tặng 1 lon pate';
+                givePateBtn.textContent = t('btn_give_pate');
 
                 pateRow.append(pateCountText, givePateBtn);
                 feedingSection.appendChild(pateRow);
@@ -4223,7 +4677,7 @@
                 const sightingsTitle = document.createElement('span');
                 sightingsTitle.className = 'cat-sightings-title';
                 const totalSightings = Math.max(1, Number(cat.sightings_count) || 1);
-                sightingsTitle.innerHTML = `🐾 Đã gặp bé: <b>${totalSightings} lần</b>`;
+                sightingsTitle.innerHTML = t('popup_sightings_count', { count: totalSightings });
 
                 sightingsHeader.appendChild(sightingsTitle);
                 sightingsSection.appendChild(sightingsHeader);
@@ -4235,13 +4689,13 @@
                 addSightingBtn.type = 'button';
                 addSightingBtn.className = 'cat-sighting-btn btn-meet-again';
                 addSightingBtn.dataset.catSightingAdd = cat.id;
-                addSightingBtn.textContent = '📸 Hôm nay lại gặp bé!';
+                addSightingBtn.textContent = t('btn_meet_again');
 
                 const viewTimelineBtn = document.createElement('button');
                 viewTimelineBtn.type = 'button';
                 viewTimelineBtn.className = 'cat-sighting-btn btn-view-timeline';
                 viewTimelineBtn.dataset.catTimeline = cat.id;
-                viewTimelineBtn.textContent = '📅 Xem hành trình ảnh';
+                viewTimelineBtn.textContent = t('btn_view_timeline');
 
                 sightingsActionRow.append(addSightingBtn, viewTimelineBtn);
                 sightingsSection.appendChild(sightingsActionRow);
@@ -4253,14 +4707,14 @@
                 if (cat.is_sos) {
                     const sosTag = document.createElement('div');
                     sosTag.className = 'sos-badge-tag';
-                    sosTag.textContent = '🚨 BÉ ĐANG CẦN HỖ TRỢ KHẨN CẤP';
+                    sosTag.textContent = t('popup_sos_alert');
                     sosSection.appendChild(sosTag);
 
                     if (cat.sos_note) {
                         const sosNoteText = document.createElement('div');
                         sosNoteText.style.fontWeight = '700';
                         sosNoteText.style.marginBottom = '4px';
-                        sosNoteText.textContent = `Ghi chú cứu trợ: ${cat.sos_note}`;
+                        sosNoteText.textContent = `${currentLang === 'vi' ? 'Ghi chú cứu trợ' : 'Rescue note'}: ${cat.sos_note}`;
                         sosSection.appendChild(sosNoteText);
                     }
 
@@ -4268,14 +4722,14 @@
                     resolveBtn.type = 'button';
                     resolveBtn.className = 'cat-sos-toggle-btn btn-resolve';
                     resolveBtn.dataset.catSosResolve = cat.id;
-                    resolveBtn.textContent = '✅ Đánh dấu bé đã an toàn / Đã được cứu';
+                    resolveBtn.textContent = t('btn_resolve_sos');
                     sosSection.appendChild(resolveBtn);
                 } else {
                     const reportSosBtn = document.createElement('button');
                     reportSosBtn.type = 'button';
                     reportSosBtn.className = 'cat-sos-toggle-btn';
                     reportSosBtn.dataset.catSosReport = cat.id;
-                    reportSosBtn.textContent = '🚨 Báo bé này cần hỗ trợ khẩn cấp (SOS)';
+                    reportSosBtn.textContent = t('btn_report_sos');
                     sosSection.appendChild(reportSosBtn);
                 }
                 entry.appendChild(sosSection);
@@ -4292,10 +4746,10 @@
                     const statusActions = document.createElement('div');
                     statusActions.className = 'cat-status-actions';
                     [
-                        ['seen', 'Vẫn thấy'],
-                        ['helped', 'Đã được giúp'],
-                        ['not_found', 'Không còn ở đây'],
-                        ['other', 'Khác']
+                        ['seen', t('status_seen')],
+                        ['helped', t('status_helped')],
+                        ['not_found', t('status_not_found')],
+                        ['other', t('status_other')]
                     ].forEach(([value, labelText]) => {
                         const button = document.createElement('button');
                         button.type = 'button';
@@ -4311,27 +4765,27 @@
                     otherForm.hidden = true;
                     const otherInput = document.createElement('textarea');
                     otherInput.maxLength = 200;
-                    otherInput.placeholder = 'Nhập tình trạng khác (tối đa 200 ký tự)';
-                    otherInput.setAttribute('aria-label', 'Nội dung tình trạng khác');
+                    otherInput.placeholder = currentLang === 'vi' ? 'Nhập tình trạng khác (tối đa 200 ký tự)' : 'Enter other status (max 200 chars)';
+                    otherInput.setAttribute('aria-label', currentLang === 'vi' ? 'Nội dung tình trạng khác' : 'Other status content');
                     otherInput.dataset.catStatusNote = cat.id;
                     otherInput.value = cat.current_status === 'other' ? cat.status_note || '' : '';
                     const saveOtherButton = document.createElement('button');
                     saveOtherButton.type = 'button';
-                    saveOtherButton.textContent = 'Lưu tình trạng';
+                    saveOtherButton.textContent = currentLang === 'vi' ? 'Lưu tình trạng' : 'Save status';
                     saveOtherButton.dataset.catStatusSubmit = cat.id;
                     otherForm.append(otherInput, saveOtherButton);
                     status.appendChild(otherForm);
                 } else {
                     const loginNote = document.createElement('small');
                     loginNote.className = 'cat-status-login-note';
-                    loginNote.textContent = 'Đăng nhập để cập nhật tình trạng.';
+                    loginNote.textContent = t('login_to_update_status');
                     status.appendChild(loginNote);
                 }
                 const statusUpdatedAt = cat.status_updated_at ? new Date(cat.status_updated_at) : null;
                 if (statusUpdatedAt && Number.isFinite(statusUpdatedAt.getTime())) {
                     const updatedTime = document.createElement('div');
                     updatedTime.className = 'cat-status-updated';
-                    updatedTime.textContent = `Cập nhật ${statusUpdatedAt.toLocaleString('vi-VN', {
+                    updatedTime.textContent = `${currentLang === 'vi' ? 'Cập nhật' : 'Updated'} ${statusUpdatedAt.toLocaleString(currentLang === 'vi' ? 'vi-VN' : 'en-US', {
                         dateStyle: 'short',
                         timeStyle: 'short'
                     })}`;
@@ -4344,12 +4798,12 @@
                     actions.className = 'cat-record-actions';
                     const editButton = document.createElement('button');
                     editButton.type = 'button';
-                    editButton.textContent = 'Sửa';
+                    editButton.textContent = t('btn_edit');
                     editButton.dataset.catAction = 'edit';
                     editButton.dataset.catId = cat.id;
                     const deleteButton = document.createElement('button');
                     deleteButton.type = 'button';
-                    deleteButton.textContent = 'Xóa';
+                    deleteButton.textContent = t('btn_delete');
                     deleteButton.dataset.catAction = 'delete';
                     deleteButton.dataset.catId = cat.id;
                     actions.append(editButton, deleteButton);
@@ -4458,13 +4912,7 @@
         }
 
         function getCatStatusLabel(status) {
-            return ({
-                seen: 'Vẫn thấy',
-                helped: 'Đã được giúp đỡ',
-                not_found: 'Không còn ở đây',
-                other: 'Khác',
-                unknown: 'Chưa cập nhật'
-            })[status] || 'Chưa cập nhật';
+            return t('status_' + (status || 'unknown'));
         }
 
         async function uploadCatImage(image, catId, collection = 'cats') {
@@ -5119,12 +5567,12 @@
 
         function updateCatLocationControls() {
             catLocationButton.disabled = catLocationLoading;
-            catLocationButton.textContent = catLocationLoading ? 'Đang lấy vị trí…' :
-                catFilterLocation ? 'Cập nhật vị trí' : 'Dùng vị trí của tôi';
-            catLocationNote.textContent = catLocationLoading ? 'Đang xác định vị trí của bạn…' :
+            catLocationButton.textContent = catLocationLoading ? (currentLang === 'vi' ? 'Đang lấy vị trí…' : 'Getting location…') :
+                catFilterLocation ? (currentLang === 'vi' ? 'Cập nhật vị trí' : 'Update location') : t('btn_use_location');
+            catLocationNote.textContent = catLocationLoading ? (currentLang === 'vi' ? 'Đang xác định vị trí của bạn…' : 'Locating your device…') :
                 catLocationError || (catFilterLocation
-                    ? 'Xếp gần nhất trước. Khoảng cách tính theo đường thẳng từ vị trí của bạn.'
-                    : 'Dùng vị trí của bạn để tìm mèo gần nhất.');
+                    ? (currentLang === 'vi' ? 'Xếp gần nhất trước. Khoảng cách tính theo đường thẳng từ vị trí của bạn.' : 'Nearest first. Straight-line distance from your location.')
+                    : t('location_note'));
         }
 
         function requestCatFilterLocation(setView = false) {
@@ -5139,25 +5587,25 @@
         function renderCatList(results = getFilteredCatResults()) {
             const hasFilters = Boolean(catSearchInput.value.trim() || catStatusFilter.value || catDistanceFilter.value);
             const filterCount = Number(Boolean(catStatusFilter.value)) + Number(Boolean(catDistanceFilter.value));
-            catFiltersSummary.textContent = filterCount ? `Bộ lọc (${filterCount})` : 'Bộ lọc';
+            catFiltersSummary.textContent = filterCount ? `${t('filter_summary')} (${filterCount})` : t('filter_summary');
             const favoriteCount = cats.filter(cat => favoriteCatIds.has(cat.id)).length;
-            catAllTab.textContent = `Tất cả (${cats.length})`;
-            catFavoritesTab.textContent = `♥ Yêu thích (${favoriteCount})`;
+            catAllTab.textContent = `${t('cat_all')} (${cats.length})`;
+            catFavoritesTab.textContent = `${t('cat_fav')} (${favoriteCount})`;
             catAllTab.setAttribute('aria-pressed', String(!favoritesOnly));
             catFavoritesTab.setAttribute('aria-pressed', String(favoritesOnly));
             catFavoritesNote.hidden = !favoritesOnly && !favoriteSyncError;
-            catFavoritesNote.textContent = !currentUser ? 'Đăng nhập để lưu và đồng bộ yêu thích theo tài khoản.'
-                : favoriteLoading ? 'Đang tải yêu thích từ tài khoản…'
-                    : favoriteSaving ? 'Đang lưu yêu thích vào tài khoản…'
-                        : favoriteSyncError || 'Yêu thích được lưu theo tài khoản và đồng bộ giữa các thiết bị.';
-            catListToggle.textContent = favoritesOnly ? `♥ Yêu thích (${results.length}/${favoriteCount})` : hasFilters
-                ? `🐾 Danh sách mèo (${results.length}/${cats.length})`
-                : `🐾 Danh sách mèo (${cats.length})`;
+            catFavoritesNote.textContent = !currentUser ? t('fav_login_note')
+                : favoriteLoading ? (currentLang === 'vi' ? 'Đang tải yêu thích từ tài khoản…' : 'Loading favorites…')
+                    : favoriteSaving ? (currentLang === 'vi' ? 'Đang lưu yêu thích vào tài khoản…' : 'Saving favorites…')
+                        : favoriteSyncError || (currentLang === 'vi' ? 'Yêu thích được lưu theo tài khoản và đồng bộ giữa các thiết bị.' : 'Favorites are synced across your devices.');
+            catListToggle.textContent = favoritesOnly ? `${t('cat_fav')} (${results.length}/${favoriteCount})` : hasFilters
+                ? `${t('cat_list_btn')} (${results.length}/${cats.length})`
+                : `${t('cat_list_btn')} (${cats.length})`;
             catClearFiltersButton.disabled = !hasFilters;
             catFilterSummary.textContent = catDistanceFilter.value && !catFilterLocation
-                ? 'Cần vị trí của bạn để lọc theo khoảng cách.'
-                : favoritesOnly ? `Hiển thị ${results.length}/${favoriteCount} mèo yêu thích trên bản đồ.`
-                    : `Hiển thị ${results.length}/${cats.length} mèo trên bản đồ.`;
+                ? (currentLang === 'vi' ? 'Cần vị trí của bạn để lọc theo khoảng cách.' : 'Location required to filter by distance.')
+                : favoritesOnly ? (currentLang === 'vi' ? `Hiển thị ${results.length}/${favoriteCount} mèo yêu thích trên bản đồ.` : `Showing ${results.length}/${favoriteCount} favorite cats on map.`)
+                    : (currentLang === 'vi' ? `Hiển thị ${results.length}/${cats.length} mèo trên bản đồ.` : `Showing ${results.length}/${cats.length} cats on map.`);
             stopObservingCatLocations(catSearchResults);
             catSearchResults.replaceChildren();
             if (!results.length) {
@@ -5755,13 +6203,15 @@
             const wallet = getSenWallet();
             wallet.fedCount = (wallet.fedCount || 0) + 1;
             saveSenWallet(wallet);
-            showAppStatus(`🥣 Cảm ơn Sen ${feederName} đã tiếp tế cho ${cat.name || 'bé mèo'}! 🐾🐟`);
+            showAppStatus(t('toast_feed_thanks', { feeder: feederName, name: cat.name || (currentLang === 'en' ? 'cat' : 'bé mèo') }));
         }
 
         const SEN_RANKS = [
             {
                 id: 'rank_1',
                 title: 'Sen Tập Sự',
+                titleKey: 'rank_1_title',
+                descKey: 'rank_1_desc',
                 icon: '🌱',
                 minStreak: 1,
                 minGiven: 0,
@@ -5773,6 +6223,8 @@
             {
                 id: 'rank_2',
                 title: 'Sen Chu Đáo',
+                titleKey: 'rank_2_title',
+                descKey: 'rank_2_desc',
                 icon: '🐾',
                 minStreak: 3,
                 minGiven: 3,
@@ -5784,6 +6236,8 @@
             {
                 id: 'rank_3',
                 title: 'Sen Cần Mẫn',
+                titleKey: 'rank_3_title',
+                descKey: 'rank_3_desc',
                 icon: '🔥',
                 minStreak: 7,
                 minGiven: 10,
@@ -5795,6 +6249,8 @@
             {
                 id: 'rank_4',
                 title: 'Đại Gia Pate',
+                titleKey: 'rank_4_title',
+                descKey: 'rank_4_desc',
                 icon: '🐟',
                 minStreak: 14,
                 minGiven: 25,
@@ -5806,6 +6262,8 @@
             {
                 id: 'rank_5',
                 title: 'Bảo Mẫu Hoàng Gia',
+                titleKey: 'rank_5_title',
+                descKey: 'rank_5_desc',
                 icon: '👑',
                 minStreak: 30,
                 minGiven: 50,
@@ -5830,17 +6288,25 @@
             }
 
             let progress = 100;
-            let progressText = 'Đã đạt danh hiệu tối cao! 👑';
+            let progressText = currentLang === 'en' ? 'Max rank reached! 👑' : 'Đã đạt danh hiệu tối cao! 👑';
             if (nextRank) {
                 const streakPct = Math.min(100, Math.round((streak / nextRank.minStreak) * 100));
                 const givenPct = Math.min(100, Math.round((totalGiven / nextRank.minGiven) * 100));
                 progress = Math.min(100, Math.max(streakPct, givenPct));
                 const streakRemain = Math.max(0, nextRank.minStreak - streak);
                 const givenRemain = Math.max(0, nextRank.minGiven - totalGiven);
-                progressText = `Cần thêm ${streakRemain} ngày 🔥 hoặc ${givenRemain} lon 🐟 để lên Cấp ${nextRank.id.replace('rank_', '')}`;
+                progressText = currentLang === 'en'
+                    ? `Need ${streakRemain} more days 🔥 or ${givenRemain} cans 🐟 for Level ${nextRank.id.replace('rank_', '')}`
+                    : `Cần thêm ${streakRemain} ngày 🔥 hoặc ${givenRemain} lon 🐟 để lên Cấp ${nextRank.id.replace('rank_', '')}`;
             }
 
-            return { currentRank, nextRank, progress, progressText };
+            const localizedCurrentRank = {
+                ...currentRank,
+                title: t(currentRank.titleKey) || currentRank.title,
+                desc: t(currentRank.descKey) || currentRank.desc
+            };
+
+            return { currentRank: localizedCurrentRank, nextRank, progress, progressText };
         }
 
         function getSenClientId() {
@@ -5939,9 +6405,9 @@
 
             if (streakCountText) streakCountText.textContent = wallet.streak || 1;
             if (pateCountText) pateCountText.textContent = wallet.pate || 0;
-            if (walletStreakValue) walletStreakValue.textContent = `${wallet.streak || 1} ngày`;
-            if (walletPateValue) walletPateValue.textContent = `${wallet.pate || 0} lon`;
-            if (walletTotalGivenValue) walletTotalGivenValue.textContent = `${wallet.totalGiven || 0} lon`;
+            if (walletStreakValue) walletStreakValue.textContent = `${wallet.streak || 1} ${t('unit_days')}`;
+            if (walletPateValue) walletPateValue.textContent = `${wallet.pate || 0} ${t('unit_cans')}`;
+            if (walletTotalGivenValue) walletTotalGivenValue.textContent = `${wallet.totalGiven || 0} ${t('unit_cans')}`;
 
             if (senRankIcon) senRankIcon.textContent = rankInfo.currentRank.icon;
             if (senRankTitle) {
@@ -5976,7 +6442,7 @@
                 wallet.streak = 1;
                 wallet.pate = Math.max(wallet.pate || 0, 3);
                 saveSenWallet(wallet);
-                showAppStatus('🎒 Chào mừng Sen mới! Bạn được tặng 3 lon pate yêu thương 🐟');
+                showAppStatus(t('toast_welcome_new_sen'));
                 return;
             }
 
@@ -6008,9 +6474,9 @@
             saveSenWallet(wallet);
 
             if (wallet.streak % 7 === 0) {
-                showAppStatus(`🌟 Xuất sắc! Chuỗi ${wallet.streak} ngày tuần tra! Thưởng lớn +${bonus} lon pate 🐟`);
+                showAppStatus(t('toast_streak_milestone', { streak: wallet.streak, bonus }));
             } else {
-                showAppStatus(`🎉 Điểm danh ngày mới! Bạn nhận được +${bonus} lon pate 🐟 (Chuỗi ${wallet.streak} ngày 🔥)`);
+                showAppStatus(t('toast_daily_checkin', { bonus, streak: wallet.streak }));
             }
         }
 
@@ -6029,13 +6495,13 @@
         async function giveCatPate(catId) {
             const wallet = getSenWallet();
             if ((wallet.pate || 0) <= 0) {
-                showAppStatus('😿 Bạn đã hết pate rồi! Hãy quay lại điểm danh vào ngày mai để nhận thêm nhé 🐟');
+                showAppStatus(t('toast_pate_empty'));
                 openSenWalletModal();
                 return;
             }
 
             const cat = cats.find(item => item.id === catId);
-            if (!cat) throw new Error('Không tìm thấy bản ghi mèo.');
+            if (!cat) throw new Error(currentLang === 'en' ? 'Cat record not found.' : 'Không tìm thấy bản ghi mèo.');
 
             const prevRank = calculateSenRank(wallet.streak, wallet.totalGiven).currentRank;
             wallet.pate -= 1;
@@ -6046,7 +6512,7 @@
             saveSenWallet(wallet);
 
             if (newRankInfo.currentRank.id !== prevRank.id) {
-                showAppStatus(`🎉 CHÚC MỪNG BẠN ĐÃ THĂNG CẤP: ${newRankInfo.currentRank.icon} ${newRankInfo.currentRank.title}! 🐾👑`);
+                showAppStatus(t('toast_rank_up', { icon: newRankInfo.currentRank.icon, title: newRankInfo.currentRank.title }));
             }
 
             const newPateCount = (Number(cat.pate_count) || 0) + 1;
@@ -6076,12 +6542,12 @@
             if (updatedCat) {
                 openSingleCatPopup(updatedCat);
             }
-            showAppStatus(`🐟 Bạn vừa tặng 1 lon pate cho ${cat.name || 'bé mèo'}! Cảm ơn tấm lòng của Sen ❤️ (Còn ${wallet.pate} lon)`);
+            showAppStatus(t('toast_pate_given', { name: cat.name || (currentLang === 'en' ? 'cat' : 'bé mèo'), remain: wallet.pate }));
         }
 
         async function toggleCatSos(catId, isSos, sosNote = '') {
             const cat = cats.find(item => item.id === catId);
-            if (!cat) throw new Error('Không tìm thấy bản ghi mèo.');
+            if (!cat) throw new Error(currentLang === 'en' ? 'Cat record not found.' : 'Không tìm thấy bản ghi mèo.');
 
             const note = typeof sosNote === 'string' ? sosNote.trim().slice(0, 200) : '';
 
@@ -6114,7 +6580,9 @@
             if (updatedCat) {
                 openSingleCatPopup(updatedCat);
             }
-            showAppStatus(isSos ? `🚨 Đã bật cảnh báo cứu trợ SOS cho ${cat.name || 'bé mèo'}!` : `✅ Đã đánh dấu ${cat.name || 'bé mèo'} đã an toàn!`);
+            showAppStatus(isSos
+                ? t('toast_sos_on', { name: cat.name || (currentLang === 'en' ? 'cat' : 'bé mèo') })
+                : t('toast_sos_off', { name: cat.name || (currentLang === 'en' ? 'cat' : 'bé mèo') }));
         }
 
         function updateSosBadge() {
@@ -6155,7 +6623,7 @@
                 emptyEl.style.textAlign = 'center';
                 emptyEl.style.padding = '24px 12px';
                 emptyEl.style.color = '#8c7377';
-                emptyEl.textContent = 'Chưa có bé mèo nào trên bản đồ để xếp hạng.';
+                emptyEl.textContent = currentLang === 'en' ? 'No cats on the map to rank yet.' : 'Chưa có bé mèo nào trên bản đồ để xếp hạng.';
                 idolList.appendChild(emptyEl);
                 return;
             }
@@ -6193,7 +6661,7 @@
 
                 const nameEl = document.createElement('div');
                 nameEl.className = 'leaderboard-card-name';
-                nameEl.textContent = cat.name || 'Bé mèo ẩn danh';
+                nameEl.textContent = cat.name || (currentLang === 'en' ? 'Anonymous Cat' : 'Bé mèo ẩn danh');
 
                 const locEl = document.createElement('div');
                 locEl.className = 'leaderboard-card-location';
@@ -6208,7 +6676,7 @@
 
                 const fedEl = document.createElement('span');
                 fedEl.className = 'metric-fed';
-                fedEl.textContent = `🥣 ${cat.fed_count || 0} lần ăn`;
+                fedEl.textContent = currentLang === 'en' ? `🥣 ${cat.fed_count || 0} meals` : `🥣 ${cat.fed_count || 0} lần ăn`;
 
                 metricsEl.append(pateEl, fedEl);
                 infoEl.append(nameEl, locEl, metricsEl);
@@ -6216,7 +6684,7 @@
                 const actionBtn = document.createElement('button');
                 actionBtn.type = 'button';
                 actionBtn.className = 'leaderboard-card-btn';
-                actionBtn.textContent = '🐾 Đến chỗ';
+                actionBtn.textContent = currentLang === 'en' ? '🐾 Locate' : '🐾 Đến chỗ';
                 actionBtn.onclick = () => {
                     closeLeaderboardModal();
                     map.flyTo([cat.lat, cat.lng], Math.max(map.getZoom(), 17), { duration: 1.2 });
@@ -6239,7 +6707,9 @@
                 emptyEl.style.padding = '28px 12px';
                 emptyEl.style.color = '#059669';
                 emptyEl.style.fontWeight = '700';
-                emptyEl.innerHTML = '🎉 Hiện không có bé mèo nào cần cứu trợ khẩn cấp!<br><span style="font-size:12px; font-weight:normal; color:#6b7280;">Mọi bé mèo trên bản đồ đều đang an toàn. Cảm ơn cộng đồng Sen! ❤️</span>';
+                emptyEl.innerHTML = currentLang === 'en'
+                    ? '🎉 No cats currently need emergency rescue!<br><span style="font-size:12px; font-weight:normal; color:#6b7280;">Every cat on the map is safe. Thank you amazing hoomans! ❤️</span>'
+                    : '🎉 Hiện không có bé mèo nào cần cứu trợ khẩn cấp!<br><span style="font-size:12px; font-weight:normal; color:#6b7280;">Mọi bé mèo trên bản đồ đều đang an toàn. Cảm ơn cộng đồng Sen! ❤️</span>';
                 sosList.appendChild(emptyEl);
                 return;
             }
@@ -6265,11 +6735,11 @@
 
                 const tagEl = document.createElement('div');
                 tagEl.className = 'sos-badge-tag';
-                tagEl.textContent = '🚨 CẦN HỖ TRỢ';
+                tagEl.textContent = currentLang === 'en' ? '🚨 NEEDS RESCUE' : '🚨 CẦN HỖ TRỢ';
 
                 const nameEl = document.createElement('div');
                 nameEl.className = 'leaderboard-card-name';
-                nameEl.textContent = cat.name || 'Bé mèo SOS';
+                nameEl.textContent = cat.name || (currentLang === 'en' ? 'SOS Cat' : 'Bé mèo SOS');
 
                 const locEl = document.createElement('div');
                 locEl.className = 'leaderboard-card-location';
@@ -6280,7 +6750,9 @@
                 noteEl.style.color = '#dc2626';
                 noteEl.style.fontWeight = '700';
                 noteEl.style.marginTop = '2px';
-                noteEl.textContent = cat.sos_note ? `Ghi chú: ${cat.sos_note}` : 'Được cộng đồng báo cần cứu trợ!';
+                noteEl.textContent = cat.sos_note
+                    ? (currentLang === 'en' ? `Note: ${cat.sos_note}` : `Ghi chú: ${cat.sos_note}`)
+                    : (currentLang === 'en' ? 'Reported needing rescue by community!' : 'Được cộng đồng báo cần cứu trợ!');
 
                 infoEl.append(tagEl, nameEl, locEl, noteEl);
 
@@ -6288,7 +6760,7 @@
                 actionBtn.type = 'button';
                 actionBtn.className = 'leaderboard-card-btn';
                 actionBtn.style.background = '#ef4444';
-                actionBtn.textContent = '🚨 Cứu trợ';
+                actionBtn.textContent = currentLang === 'en' ? '🚨 Rescue' : '🚨 Cứu trợ';
                 actionBtn.onclick = () => {
                     closeLeaderboardModal();
                     map.flyTo([cat.lat, cat.lng], Math.max(map.getZoom(), 17), { duration: 1.2 });
@@ -6635,22 +7107,27 @@
         function openFortuneModal(forceRandom = false) {
             const today = new Date();
             const todayStr = today.toLocaleDateString('en-CA');
-            fortuneDate.textContent = today.toLocaleDateString('vi-VN', {
+            const localeStr = currentLang === 'en' ? 'en-US' : 'vi-VN';
+            fortuneDate.textContent = today.toLocaleDateString(localeStr, {
                 weekday: 'long',
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric'
             });
 
+            const fortunesList = currentLang === 'en' ? CAT_FORTUNES_EN : CAT_FORTUNES;
+
             if (!cats.length) {
                 currentFortuneCat = null;
-                fortuneCatName.textContent = 'Mèo May Mắn Sổ Tay 🐾';
-                fortuneCatLoc.textContent = '📍 Khắp mọi nẻo đường';
+                fortuneCatName.textContent = currentLang === 'en' ? 'Lucky Stray Cat 🐾' : 'Mèo May Mắn Sổ Tay 🐾';
+                fortuneCatLoc.textContent = currentLang === 'en' ? '📍 All across town' : '📍 Khắp mọi nẻo đường';
                 fortuneCatImg.style.display = 'none';
                 fortuneCatEmoji.style.display = 'block';
                 fortuneCatEmoji.textContent = '😻';
-                fortuneTitle.textContent = 'Khởi Đầu Tươi Sáng';
-                fortuneMessage.textContent = 'Hôm nay là một ngày tuyệt vời! Hãy mở mắt thật to, có thể bạn sẽ là người đầu tiên ghi dấu một bé mèo lên bản đồ đấy.';
+                fortuneTitle.textContent = currentLang === 'en' ? 'Bright Beginnings' : 'Khởi Đầu Tươi Sáng';
+                fortuneMessage.textContent = currentLang === 'en'
+                    ? 'Today is a wonderful day! Keep your eyes open, you might be the first to spot and mark a cute cat on the map.'
+                    : 'Hôm nay là một ngày tuyệt vời! Hãy mở mắt thật to, có thể bạn sẽ là người đầu tiên ghi dấu một bé mèo lên bản đồ đấy.';
                 fortuneGoToCatBtn.style.display = 'none';
                 fortuneModal.classList.add('active');
                 localStorage.setItem('catMap_fortune_seen_' + todayStr, 'true');
@@ -6676,15 +7153,15 @@
                 } else {
                     selectedCat = cats[0];
                 }
-                const fortuneIdx = Math.floor(Math.random() * CAT_FORTUNES.length);
-                fortune = CAT_FORTUNES[fortuneIdx];
+                const fortuneIdx = Math.floor(Math.random() * fortunesList.length);
+                fortune = fortunesList[fortuneIdx];
             } else {
                 selectedCat = currentFortuneCat;
-                fortune = CAT_FORTUNES[0];
+                fortune = fortunesList[0];
             }
 
             currentFortuneCat = selectedCat;
-            fortuneCatName.textContent = selectedCat.name || 'Bé mèo bí ẩn';
+            fortuneCatName.textContent = selectedCat.name || (currentLang === 'en' ? 'Mysterious Cat' : 'Bé mèo bí ẩn');
             setCatLocationLabel(fortuneCatLoc, selectedCat, '📍 ');
 
             if (selectedCat.image) {
@@ -7708,8 +8185,12 @@
             const newHigh = Math.max(prevHigh, gameScore);
             localStorage.setItem('catMap_game_highScore', String(newHigh));
 
-            if (gameFinalScore) gameFinalScore.textContent = `Điểm: ${gameScore}đ`;
-            if (gameHighScore) gameHighScore.textContent = `🏆 Kỷ lục: ${newHigh}đ`;
+            if (gameFinalScore) {
+                gameFinalScore.textContent = currentLang === 'en' ? `Score: ${gameScore} pts` : `Điểm: ${gameScore}đ`;
+            }
+            if (gameHighScore) {
+                gameHighScore.textContent = currentLang === 'en' ? `🏆 High Score: ${newHigh} pts` : `🏆 Kỷ lục: ${newHigh}đ`;
+            }
 
             const todayStr = new Date().toLocaleDateString('en-CA');
             const lastRewardDate = localStorage.getItem('catMap_game_reward_date');
@@ -7723,18 +8204,40 @@
                     localStorage.setItem('catMap_game_reward_date', todayStr);
 
                     if (gameOverIcon) gameOverIcon.textContent = '🎉';
-                    if (gameOverTitle) gameOverTitle.textContent = reason === 'dead' ? 'Hết tim nhưng vẫn đủ chỉ tiêu!' : 'Chiến thắng xuất sắc!';
-                    if (gameRewardText) gameRewardText.innerHTML = '🎁 Thưởng: <b>+1 lon pate 🐟</b> đã được chuyển vào Túi Sen!';
-                    showAppStatus(`🎮 Tuyệt vời! Bạn ghi được ${gameScore}đ và nhận ngay 1 lon pate vào Ví Sen 🐟`);
+                    if (gameOverTitle) {
+                        gameOverTitle.textContent = reason === 'dead'
+                            ? (currentLang === 'en' ? 'Out of lives but target reached!' : 'Hết tim nhưng vẫn đủ chỉ tiêu!')
+                            : (currentLang === 'en' ? 'Outstanding Victory!' : 'Chiến thắng xuất sắc!');
+                    }
+                    if (gameRewardText) {
+                        gameRewardText.innerHTML = currentLang === 'en'
+                            ? '🎁 Reward: <b>+1 pate can 🐟</b> transferred to your Bag!'
+                            : '🎁 Thưởng: <b>+1 lon pate 🐟</b> đã được chuyển vào Túi Sen!';
+                    }
+                    showAppStatus(t('toast_game_win_reward', { score: gameScore }));
                 } else {
                     if (gameOverIcon) gameOverIcon.textContent = '⭐';
-                    if (gameOverTitle) gameOverTitle.textContent = 'Cao thủ hứng pate!';
-                    if (gameRewardText) gameRewardText.innerHTML = '✨ Bạn đã nhận phần thưởng pate của hôm nay rồi. Hãy quay lại vào ngày mai nhé!';
+                    if (gameOverTitle) {
+                        gameOverTitle.textContent = currentLang === 'en' ? 'Pate Catching Master!' : 'Cao thủ hứng pate!';
+                    }
+                    if (gameRewardText) {
+                        gameRewardText.innerHTML = currentLang === 'en'
+                            ? "✨ You already received today's pate reward. Come back tomorrow!"
+                            : '✨ Bạn đã nhận phần thưởng pate của hôm nay rồi. Hãy quay lại vào ngày mai nhé!';
+                    }
                 }
             } else {
                 if (gameOverIcon) gameOverIcon.textContent = reason === 'dead' ? '😿' : '🐱';
-                if (gameOverTitle) gameOverTitle.textContent = reason === 'dead' ? 'Bé mèo bị trúng bom cay!' : 'Hết giờ rồi!';
-                if (gameRewardText) gameRewardText.innerHTML = 'Cố lên Sen ơi! Cần đạt <b>50đ</b> để nhận 1 lon pate vào Ví nhé!';
+                if (gameOverTitle) {
+                    gameOverTitle.textContent = reason === 'dead'
+                        ? (currentLang === 'en' ? 'The cat got hit by spicy bombs!' : 'Bé mèo bị trúng bom cay!')
+                        : (currentLang === 'en' ? 'Time is up!' : 'Hết giờ rồi!');
+                }
+                if (gameRewardText) {
+                    gameRewardText.innerHTML = currentLang === 'en'
+                        ? 'Keep trying Hooman! Reach <b>50 pts</b> to win 1 pate can!'
+                        : 'Cố lên Sen ơi! Cần đạt <b>50đ</b> để nhận 1 lon pate vào Ví nhé!';
+                }
             }
 
             if (gameOverOverlay) gameOverOverlay.style.display = 'flex';
@@ -7816,6 +8319,11 @@
         if (startGameBtn) startGameBtn.onclick = startGame;
         if (playAgainBtn) playAgainBtn.onclick = startGame;
         if (gameDoneBtn) gameDoneBtn.onclick = closeGameModal;
+        if (langToggleBtn) {
+            langToggleBtn.onclick = () => {
+                applyLanguage(currentLang === 'vi' ? 'en' : 'vi');
+            };
+        }
 
         window.addEventListener('beforeinstallprompt', event => {
             event.preventDefault();
@@ -8127,17 +8635,17 @@
             document.getElementById('catNote').value = "";
             previewContainer.style.display = "none";
             editingCatId = null;
-            modalTitle.textContent = 'Bắt được một bé! 🐾';
-            saveButton.innerText = isCloudConfigured ? 'Thêm lên bản đồ' : 'Lưu vị trí';
+            modalTitle.textContent = t('add_modal_title');
+            saveButton.innerText = isCloudConfigured ? t('btn_add_to_map') : (currentLang === 'en' ? 'Save Location' : 'Lưu vị trí');
             editLocationFields.classList.remove('active');
             sourceImage = null;
             currentImageDataUrl = "";
             resetImageEditor();
             saveButton.disabled = false;
-            saveButton.innerText = isCloudConfigured ? 'Thêm lên bản đồ' : 'Lưu vị trí';
         }
 
         initializeStorage().then(() => {
+            applyLanguage(currentLang);
             saveButton.disabled = false;
             openModalButton.disabled = !storageReady || Boolean(pendingMapCat) || (isCloudConfigured && !supabaseClient);
             updateBackupControls();
