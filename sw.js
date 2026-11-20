@@ -1,5 +1,5 @@
 // Service Worker cho Sổ Tay Bắt Mèo 🐾
-const CACHE_NAME = 'so-tay-bat-meo-v6';
+const CACHE_NAME = 'so-tay-bat-meo-v7';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -37,7 +37,7 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
   // Không cache các yêu cầu API động đến Supabase hoặc Nominatim
-  if (url.hostname.includes('supabase.co') || url.hostname.includes('nominatim.openstreetmap.org')) {
+  if (url.hostname.includes('supabase.co') || url.hostname.includes('nominatim.openstreetmap.org') || url.hostname.includes('google.com')) {
     return;
   }
 
