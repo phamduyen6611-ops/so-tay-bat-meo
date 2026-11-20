@@ -512,6 +512,10 @@ revoke all on table public.cat_favorites from public, anon, authenticated;
 grant select, insert, delete on table public.cat_favorites to authenticated;
 
 
+
+-- ============================================================
+-- Nhật ký gặp lại mèo (cat_sightings)
+-- ============================================================
 create table if not exists public.cat_sightings (
     id text primary key,
     cat_id text not null references public.cats(id) on delete cascade,
@@ -528,15 +532,27 @@ create index if not exists cat_sightings_cat_id_seen_at_idx
 
 alter table public.cat_sightings enable row level security;
 
+do $$
+begin
+    if not exists (
+        select 1 from pg_constraint
+        where conrelid = 'public.cat_sightings'::regclass
+          and conname = 'cat_sightings_image_length_check'
+    ) then
+        -- not valid: không chặn các dòng cũ, chỉ áp dụng cho dòng mới.
+        alter table public.cat_sightings
+            add constraint cat_sightings_image_length_check
+            check (image is null or char_length(image) <= 1000000) not valid;
+    end if;
+end;
+$$;
+
 drop policy if exists "Public can view cat sightings" on public.cat_sightings;
 create policy "Public can view cat sightings"
-    on public.cat_sightings for select to public
+    on public.cat_sightings for select to anon, authenticated
     using (true);
 
 drop policy if exists "Anyone can insert cat sightings" on public.cat_sightings;
-create policy "Anyone can insert cat sightings"
-    on public.cat_sightings for insert to anon, authenticated
-    with check (true);
 
 create or replace function public.add_cat_sighting(
     p_cat_id text,
@@ -552,51 +568,65 @@ set search_path = ''
 as $$
 declare
     v_sighting_id text;
+    v_user_id uuid;
     v_reporter text;
     v_note text;
+    v_image text;
+    v_seen_at timestamptz;
 begin
-    v_sighting_id := gen_random_uuid()::text;
+    v_user_id := auth.uid();
+
+    if not exists (select 1 from public.cats where id = p_cat_id) then
+        raise exception 'Cat not found.';
+    end if;
+
     v_reporter := trim(coalesce(p_reporter_name, ''));
     if v_reporter = '' then
         v_reporter := 'Một Sen tốt bụng';
     end if;
-    if char_length(v_reporter) > 40 then
-        v_reporter := substring(v_reporter from 1 for 40);
+    v_reporter := substring(v_reporter from 1 for 40);
+
+    v_note := substring(trim(coalesce(p_note, '')) from 1 for 1000);
+
+    -- Ảnh chỉ được là: ảnh base64 do app nén, hoặc file trong thư mục riêng
+    -- của chính người gửi trên bucket cat-images. Không nhận URL ngoài.
+    v_image := nullif(trim(coalesce(p_image, '')), '');
+    if v_image is not null then
+        if v_image ~ '^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$' then
+            if char_length(v_image) > 1000000 then
+                raise exception 'Sighting image is too large.';
+            end if;
+        elsif v_user_id is null
+           or v_image !~ ('^' || v_user_id::text || '/sightings/[A-Za-z0-9_.-]{1,120}\.(jpg|png|webp)$') then
+            raise exception 'Invalid sighting image.';
+        end if;
     end if;
 
-    v_note := trim(coalesce(p_note, ''));
-    if char_length(v_note) > 1000 then
-        v_note := substring(v_note from 1 for 1000);
+    v_seen_at := coalesce(p_seen_at, now());
+    if v_seen_at > now() + interval '1 day' then
+        raise exception 'Sighting date cannot be in the future.';
     end if;
 
+    v_sighting_id := gen_random_uuid()::text;
     insert into public.cat_sightings (id, cat_id, seen_at, image, note, reporter_name, created_by, created_at)
-    values (
-        v_sighting_id,
-        p_cat_id,
-        coalesce(p_seen_at, now()),
-        p_image,
-        v_note,
-        v_reporter,
-        auth.uid(),
-        now()
-    );
+    values (v_sighting_id, p_cat_id, v_seen_at, v_image, v_note, v_reporter, v_user_id, now());
 
     update public.cats
     set sightings_count = coalesce(sightings_count, 1) + 1
     where id = p_cat_id;
 
-    if not found then
-        raise exception 'Cat not found.';
-    end if;
-
     return v_sighting_id;
 end;
 $$;
 
+revoke all on table public.cat_sightings from public, anon, authenticated;
+grant select on table public.cat_sightings to anon, authenticated;
+revoke all on function public.add_cat_sighting(text, text, text, text, timestamptz) from public;
 grant execute on function public.add_cat_sighting(text, text, text, text, timestamptz) to anon, authenticated;
-grant select, insert on table public.cat_sightings to anon, authenticated;
 
--- Bảng và hàm đồng bộ Ví Sen & Danh hiệu Sen
+-- ============================================================
+-- Ví Sen (sen_wallets)
+-- ============================================================
 create table if not exists public.sen_wallets (
     id text primary key,
     user_id uuid references auth.users(id) on delete set null,
@@ -614,16 +644,14 @@ create table if not exists public.sen_wallets (
 alter table public.sen_wallets enable row level security;
 
 drop policy if exists "Anyone can read sen wallets" on public.sen_wallets;
-create policy "Anyone can read sen wallets"
-    on public.sen_wallets for select to anon, authenticated
-    using (true);
-
 drop policy if exists "Anyone can insert or update sen wallets" on public.sen_wallets;
-create policy "Anyone can insert or update sen wallets"
-    on public.sen_wallets for all to anon, authenticated
-    using (true)
-    with check (true);
+drop policy if exists "Users can read own sen wallet" on public.sen_wallets;
+create policy "Users can read own sen wallet"
+    on public.sen_wallets for select to authenticated
+    using (user_id = (select auth.uid()));
 
+-- p_streak và p_last_checkin_date được giữ trong chữ ký hàm để client cũ không lỗi,
+-- nhưng server bỏ qua chúng.
 create or replace function public.sync_sen_wallet(
     p_client_id text,
     p_streak int default 1,
@@ -640,35 +668,59 @@ as $$
 declare
     v_id text;
     v_user_id uuid;
+    v_today date := (now() at time zone 'Asia/Ho_Chi_Minh')::date;
+    v_row public.sen_wallets%rowtype;
+    v_streak int;
+    v_pate int;
+    v_total_given int;
+    v_fed_count int;
     v_rank_id text;
     v_rank_title text;
-    v_row public.sen_wallets%rowtype;
-    v_effective_streak int;
-    v_effective_total_given int;
 begin
     v_user_id := auth.uid();
     if v_user_id is not null then
         v_id := v_user_id::text;
     else
+        -- Khách chỉ dùng id do app sinh ra ('sen_' + chuỗi ngẫu nhiên),
+        -- nên không thể ghi đè ví của tài khoản (id = UUID người dùng).
         v_id := trim(coalesce(p_client_id, ''));
-        if v_id = '' then
-            v_id := gen_random_uuid()::text;
+        if v_id !~ '^sen_[A-Za-z0-9-]{8,80}$' then
+            raise exception 'Invalid wallet client id.';
         end if;
     end if;
 
-    v_effective_streak := greatest(1, coalesce(p_streak, 1));
-    v_effective_total_given := greatest(0, coalesce(p_total_given, 0));
+    v_pate := least(greatest(coalesce(p_pate, 0), 0), 9999);
+    v_total_given := least(greatest(coalesce(p_total_given, 0), 0), 100000);
+    v_fed_count := least(greatest(coalesce(p_fed_count, 0), 0), 100000);
 
-    if v_effective_streak >= 30 or v_effective_total_given >= 50 then
+    insert into public.sen_wallets (id, user_id, streak, pate, total_given, fed_count, last_checkin_date)
+    values (v_id, v_user_id, 1, v_pate, v_total_given, v_fed_count, v_today)
+    on conflict (id) do nothing;
+
+    select * into v_row from public.sen_wallets where id = v_id for update;
+
+    -- Streak do server tính: cùng ngày giữ nguyên, ngày kế tiếp +1, bỏ ngày thì về 1.
+    if v_row.last_checkin_date >= v_today then
+        v_streak := v_row.streak;
+    elsif v_row.last_checkin_date = v_today - 1 then
+        v_streak := v_row.streak + 1;
+    else
+        v_streak := 1;
+    end if;
+
+    v_total_given := greatest(v_row.total_given, v_total_given);
+    v_fed_count := greatest(v_row.fed_count, v_fed_count);
+
+    if v_streak >= 30 or v_total_given >= 50 then
         v_rank_id := 'rank_5';
         v_rank_title := 'Bảo Mẫu Hoàng Gia';
-    elsif v_effective_streak >= 14 or v_effective_total_given >= 25 then
+    elsif v_streak >= 14 or v_total_given >= 25 then
         v_rank_id := 'rank_4';
         v_rank_title := 'Đại Gia Pate';
-    elsif v_effective_streak >= 7 or v_effective_total_given >= 10 then
+    elsif v_streak >= 7 or v_total_given >= 10 then
         v_rank_id := 'rank_3';
         v_rank_title := 'Sen Cần Mẫn';
-    elsif v_effective_streak >= 3 or v_effective_total_given >= 3 then
+    elsif v_streak >= 3 or v_total_given >= 3 then
         v_rank_id := 'rank_2';
         v_rank_title := 'Sen Chu Đáo';
     else
@@ -676,24 +728,17 @@ begin
         v_rank_title := 'Sen Tập Sự';
     end if;
 
-    insert into public.sen_wallets (
-        id, user_id, streak, pate, total_given, fed_count, rank_id, rank_title, last_checkin_date, updated_at
-    )
-    values (
-        v_id, v_user_id, v_effective_streak, greatest(0, coalesce(p_pate, 3)),
-        v_effective_total_given, greatest(0, coalesce(p_fed_count, 0)),
-        v_rank_id, v_rank_title, coalesce(p_last_checkin_date, current_date), now()
-    )
-    on conflict (id) do update set
-        user_id = coalesce(excluded.user_id, public.sen_wallets.user_id),
-        streak = greatest(public.sen_wallets.streak, excluded.streak),
-        pate = excluded.pate,
-        total_given = greatest(public.sen_wallets.total_given, excluded.total_given),
-        fed_count = greatest(public.sen_wallets.fed_count, excluded.fed_count),
-        rank_id = excluded.rank_id,
-        rank_title = excluded.rank_title,
-        last_checkin_date = excluded.last_checkin_date,
+    update public.sen_wallets
+    set user_id = coalesce(user_id, v_user_id),
+        streak = v_streak,
+        pate = v_pate,
+        total_given = v_total_given,
+        fed_count = v_fed_count,
+        rank_id = v_rank_id,
+        rank_title = v_rank_title,
+        last_checkin_date = greatest(last_checkin_date, v_today),
         updated_at = now()
+    where id = v_id
     returning * into v_row;
 
     return json_build_object(
@@ -710,7 +755,326 @@ begin
 end;
 $$;
 
+revoke all on table public.sen_wallets from public, anon, authenticated;
+grant select on table public.sen_wallets to authenticated;
+revoke all on function public.sync_sen_wallet(text, int, int, int, int, date) from public;
 grant execute on function public.sync_sen_wallet(text, int, int, int, int, date) to anon, authenticated;
-grant select, insert, update on table public.sen_wallets to anon, authenticated;
+
+-- ===== Ví Sen do server quản lý & chống spam (xem migrations/20261120_server_wallet_rate_limit.sql) =====
+
+alter table public.sen_wallets
+    add column if not exists last_game_reward_date date;
+
+alter table public.cats
+    add column if not exists sos_updated_at timestamptz,
+    add column if not exists sos_updated_by uuid references auth.users(id) on delete set null;
+
+-- ============================================================
+-- Hàm nội bộ (không cho gọi qua API)
+-- ============================================================
+create or replace function public.sen_wallet_id(p_client_id text)
+returns text
+language plpgsql
+stable
+set search_path = ''
+as $$
+declare
+    v_id text;
+begin
+    if auth.uid() is not null then
+        return auth.uid()::text;
+    end if;
+    v_id := trim(coalesce(p_client_id, ''));
+    if v_id !~ '^sen_[A-Za-z0-9-]{8,80}$' then
+        raise exception 'Invalid wallet client id.';
+    end if;
+    return v_id;
+end;
+$$;
+
+create or replace function public.sen_rank(p_streak int, p_total_given int, out rank_id text, out rank_title text)
+language sql
+immutable
+set search_path = ''
+as $$
+    select r.rank_id, r.rank_title
+    from (values
+        (5, 'rank_5', 'Bảo Mẫu Hoàng Gia', 30, 50),
+        (4, 'rank_4', 'Đại Gia Pate', 14, 25),
+        (3, 'rank_3', 'Sen Cần Mẫn', 7, 10),
+        (2, 'rank_2', 'Sen Chu Đáo', 3, 3),
+        (1, 'rank_1', 'Sen Tập Sự', 0, 0)
+    ) as r(lvl, rank_id, rank_title, min_streak, min_given)
+    where p_streak >= r.min_streak or p_total_given >= r.min_given
+    order by r.lvl desc
+    limit 1;
+$$;
+
+create or replace function public.sen_wallet_json(w public.sen_wallets)
+returns json
+language sql
+stable
+set search_path = ''
+as $$
+    select json_build_object(
+        'id', w.id,
+        'user_id', w.user_id,
+        'streak', w.streak,
+        'pate', w.pate,
+        'total_given', w.total_given,
+        'fed_count', w.fed_count,
+        'rank_id', w.rank_id,
+        'rank_title', w.rank_title,
+        'last_checkin_date', w.last_checkin_date,
+        'last_game_reward_date', w.last_game_reward_date
+    );
+$$;
+
+-- Tạo ví nếu chưa có, khóa dòng ví, áp dụng điểm danh ngày mới (giờ Việt Nam)
+-- và cập nhật danh hiệu. Trả về dòng ví đã khóa.
+create or replace function public.sen_wallet_lock(p_id text)
+returns public.sen_wallets
+language plpgsql
+set search_path = ''
+as $$
+declare
+    v_today date := (now() at time zone 'Asia/Ho_Chi_Minh')::date;
+    w public.sen_wallets%rowtype;
+    v_streak int;
+    v_bonus int;
+begin
+    insert into public.sen_wallets (id, user_id, streak, pate, total_given, fed_count, last_checkin_date)
+    values (p_id, auth.uid(), 1, 3, 0, 0, v_today)
+    on conflict (id) do nothing;
+
+    select * into w from public.sen_wallets where id = p_id for update;
+
+    if w.last_checkin_date < v_today then
+        if w.last_checkin_date = v_today - 1 then
+            v_streak := w.streak + 1;
+        else
+            v_streak := 1;
+        end if;
+        v_bonus := 1 + case when v_streak % 7 = 0 then 3 else 0 end;
+        w.streak := v_streak;
+        w.pate := least(w.pate + v_bonus, 9999);
+        w.last_checkin_date := v_today;
+    end if;
+
+    select r.rank_id, r.rank_title into w.rank_id, w.rank_title
+    from public.sen_rank(w.streak, w.total_given) r;
+
+    update public.sen_wallets
+    set user_id = coalesce(user_id, auth.uid()),
+        streak = w.streak,
+        pate = w.pate,
+        last_checkin_date = w.last_checkin_date,
+        rank_id = w.rank_id,
+        rank_title = w.rank_title,
+        updated_at = now()
+    where id = p_id
+    returning * into w;
+
+    return w;
+end;
+$$;
+
+revoke all on function public.sen_wallet_id(text) from public, anon, authenticated;
+revoke all on function public.sen_rank(int, int) from public, anon, authenticated;
+revoke all on function public.sen_wallet_json(public.sen_wallets) from public, anon, authenticated;
+revoke all on function public.sen_wallet_lock(text) from public, anon, authenticated;
+
+-- ============================================================
+-- API công khai
+-- ============================================================
+
+-- Đồng bộ ví: chỉ đọc trạng thái từ server (kèm điểm danh ngày mới nếu có).
+-- Các tham số số liệu được giữ để client cũ không lỗi, nhưng bị bỏ qua.
+create or replace function public.sync_sen_wallet(
+    p_client_id text,
+    p_streak int default 1,
+    p_pate int default 3,
+    p_total_given int default 0,
+    p_fed_count int default 0,
+    p_last_checkin_date date default current_date
+)
+returns json
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+    return public.sen_wallet_json(public.sen_wallet_lock(public.sen_wallet_id(p_client_id)));
+end;
+$$;
+
+create or replace function public.claim_game_reward(p_client_id text default null)
+returns json
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+    v_today date := (now() at time zone 'Asia/Ho_Chi_Minh')::date;
+    w public.sen_wallets%rowtype;
+begin
+    w := public.sen_wallet_lock(public.sen_wallet_id(p_client_id));
+    if w.last_game_reward_date is not null and w.last_game_reward_date >= v_today then
+        raise exception 'Game reward already claimed today.';
+    end if;
+
+    update public.sen_wallets
+    set pate = least(pate + 1, 9999),
+        last_game_reward_date = v_today,
+        updated_at = now()
+    where id = w.id
+    returning * into w;
+
+    return public.sen_wallet_json(w);
+end;
+$$;
+
+drop function if exists public.give_cat_pate(text);
+create or replace function public.give_cat_pate(p_cat_id text, p_client_id text default null)
+returns json
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+    w public.sen_wallets%rowtype;
+    v_pate_count int;
+begin
+    w := public.sen_wallet_lock(public.sen_wallet_id(p_client_id));
+    if w.pate < 1 then
+        raise exception 'Out of pate.';
+    end if;
+
+    update public.cats
+    set pate_count = coalesce(pate_count, 0) + 1
+    where id = p_cat_id
+    returning pate_count into v_pate_count;
+
+    if not found then
+        raise exception 'Cat not found.';
+    end if;
+
+    w.pate := w.pate - 1;
+    w.total_given := w.total_given + 1;
+    select r.rank_id, r.rank_title into w.rank_id, w.rank_title
+    from public.sen_rank(w.streak, w.total_given) r;
+
+    update public.sen_wallets
+    set pate = w.pate,
+        total_given = w.total_given,
+        rank_id = w.rank_id,
+        rank_title = w.rank_title,
+        updated_at = now()
+    where id = w.id
+    returning * into w;
+
+    return json_build_object('pate_count', v_pate_count, 'wallet', public.sen_wallet_json(w));
+end;
+$$;
+
+drop function if exists public.check_in_cat_feed(text, text);
+create or replace function public.check_in_cat_feed(
+    p_cat_id text,
+    p_feeder_name text default '',
+    p_client_id text default null
+)
+returns json
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+    v_feeder text;
+    v_last_fed_at timestamptz;
+    w public.sen_wallets%rowtype;
+begin
+    select last_fed_at into v_last_fed_at
+    from public.cats where id = p_cat_id
+    for update;
+
+    if not found then
+        raise exception 'Cat not found.';
+    end if;
+    if v_last_fed_at is not null and v_last_fed_at > now() - interval '10 minutes' then
+        raise exception 'This cat was just fed. Please wait a few minutes.';
+    end if;
+
+    v_feeder := trim(coalesce(p_feeder_name, ''));
+    if v_feeder = '' then
+        v_feeder := 'Một Sen tốt bụng';
+    end if;
+    v_feeder := substring(v_feeder from 1 for 40);
+
+    update public.cats
+    set last_fed_at = now(),
+        fed_count = coalesce(fed_count, 0) + 1,
+        last_fed_by = v_feeder
+    where id = p_cat_id;
+
+    -- Cộng số lần cho ăn vào ví (nếu xác định được ví).
+    if auth.uid() is null and p_client_id is null then
+        return null;
+    end if;
+    w := public.sen_wallet_lock(public.sen_wallet_id(p_client_id));
+    update public.sen_wallets
+    set fed_count = fed_count + 1, updated_at = now()
+    where id = w.id
+    returning * into w;
+
+    return public.sen_wallet_json(w);
+end;
+$$;
+
+create or replace function public.toggle_cat_sos(p_cat_id text, p_is_sos boolean, p_sos_note text default '')
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+    v_sos_updated_at timestamptz;
+begin
+    if p_is_sos is null then
+        raise exception 'Invalid SOS value.';
+    end if;
+    if not p_is_sos and auth.uid() is null then
+        raise exception 'Sign in to resolve an SOS alert.';
+    end if;
+
+    select sos_updated_at into v_sos_updated_at
+    from public.cats where id = p_cat_id
+    for update;
+
+    if not found then
+        raise exception 'Cat not found.';
+    end if;
+    if v_sos_updated_at is not null and v_sos_updated_at > now() - interval '1 minute' then
+        raise exception 'SOS was just updated. Please wait a minute.';
+    end if;
+
+    update public.cats
+    set is_sos = p_is_sos,
+        sos_note = case when p_is_sos then substring(trim(coalesce(p_sos_note, '')) from 1 for 200) else '' end,
+        sos_updated_at = now(),
+        sos_updated_by = auth.uid()
+    where id = p_cat_id;
+end;
+$$;
+
+revoke all on function public.sync_sen_wallet(text, int, int, int, int, date) from public;
+revoke all on function public.claim_game_reward(text) from public;
+revoke all on function public.give_cat_pate(text, text) from public;
+revoke all on function public.check_in_cat_feed(text, text, text) from public;
+revoke all on function public.toggle_cat_sos(text, boolean, text) from public;
+grant execute on function public.sync_sen_wallet(text, int, int, int, int, date) to anon, authenticated;
+grant execute on function public.claim_game_reward(text) to anon, authenticated;
+grant execute on function public.give_cat_pate(text, text) to anon, authenticated;
+grant execute on function public.check_in_cat_feed(text, text, text) to anon, authenticated;
+grant execute on function public.toggle_cat_sos(text, boolean, text) to anon, authenticated;
 
 commit;

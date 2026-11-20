@@ -4194,6 +4194,10 @@
                 toast_pate_empty: "😿 Bạn đã hết pate rồi! Hãy quay lại điểm danh vào ngày mai để nhận thêm nhé 🐟",
                 toast_pate_given: "🐟 Bạn vừa tặng 1 lon pate cho {name}! Cảm ơn tấm lòng của Sen ❤️ (Còn {remain} lon)",
                 toast_sos_on: "🚨 Đã bật cảnh báo cứu trợ SOS cho {name}!",
+                err_feed_too_soon: "Bé vừa được cho ăn cách đây chưa tới 10 phút. Bạn quay lại sau chút nữa nhé 🥣",
+                err_sos_resolve_login: "Bạn cần đăng nhập để xác nhận bé đã an toàn.",
+                err_sos_too_soon: "Cảnh báo SOS của bé vừa được cập nhật. Bạn đợi 1 phút rồi thử lại nhé.",
+                err_cat_not_found: "Không tìm thấy bé mèo này, có thể bé đã bị xóa khỏi bản đồ.",
                 toast_sos_off: "✅ Đã đánh dấu {name} đã an toàn!",
                 toast_feed_thanks: "🥣 Cảm ơn Sen {feeder} đã tiếp tế cho {name}! 🐾🐟",
                 toast_sighting_saved: "🎉 Đã lưu kỷ niệm gặp lại! Bạn và cộng đồng đã gặp {name} {count} lần 🐾📸",
@@ -4401,6 +4405,10 @@
                 toast_pate_empty: "😿 You're out of pate! Check in tomorrow to get more 🐟",
                 toast_pate_given: "🐟 You gave 1 pate can to {name}! Thank you Hooman ❤️ ({remain} left)",
                 toast_sos_on: "🚨 SOS rescue alert turned on for {name}!",
+                err_feed_too_soon: "This cat was fed less than 10 minutes ago. Please check back a bit later 🥣",
+                err_sos_resolve_login: "Please sign in to confirm this cat is safe.",
+                err_sos_too_soon: "This cat's SOS alert was just updated. Please wait a minute and try again.",
+                err_cat_not_found: "This cat could not be found. It may have been removed from the map.",
                 toast_sos_off: "✅ {name} marked safe!",
                 toast_feed_thanks: "🥣 Thank you {feeder} for feeding {name}! 🐾🐟",
                 toast_sighting_saved: "🎉 Encounter saved! You and the community have met {name} {count} times 🐾📸",
@@ -6622,27 +6630,15 @@
             const nowIso = new Date().toISOString();
             const newFedCount = (Number(cat.fed_count) || 0) + 1;
 
+            let serverWallet = null;
             if (isCloudConfigured && supabaseClient) {
-                const { error } = await supabaseClient.rpc('check_in_cat_feed', {
+                const { data, error } = await supabaseClient.rpc('check_in_cat_feed', {
                     p_cat_id: catId,
-                    p_feeder_name: feederName
+                    p_feeder_name: feederName,
+                    p_client_id: getWalletClientId()
                 });
-                if (error) {
-                    console.warn('RPC check_in_cat_feed gặp lỗi, thử cập nhật trực tiếp:', error);
-                    if (canManageCat(cat)) {
-                        const { error: updateError } = await supabaseClient
-                            .from('cats')
-                            .update({
-                                last_fed_at: nowIso,
-                                fed_count: newFedCount,
-                                last_fed_by: feederName
-                            })
-                            .eq('id', catId);
-                        if (updateError) throw updateError;
-                    } else {
-                        throw error;
-                    }
-                }
+                if (error) throw new Error(translateServerError(error.message));
+                serverWallet = data;
                 await refreshCloudCats();
             } else {
                 await persistCats(cats.map(item => item.id === catId
@@ -6659,9 +6655,13 @@
             if (updatedCat) {
                 openSingleCatPopup(updatedCat);
             }
-            const wallet = getSenWallet();
-            wallet.fedCount = (wallet.fedCount || 0) + 1;
-            saveSenWallet(wallet);
+            if (serverWallet) {
+                applyServerWallet(serverWallet);
+            } else {
+                const wallet = getSenWallet();
+                wallet.fedCount = (wallet.fedCount || 0) + 1;
+                saveSenWallet(wallet);
+            }
             showAppStatus(t('toast_feed_thanks', { feeder: feederName, name: cat.name || (currentLang === 'en' ? 'cat' : 'bé mèo') }));
         }
 
@@ -6778,20 +6778,54 @@
         }
 
         let isWalletSyncing = false;
+        let isWalletSyncQueued = false;
         let isWalletDbSynced = false;
 
-        async function syncSenWalletToDatabase(wallet = getSenWallet()) {
-            if (!supabaseClient || isWalletSyncing) return;
+        function getWalletClientId() {
+            return currentUser?.id || getSenClientId();
+        }
+
+        // Khi có cloud, ví do server quản lý: ghi đè số liệu trong máy bằng số liệu server.
+        // Giữ nguyên lastCheckinDate trong máy (chỉ dùng để hiện thông báo điểm danh).
+        function applyServerWallet(data) {
+            const latest = getSenWallet();
+            if (!data || typeof data !== 'object') return latest;
+            latest.streak = Number(data.streak) || 1;
+            latest.pate = Math.max(0, Number(data.pate) || 0);
+            latest.totalGiven = Math.max(0, Number(data.total_given) || 0);
+            latest.fedCount = Math.max(0, Number(data.fed_count) || 0);
+            if (data.rank_id) latest.rankId = data.rank_id;
+            if (data.rank_title) latest.rankTitle = data.rank_title;
+            try {
+                localStorage.setItem(SEN_WALLET_KEY, JSON.stringify(latest));
+            } catch (e) {}
+            updateWalletDisplay(latest);
+            return latest;
+        }
+
+        const SERVER_ERROR_KEYS = [
+            ['This cat was just fed', 'err_feed_too_soon'],
+            ['Sign in to resolve an SOS', 'err_sos_resolve_login'],
+            ['SOS was just updated', 'err_sos_too_soon'],
+            ['Out of pate', 'toast_pate_empty'],
+            ['Cat not found', 'err_cat_not_found']
+        ];
+
+        function translateServerError(message = '') {
+            const match = SERVER_ERROR_KEYS.find(([text]) => message.includes(text));
+            return match ? t(match[1]) : message;
+        }
+
+        async function syncSenWalletToDatabase() {
+            if (!supabaseClient) return;
+            if (isWalletSyncing) {
+                isWalletSyncQueued = true;
+                return;
+            }
             try {
                 isWalletSyncing = true;
-                const clientId = currentUser?.id || getSenClientId();
                 const { data, error } = await supabaseClient.rpc('sync_sen_wallet', {
-                    p_client_id: clientId,
-                    p_streak: Number(wallet.streak) || 1,
-                    p_pate: Number(wallet.pate) || 0,
-                    p_total_given: Number(wallet.totalGiven) || 0,
-                    p_fed_count: Number(wallet.fedCount) || 0,
-                    p_last_checkin_date: wallet.lastCheckinDate || new Date().toLocaleDateString('en-CA')
+                    p_client_id: getWalletClientId()
                 });
 
                 if (error) {
@@ -6799,35 +6833,18 @@
                     isWalletDbSynced = false;
                 } else if (data) {
                     isWalletDbSynced = true;
-                    let changed = false;
-                    if (data.streak > (wallet.streak || 1)) {
-                        wallet.streak = data.streak;
-                        changed = true;
-                    }
-                    if (data.total_given > (wallet.totalGiven || 0)) {
-                        wallet.totalGiven = data.total_given;
-                        changed = true;
-                    }
-                    if (data.pate !== undefined && data.pate > (wallet.pate || 0)) {
-                        wallet.pate = data.pate;
-                        changed = true;
-                    }
-                    if (data.rank_title) {
-                        wallet.rankTitle = data.rank_title;
-                        wallet.rankId = data.rank_id;
-                    }
-                    if (changed) {
-                        try {
-                            localStorage.setItem(SEN_WALLET_KEY, JSON.stringify(wallet));
-                        } catch (e) {}
-                    }
+                    applyServerWallet(data);
                 }
             } catch (e) {
                 console.warn('Lỗi kết nối đồng bộ ví:', e);
                 isWalletDbSynced = false;
             } finally {
                 isWalletSyncing = false;
-                updateWalletDisplay(wallet);
+                updateWalletDisplay();
+                if (isWalletSyncQueued) {
+                    isWalletSyncQueued = false;
+                    syncSenWalletToDatabase();
+                }
             }
         }
 
@@ -6963,6 +6980,35 @@
             if (!cat) throw new Error(currentLang === 'en' ? 'Cat record not found.' : 'Không tìm thấy bản ghi mèo.');
 
             const prevRank = calculateSenRank(wallet.streak, wallet.totalGiven).currentRank;
+
+            if (isCloudConfigured && supabaseClient) {
+                // Server trừ ví và cộng pate cho mèo trong cùng một giao dịch.
+                const { data, error } = await supabaseClient.rpc('give_cat_pate', {
+                    p_cat_id: catId,
+                    p_client_id: getWalletClientId()
+                });
+                if (error) {
+                    if (error.message?.includes('Out of pate')) {
+                        await syncSenWalletToDatabase();
+                        showAppStatus(t('toast_pate_empty'));
+                        openSenWalletModal();
+                        return;
+                    }
+                    throw new Error(translateServerError(error.message));
+                }
+                const serverWallet = applyServerWallet(data?.wallet);
+                if (typeof data?.pate_count === 'number') cat.pate_count = data.pate_count;
+                const serverRank = calculateSenRank(serverWallet.streak, serverWallet.totalGiven).currentRank;
+                if (serverRank.id !== prevRank.id) {
+                    showAppStatus(t('toast_rank_up', { icon: serverRank.icon, title: serverRank.title }));
+                }
+                await refreshCloudCats();
+                const refreshedCat = cats.find(item => item.id === catId);
+                if (refreshedCat) openSingleCatPopup(refreshedCat);
+                showAppStatus(t('toast_pate_given', { name: cat.name || (currentLang === 'en' ? 'cat' : 'bé mèo'), remain: serverWallet.pate }));
+                return;
+            }
+
             wallet.pate -= 1;
             wallet.totalGiven = (wallet.totalGiven || 0) + 1;
             const newRankInfo = calculateSenRank(wallet.streak, wallet.totalGiven);
@@ -6976,26 +7022,7 @@
 
             const newPateCount = (Number(cat.pate_count) || 0) + 1;
             cat.pate_count = newPateCount;
-
-            if (isCloudConfigured && supabaseClient) {
-                const { data, error } = await supabaseClient.rpc('give_cat_pate', {
-                    p_cat_id: catId
-                });
-                if (error) {
-                    console.warn('RPC give_cat_pate gặp lỗi, thử cập nhật trực tiếp:', error);
-                    if (canManageCat(cat)) {
-                        await supabaseClient
-                            .from('cats')
-                            .update({ pate_count: newPateCount })
-                            .eq('id', catId);
-                    }
-                } else if (typeof data === 'number') {
-                    cat.pate_count = data;
-                }
-                await refreshCloudCats();
-            } else {
-                await persistCats(cats.map(item => item.id === catId ? { ...item, pate_count: newPateCount } : item));
-            }
+            await persistCats(cats.map(item => item.id === catId ? { ...item, pate_count: newPateCount } : item));
 
             const updatedCat = cats.find(item => item.id === catId);
             if (updatedCat) {
@@ -7016,15 +7043,7 @@
                     p_is_sos: isSos,
                     p_sos_note: note
                 });
-                if (error) {
-                    console.warn('RPC toggle_cat_sos gặp lỗi, thử cập nhật trực tiếp:', error);
-                    if (canManageCat(cat)) {
-                        await supabaseClient
-                            .from('cats')
-                            .update({ is_sos: isSos, sos_note: note })
-                            .eq('id', catId);
-                    }
-                }
+                if (error) throw new Error(translateServerError(error.message));
                 await refreshCloudCats();
             } else {
                 cat.is_sos = isSos;
@@ -7384,27 +7403,9 @@
                         p_reporter_name: reporterName,
                         p_seen_at: seenAt
                     });
-                    if (error) {
-                        console.warn('RPC add_cat_sighting lỗi, thử insert bảng trực tiếp:', error);
-                        const { error: insertErr } = await supabaseClient.from('cat_sightings').insert([{
-                            id: sightingId,
-                            cat_id: catId,
-                            seen_at: seenAt,
-                            image: imagePath,
-                            note: note,
-                            reporter_name: reporterName
-                        }]);
-                        if (!insertErr) {
-                            savedOnCloud = true;
-                            if (canManageCat(cat)) {
-                                await supabaseClient.from('cats').update({
-                                    sightings_count: (Number(cat.sightings_count) || 1) + 1
-                                }).eq('id', catId);
-                            }
-                        }
-                    } else {
-                        savedOnCloud = true;
-                    }
+                    // Bảng cat_sightings không còn cho insert trực tiếp; chỉ ghi qua RPC có kiểm tra.
+                    if (error) throw new Error(error.message);
+                    savedOnCloud = true;
                     await refreshCloudCats();
                 }
 
@@ -8667,10 +8668,23 @@
 
             if (gameScore >= 50) {
                 if (lastRewardDate !== todayStr) {
-                    const wallet = getSenWallet();
-                    wallet.pate = (wallet.pate || 0) + 1;
-                    saveSenWallet(wallet);
-                    updateWalletDisplay();
+                    if (isCloudConfigured && supabaseClient) {
+                        // Server cộng thưởng (tối đa 1 lần/ngày) rồi trả về ví mới.
+                        supabaseClient.rpc('claim_game_reward', { p_client_id: getWalletClientId() })
+                            .then(({ data, error }) => {
+                                if (error) {
+                                    console.warn('Không nhận được thưởng game:', error.message);
+                                    syncSenWalletToDatabase();
+                                } else {
+                                    applyServerWallet(data);
+                                }
+                            });
+                    } else {
+                        const wallet = getSenWallet();
+                        wallet.pate = (wallet.pate || 0) + 1;
+                        saveSenWallet(wallet);
+                        updateWalletDisplay();
+                    }
                     localStorage.setItem('catMap_game_reward_date', todayStr);
 
                     if (gameOverIcon) gameOverIcon.textContent = '🎉';
