@@ -3993,6 +3993,7 @@
                 btn_directions: "↗ Chỉ đường",
                 btn_report_info: "Báo thông tin sai",
                 unnamed_cat: "Mèo chưa đặt tên",
+                default_cat_note: "Một bé mèo cute ẩn danh 🐾",
                 btn_edit: "Sửa",
                 btn_delete: "Xóa",
                 login_to_update_status: "Đăng nhập để cập nhật tình trạng.",
@@ -4184,6 +4185,7 @@
                 btn_directions: "↗ Directions",
                 btn_report_info: "Report wrong info",
                 unnamed_cat: "Unnamed cat",
+                default_cat_note: "A cute anonymous kitty 🐾",
                 btn_edit: "Edit",
                 btn_delete: "Delete",
                 login_to_update_status: "Sign in to update status.",
@@ -4614,6 +4616,14 @@
             return url.href;
         }
 
+        function getCatDisplayNote(cat) {
+            const raw = (cat?.note || '').trim();
+            if (!raw || raw === 'Một bé mèo cute ẩn danh 🐾' || raw === 'A cute anonymous kitty 🐾') {
+                return t('default_cat_note');
+            }
+            return raw;
+        }
+
         function createCatQuickActions(cat) {
             const actions = document.createElement('div');
             actions.className = 'cat-quick-actions';
@@ -4703,7 +4713,7 @@
                 const label = document.createElement('b');
                 label.className = 'cat-popup-note-label';
                 label.textContent = currentLang === 'vi' ? 'Ghi chú: ' : 'Notes: ';
-                note.append(label, document.createTextNode(cat.note));
+                note.append(label, document.createTextNode(getCatDisplayNote(cat)));
                 entry.appendChild(note);
 
                 if (cat.approximate) {
@@ -5673,7 +5683,7 @@
                 return (!favoritesOnly || favoriteCatIds.has(cat.id)) &&
                     matchesStatus &&
                     (!radius || (distance !== null && distance <= radius)) &&
-                    normalizeSearchText(`${cat.name || 'Mèo chưa đặt tên'} ${cat.note || ''} ${formatCatLocation(cat)}`).includes(query);
+                    normalizeSearchText(`${cat.name || ''} ${cat.note || ''} ${getCatDisplayNote(cat)} ${formatCatLocation(cat)}`).includes(query);
             });
             if (catFilterLocation) results.sort((a, b) => a.distance - b.distance);
             return results;
@@ -5760,9 +5770,10 @@
                     : `${(distance / 1000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} km`;
                 details.textContent = [getCatStatusLabel(cat.current_status), distanceLabel].filter(Boolean).join(' · ');
                 button.appendChild(details);
-                if (cat.note) {
+                const displayNote = getCatDisplayNote(cat);
+                if (displayNote) {
                     const note = document.createElement('small');
-                    note.textContent = cat.note;
+                    note.textContent = displayNote;
                     button.appendChild(note);
                 }
                 button.addEventListener('click', () => {
@@ -6196,7 +6207,7 @@
             chooseMapLocationButton.style.display = 'none';
             document.getElementById('catName').value = cat.name || '';
             document.getElementById('catLocationName').value = getCatLocationName(cat);
-            document.getElementById('catNote').value = cat.note;
+            document.getElementById('catNote').value = (cat.note === 'Một bé mèo cute ẩn danh 🐾' || cat.note === 'A cute anonymous kitty 🐾') ? '' : (cat.note || '');
             editLatitude.value = String(cat.lat);
             editLongitude.value = String(cat.lng);
             editLocationFields.classList.add('active');
@@ -7119,8 +7130,8 @@
                 isFirst: true,
                 date: initialDate,
                 image: cat.image,
-                note: cat.note || 'Bé được phát hiện và lưu lên bản đồ lần đầu tiên 🐾',
-                reporterName: cat.created_by ? 'Người phát hiện ban đầu' : 'Một Sen ghi dấu'
+                note: getCatDisplayNote(cat) || (currentLang === 'vi' ? 'Bé được phát hiện và lưu lên bản đồ lần đầu tiên 🐾' : 'Cat first spotted and saved to the map 🐾'),
+                reporterName: cat.created_by ? (currentLang === 'vi' ? 'Người phát hiện ban đầu' : 'Original discoverer') : (currentLang === 'vi' ? 'Một Sen ghi dấu' : 'A spotting Hooman')
             });
             listEl.appendChild(initialCard);
 
@@ -7131,7 +7142,7 @@
                     date: sightDate,
                     image: sighting.image,
                     note: sighting.note,
-                    reporterName: sighting.reporter_name || 'Một Sen tốt bụng'
+                    reporterName: sighting.reporter_name || (currentLang === 'vi' ? 'Một Sen tốt bụng' : 'A kind Hooman')
                 });
                 listEl.appendChild(card);
             });
@@ -7485,9 +7496,9 @@
             try {
                 currentImageDataUrl = sourceImage ? photoPreviewCanvas.toDataURL('image/jpeg', 0.9) : '';
                 pendingMapCat = {
-                    name: document.getElementById('catName').value.trim() || 'Mèo chưa đặt tên',
+                    name: document.getElementById('catName').value.trim() || t('unnamed_cat'),
                     location_name: document.getElementById('catLocationName').value.trim(),
-                    note: document.getElementById('catNote').value || 'Một bé mèo cute ẩn danh 🐾',
+                    note: document.getElementById('catNote').value.trim() || t('default_cat_note'),
                     image: currentImageDataUrl
                 };
                 resetAndCloseModal();
@@ -8633,8 +8644,8 @@
         };
 
         saveButton.onclick = async () => {
-            const name = document.getElementById('catName').value.trim().slice(0, 40) || 'Mèo chưa đặt tên';
-            const note = document.getElementById('catNote').value || "Một bé mèo cute ẩn danh 🐾";
+            const name = document.getElementById('catName').value.trim().slice(0, 40) || t('unnamed_cat');
+            const note = document.getElementById('catNote').value.trim() || t('default_cat_note');
             const isEditing = Boolean(editingCatId);
             saveButton.disabled = true;
             saveButton.innerText = isEditing ? 'Đang lưu...' : 'Đang lấy vị trí...';
