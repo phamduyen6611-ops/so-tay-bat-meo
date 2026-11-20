@@ -72,7 +72,132 @@
         }
 
         .app-status {
-            top: 64px;
+            display: none;
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: min(440px, calc(100vw - 28px));
+            width: max-content;
+            padding: 0;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1.5px solid rgba(251, 146, 60, 0.45);
+            box-shadow: 0 12px 32px -4px rgba(234, 88, 12, 0.26), 0 4px 16px rgba(0, 0, 0, 0.1);
+            z-index: 99999 !important;
+            overflow: hidden;
+            pointer-events: auto;
+            cursor: pointer;
+            user-select: none;
+            font-family: inherit;
+        }
+
+        .app-status.toast-show {
+            animation: toastPopIn 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .app-status.toast-hide {
+            animation: toastPopOut 0.28s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes toastPopIn {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -24px) scale(0.9);
+            }
+            65% {
+                opacity: 1;
+                transform: translate(-50%, 4px) scale(1.02);
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, 0) scale(1);
+            }
+        }
+
+        @keyframes toastPopOut {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -18px) scale(0.92);
+            }
+        }
+
+        .toast-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+        }
+
+        .toast-icon {
+            font-size: 22px;
+            line-height: 1;
+            flex-shrink: 0;
+            display: inline-block;
+            animation: toastIconWiggle 0.6s ease-out;
+        }
+
+        @keyframes toastIconWiggle {
+            0% { transform: scale(0.6) rotate(-15deg); }
+            45% { transform: scale(1.25) rotate(10deg); }
+            70% { transform: scale(1.05) rotate(-5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .toast-text {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #431407;
+            line-height: 1.4;
+            flex: 1;
+            text-align: left;
+        }
+
+        .toast-close {
+            background: rgba(0, 0, 0, 0.05);
+            border: none;
+            color: #9a3412;
+            font-size: 12px;
+            font-weight: 800;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background 0.15s, transform 0.15s;
+            padding: 0;
+            margin-left: 4px;
+        }
+
+        .toast-close:hover {
+            background: rgba(234, 88, 12, 0.18);
+            transform: scale(1.1);
+        }
+
+        .toast-progress-bar {
+            height: 3px;
+            width: 100%;
+            background: linear-gradient(90deg, #f97316, #fb923c, #fbbf24);
+            animation: toastProgressCountdown linear forwards;
+            transform-origin: left;
+        }
+
+        @keyframes toastProgressCountdown {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        .app-status:hover .toast-progress-bar {
+            animation-play-state: paused;
         }
 
         .cat-list-panel {
@@ -2954,7 +3079,7 @@
             }
 
             .app-status {
-                top: calc(max(8px, env(safe-area-inset-top)) + 178px) !important;
+                top: calc(max(8px, env(safe-area-inset-top)) + 148px) !important;
             }
 
             .game-modal-content {
@@ -6218,14 +6343,128 @@
             }
         }
 
-        function showAppStatus(message) {
-            appStatus.textContent = message;
+        let appStatusTimer = null;
+        let appStatusHideTimer = null;
+        let appStatusRemaining = 0;
+        let appStatusStart = 0;
+
+        function showAppStatus(message, duration = 3000) {
+            if (!appStatus) return;
+            if (appStatusTimer) {
+                clearTimeout(appStatusTimer);
+                appStatusTimer = null;
+            }
+            if (appStatusHideTimer) {
+                clearTimeout(appStatusHideTimer);
+                appStatusHideTimer = null;
+            }
+
+            const trimmed = String(message || '').trim();
+            if (!trimmed) {
+                clearAppStatus();
+                return;
+            }
+
+            const emojiRegex = /^(\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic})*)\s*(.*)$/u;
+            const match = trimmed.match(emojiRegex);
+            let icon = '🐾';
+            let text = trimmed;
+
+            if (match) {
+                icon = match[1];
+                text = match[2];
+            } else if (/lỗi|không thể|thất bại|error|failed/i.test(trimmed)) {
+                icon = '😿';
+            }
+
+            appStatus.classList.remove('toast-hide');
+            appStatus.classList.remove('toast-show');
+
+            appStatus.replaceChildren();
+
+            const content = document.createElement('div');
+            content.className = 'toast-content';
+
+            const iconEl = document.createElement('span');
+            iconEl.className = 'toast-icon';
+            iconEl.textContent = icon;
+
+            const textEl = document.createElement('span');
+            textEl.className = 'toast-text';
+            textEl.textContent = text;
+
+            const closeBtn = document.createElement('button');
+            closeBtn.type = 'button';
+            closeBtn.className = 'toast-close';
+            closeBtn.setAttribute('aria-label', currentLang === 'vi' ? 'Đóng thông báo' : 'Close notification');
+            closeBtn.textContent = '✕';
+            closeBtn.addEventListener('click', event => {
+                event.stopPropagation();
+                clearAppStatus();
+            });
+
+            content.append(iconEl, textEl, closeBtn);
+
+            const progressBar = document.createElement('div');
+            progressBar.className = 'toast-progress-bar';
+            progressBar.style.animationDuration = `${duration}ms`;
+
+            appStatus.append(content, progressBar);
             appStatus.style.display = 'block';
+
+            // Kích hoạt animation
+            void appStatus.offsetWidth;
+            appStatus.classList.add('toast-show');
+
+            // Tạm dừng khi rê chuột / chạm giữ
+            appStatusRemaining = duration;
+            appStatusStart = Date.now();
+
+            const startCountdown = (ms) => {
+                if (appStatusTimer) clearTimeout(appStatusTimer);
+                appStatusTimer = setTimeout(() => {
+                    clearAppStatus();
+                }, ms);
+            };
+
+            appStatus.onmouseenter = () => {
+                if (appStatusTimer) {
+                    clearTimeout(appStatusTimer);
+                    appStatusTimer = null;
+                    appStatusRemaining = Math.max(500, appStatusRemaining - (Date.now() - appStatusStart));
+                }
+            };
+
+            appStatus.onmouseleave = () => {
+                if (appStatusRemaining > 0) {
+                    appStatusStart = Date.now();
+                    startCountdown(appStatusRemaining);
+                } else {
+                    clearAppStatus();
+                }
+            };
+
+            appStatus.onclick = () => {
+                clearAppStatus();
+            };
+
+            startCountdown(duration);
         }
 
         function clearAppStatus() {
-            appStatus.textContent = '';
-            appStatus.style.display = 'none';
+            if (!appStatus || appStatus.style.display === 'none') return;
+            if (appStatusTimer) {
+                clearTimeout(appStatusTimer);
+                appStatusTimer = null;
+            }
+            appStatus.classList.remove('toast-show');
+            appStatus.classList.add('toast-hide');
+            if (appStatusHideTimer) clearTimeout(appStatusHideTimer);
+            appStatusHideTimer = setTimeout(() => {
+                appStatus.style.display = 'none';
+                appStatus.classList.remove('toast-hide');
+                appStatus.replaceChildren();
+            }, 280);
         }
 
         function loadImageForEditing(dataUrl) {
@@ -8591,14 +8830,12 @@
                         previewContainer.style.display = 'block';
                     };
                     image.onerror = () => {
-                        appStatus.textContent = 'Không thể mở ảnh đã chọn. Vui lòng chọn ảnh khác.';
-                        appStatus.style.display = 'block';
+                        showAppStatus(currentLang === 'vi' ? 'Không thể mở ảnh đã chọn. Vui lòng chọn ảnh khác.' : 'Could not open selected image. Please choose another.');
                     };
                     image.src = event.target.result;
                 };
                 reader.onerror = () => {
-                    appStatus.textContent = 'Không thể đọc ảnh đã chọn. Vui lòng thử lại.';
-                    appStatus.style.display = 'block';
+                    showAppStatus(currentLang === 'vi' ? 'Không thể đọc ảnh đã chọn. Vui lòng thử lại.' : 'Could not read selected image. Please try again.');
                 };
                 reader.readAsDataURL(file);
             }
@@ -8700,8 +8937,7 @@
                 currentImageDataUrl = sourceImage ? photoPreviewCanvas.toDataURL('image/jpeg', 0.82) : '';
             } catch (error) {
                 console.error('Không thể xuất ảnh đã chỉnh sửa:', error);
-                appStatus.textContent = 'Không thể xử lý ảnh này. Vui lòng chọn ảnh khác.';
-                appStatus.style.display = 'block';
+                showAppStatus(currentLang === 'vi' ? 'Không thể xử lý ảnh này. Vui lòng chọn ảnh khác.' : 'Could not process this image. Please choose another.');
                 saveButton.disabled = false;
                 saveButton.innerText = isEditing ? 'Lưu thay đổi' :
                     isCloudConfigured ? 'Thêm lên bản đồ' : 'Lưu vị trí';
