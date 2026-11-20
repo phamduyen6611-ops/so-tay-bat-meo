@@ -3361,6 +3361,7 @@
             <div class="moderation-queue" id="moderationQueue" hidden></div>
             <button type="button" id="collaborationMigrateImagesBtn" data-i18n="btn_migrate_images" hidden>Chuyển ảnh cũ lên Storage</button>
             <button type="button" id="collaborationMigrateLocalBtn" class="collaboration-migrate-button" hidden></button>
+            <button type="button" id="collaborationDisplayNameBtn">✏️ Đặt biệt danh</button>
             <button type="button" id="collaborationSignOutBtn" data-i18n="btn_signout" hidden>Đăng xuất</button>
         </form>
     </section>
@@ -3931,6 +3932,7 @@
         const collaborationMigrateImagesButton = document.getElementById('collaborationMigrateImagesBtn');
         const collaborationMigrateLocalButton = document.getElementById('collaborationMigrateLocalBtn');
         const collaborationSignOutButton = document.getElementById('collaborationSignOutBtn');
+        const collaborationDisplayNameButton = document.getElementById('collaborationDisplayNameBtn');
         const imageViewer = document.getElementById('imageViewer');
         const imageViewerImage = document.getElementById('imageViewerImage');
         const imageViewerClose = document.getElementById('imageViewerClose');
@@ -4321,6 +4323,11 @@
                 err_cat_record_not_found: "Không tìm thấy bản ghi mèo.",
                 err_login_to_update_status: "Hãy đăng nhập để cập nhật tình trạng mèo.",
                 prompt_feeder_name: "Nhập tên của bạn để ghi nhận tiếp tế (hoặc để trống):",
+                prompt_display_name: "Bạn muốn hiện tên gì khi ghi nhận cho ăn / gặp lại bé? (Tên này ai cũng thấy. Để trống sẽ hiện \"Một Sen tốt bụng\".)",
+                btn_display_name_set: "✏️ Biệt danh: {name}",
+                btn_display_name_empty: "✏️ Đặt biệt danh",
+                toast_display_name_saved: "✅ Đã lưu biệt danh: {name}",
+                err_display_name_save: "Không thể lưu biệt danh: {message}",
                 btn_recording: "Đang ghi nhận...",
                 err_record_feed: "Không thể ghi nhận: {message}",
                 btn_feed_retry: "🥣 Thử lại",
@@ -4649,6 +4656,11 @@
                 err_cat_record_not_found: "Cat record not found.",
                 err_login_to_update_status: "Please sign in to update the cat's status.",
                 prompt_feeder_name: "Enter your name to log this feeding (or leave blank):",
+                prompt_display_name: "What name should show when you log a feeding or sighting? (Everyone can see it. Leave blank to show \"A kind Hooman\".)",
+                btn_display_name_set: "✏️ Nickname: {name}",
+                btn_display_name_empty: "✏️ Set nickname",
+                toast_display_name_saved: "✅ Nickname saved: {name}",
+                err_display_name_save: "Couldn't save nickname: {message}",
                 btn_recording: "Logging...",
                 err_record_feed: "Couldn't log the feeding: {message}",
                 btn_feed_retry: "🥣 Try again",
@@ -5776,6 +5788,7 @@
             collaborationMigrateLocalButton.disabled = !isSignedIn;
             collaborationMigrateLocalButton.textContent = t('btn_migrate_local', { count: localCatsForMigration.length });
             collaborationSignOutButton.hidden = !currentUser;
+            updateDisplayNameButton();
             collaborationSignInButton.disabled = false;
             collaborationCreateAccountButton.disabled = false;
             collaborationSignUpButton.disabled = false;
@@ -6941,20 +6954,76 @@
             showAppStatus(t('toast_status_updated', { status: getCatStatusLabel(status) }));
         }
 
+        // ===== Biệt danh hiển thị công khai =====
+        // Không bao giờ lấy email làm tên. Người đăng nhập: lưu trong user_metadata của
+        // tài khoản (đổi máy vẫn còn). Khách: lưu trong trình duyệt.
+        const DISPLAY_NAME_KEY = 'catMap_feeder_name';
+        const DISPLAY_NAME_SET_KEY = 'catMap_display_name_set';
+
+        function isDisplayNameSet() {
+            if (currentUser) return currentUser.user_metadata?.display_name_set === true;
+            try {
+                return localStorage.getItem(DISPLAY_NAME_SET_KEY) === 'true';
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function getDisplayName() {
+            if (currentUser) return (currentUser.user_metadata?.display_name || '').trim().slice(0, 40);
+            try {
+                return (localStorage.getItem(DISPLAY_NAME_KEY) || '').trim().slice(0, 40);
+            } catch (e) {
+                return '';
+            }
+        }
+
+        async function setDisplayName(name) {
+            const cleanName = (name || '').trim().slice(0, 40);
+            if (currentUser && supabaseClient) {
+                const { data, error } = await supabaseClient.auth.updateUser({
+                    data: { display_name: cleanName, display_name_set: true }
+                });
+                if (error) throw error;
+                if (data?.user) currentUser = data.user;
+            } else {
+                try {
+                    localStorage.setItem(DISPLAY_NAME_KEY, cleanName);
+                    localStorage.setItem(DISPLAY_NAME_SET_KEY, 'true');
+                } catch (e) {}
+            }
+            updateDisplayNameButton();
+            return cleanName;
+        }
+
+        // Hỏi biệt danh một lần nếu chưa đặt. Trả về null nếu người dùng bấm Hủy.
+        async function ensureDisplayName() {
+            if (isDisplayNameSet()) return getDisplayName();
+            const entered = prompt(t('prompt_display_name'), '');
+            if (entered === null) return null;
+            try {
+                return await setDisplayName(entered);
+            } catch (error) {
+                console.warn('Không thể lưu biệt danh:', error);
+                return entered.trim().slice(0, 40);
+            }
+        }
+
+        function updateDisplayNameButton() {
+            if (!collaborationDisplayNameButton) return;
+            const name = isDisplayNameSet() ? getDisplayName() : '';
+            collaborationDisplayNameButton.textContent = name
+                ? t('btn_display_name_set', { name })
+                : t('btn_display_name_empty');
+        }
+
         async function checkInCatFeed(catId) {
             const cat = cats.find(item => item.id === catId);
             if (!cat) throw new Error(t('err_cat_record_not_found'));
 
-            let feederName = currentUser?.email ? currentUser.email.split('@')[0] : '';
-            if (!feederName) {
-                const storedName = localStorage.getItem('catMap_feeder_name') || '';
-                const entered = prompt(t('prompt_feeder_name'), storedName);
-                if (entered === null) return;
-                feederName = entered.trim().slice(0, 40) || 'Một Sen tốt bụng';
-                if (entered.trim()) {
-                    localStorage.setItem('catMap_feeder_name', entered.trim().slice(0, 40));
-                }
-            }
+            const displayName = await ensureDisplayName();
+            if (displayName === null) return;
+            const feederName = displayName || (currentLang === 'en' ? 'A kind Hooman' : 'Một Sen tốt bụng');
 
             const nowIso = new Date().toISOString();
             const newFedCount = (Number(cat.fed_count) || 0) + 1;
@@ -7664,8 +7733,8 @@
 
             sightingNoteInput.value = '';
 
-            const defaultReporter = currentUser?.email ? currentUser.email.split('@')[0] : (localStorage.getItem('catMap_feeder_name') || '');
-            sightingReporterInput.value = defaultReporter;
+            // Điền sẵn biệt danh (không bao giờ điền email).
+            sightingReporterInput.value = getDisplayName();
 
             sightingSubmitBtn.disabled = false;
             sightingSubmitBtn.textContent = t('btn_sighting_submit');
@@ -7691,9 +7760,11 @@
             if (!cat) return;
 
             const note = sightingNoteInput.value.trim().slice(0, 1000);
-            const reporterName = sightingReporterInput.value.trim().slice(0, 40) || t('timeline_kind_hooman');
-            if (reporterName) {
-                localStorage.setItem('catMap_feeder_name', reporterName);
+            const enteredReporter = sightingReporterInput.value.trim().slice(0, 40);
+            const reporterName = enteredReporter || t('timeline_kind_hooman');
+            // Lần đầu chưa có biệt danh: dùng tên vừa nhập làm biệt danh (để trống cũng tính là đã chọn).
+            if (!isDisplayNameSet()) {
+                setDisplayName(enteredReporter).catch(error => console.warn('Không thể lưu biệt danh:', error));
             }
             const dateVal = sightingDateInput.value;
             const seenAt = dateVal ? new Date(dateVal + 'T12:00:00').toISOString() : new Date().toISOString();
@@ -8348,6 +8419,23 @@
                 collaborationMigrateLocalButton.disabled = !isSignedIn;
             }
         };
+        collaborationDisplayNameButton.onclick = async () => {
+            const entered = prompt(t('prompt_display_name'), getDisplayName());
+            if (entered === null) return;
+            collaborationDisplayNameButton.disabled = true;
+            try {
+                const saved = await setDisplayName(entered);
+                showAppStatus(t('toast_display_name_saved', {
+                    name: saved || (currentLang === 'en' ? 'A kind Hooman' : 'Một Sen tốt bụng')
+                }));
+            } catch (error) {
+                console.error('Không thể lưu biệt danh:', error);
+                showAppStatus(t('err_display_name_save', { message: error.message }));
+            } finally {
+                collaborationDisplayNameButton.disabled = false;
+            }
+        };
+
         collaborationSignOutButton.onclick = async () => {
             if (!supabaseClient) return;
             try {
