@@ -6,29 +6,23 @@
     <!-- Cấu hình viewport chống zoom khi bấm vào input trên điện thoại -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Sổ Tay Bắt Mèo 🐾</title>
+    <!-- Cấu hình PWA & App Icons (mỗi thẻ chỉ khai báo một lần; giữ đúng giá trị trình duyệt đang dùng) -->
     <meta name="theme-color" content="#ff8da1">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Sổ Tay Mèo">
     <link rel="manifest" href="./manifest.webmanifest">
-    <link rel="icon" href="./icons/cat-paw.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+    <link rel="icon" type="image/svg+xml" href="./icons/cat-icon.svg">
+    <link rel="apple-touch-icon" href="./icons/icon-192.png">
     <script src="./install.js" defer></script>
     <meta name="google-adsense-account" content="ca-pub-9861032559060235">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9861032559060235"
         crossorigin="anonymous"></script>
 
-    <!-- Cấu hình PWA & App Icons -->
-    <meta name="theme-color" content="#ff758c" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Bắt Mèo" />
-    <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="icon" type="image/svg+xml" href="icons/cat-icon.svg" />
-    <link rel="apple-touch-icon" href="icons/icon-192.png" />
-
     <!-- Thư viện Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" />
     <!-- Font chữ dễ thương (Nunito) -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
 
@@ -3735,8 +3729,11 @@
     </div>
 
     <!-- Thư viện Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Ghim đúng phiên bản + kiểm tra toàn vẹn (SRI): CDN bị sửa file thì trình duyệt từ chối chạy -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.min.js"
+        integrity="sha384-7i/4BYWz4Mn+lJfg2HWfEPfZQ7tmFKF3CTSKlXBpxWjNlLjcg+T6smpHG4gLmU1u" crossorigin="anonymous"></script>
 
     <script>
         /* ========================================================
@@ -3833,7 +3830,7 @@
                 const image = document.createElement('img');
                 image.className = 'cat-marker-photo';
                 image.src = getCatImageUrl(cat.image);
-                image.alt = `Ảnh mèo ${cat.name || 'chưa đặt tên'}`;
+                image.alt = t('alt_cat_photo', { name: cat.name || t('alt_unnamed') });
                 container.appendChild(image);
             } else {
                 const emoji = document.createElement('div');
@@ -3997,6 +3994,7 @@
         const sightingCancelBtn = document.getElementById('sightingCancelBtn');
         let currentSightingCatId = null;
         let currentSightingImageDataUrl = '';
+        let sightingPhotoSeq = 0;
 
         const timelineModal = document.getElementById('timelineModal');
         const timelineModalTitle = document.getElementById('timelineModalTitle');
@@ -4246,7 +4244,124 @@
                 install_help_browser_note: "Nếu đang mở trong Zalo hoặc Facebook, hãy chọn mở liên kết bằng trình duyệt trước.",
                 install_help_url_label: "Liên kết ứng dụng",
                 btn_got_it: "Đã hiểu",
-                map_selection_prompt: "Chạm vào bản đồ để đặt vị trí mèo"
+                map_selection_prompt: "Chạm vào bản đồ để đặt vị trí mèo",
+                // Dynamic messages (JS)
+                alt_cat_photo: "Ảnh mèo {name}",
+                alt_unnamed: "chưa đặt tên",
+                alt_unnamed_cat: "mèo chưa đặt tên",
+                alt_submission_photo: "Ảnh đề xuất: {name}",
+                alt_cat: "Mèo",
+                alt_sos_cat: "Mèo SOS",
+                err_fav_sync: "Không thể đồng bộ yêu thích. Bấm mục Yêu thích để thử lại.",
+                err_fav_save: "Chưa lưu được yêu thích. Bấm mục Yêu thích để thử đồng bộ lại.",
+                err_idb_open: "Không thể mở IndexedDB.",
+                err_idb_blocked: "IndexedDB đang bị chặn bởi một tab khác.",
+                err_idb_read: "Không thể đọc IndexedDB.",
+                err_idb_read_aborted: "Đọc IndexedDB đã bị hủy.",
+                err_idb_write: "Không thể ghi IndexedDB.",
+                err_idb_write_aborted: "Ghi IndexedDB đã bị hủy.",
+                err_backup_not_list: "File sao lưu phải chứa danh sách mèo.",
+                err_invalid_cat_data: "Dữ liệu mèo không hợp lệ; không có dữ liệu nào được nhập.",
+                err_login_before_upload: "Hãy đăng nhập trước khi tải ảnh lên.",
+                err_read_upload_image: "Không thể đọc ảnh cần tải lên ({status}).",
+                err_unsupported_image: "Định dạng ảnh chưa được hỗ trợ; hãy chọn ảnh JPEG, PNG hoặc WebP.",
+                err_admin_only_migrate: "Chỉ admin mới có thể di chuyển ảnh cũ.",
+                msg_no_legacy_images: "Không còn ảnh dạng cũ trong dữ liệu mèo chung.",
+                confirm_migrate_images: "Chuyển {total} ảnh cũ (gồm ảnh trên bản đồ và hàng chờ cũ) sang Supabase Storage? Ảnh chỉ được thay bằng đường dẫn sau khi tải lên thành công.",
+                err_no_permission_cat_image: "Không đủ quyền cập nhật ảnh của mèo {name}.",
+                err_no_permission_submission_image: "Không đủ quyền cập nhật ảnh bài chờ duyệt {name}.",
+                msg_migrate_progress: "Đã chuyển {migrated}/{total} ảnh lên Storage…",
+                msg_migrate_done: "Đã chuyển {count} ảnh sang Supabase Storage.",
+                err_reload_latest: "Không tải lại được danh sách mới nhất: {message}",
+                err_migrate_partial: "Đã chuyển {migrated}/{total} ảnh; ảnh còn lại vẫn được giữ nguyên. ",
+                aria_backup_open: "Mở menu sao lưu",
+                aria_backup_close: "Đóng menu sao lưu",
+                moderation_empty: "Chưa có mèo nào chờ duyệt.",
+                btn_approve: "Duyệt",
+                btn_reject: "Từ chối",
+                err_admin_only_moderate: "Chỉ admin mới được duyệt bài gửi.",
+                msg_submission_approved: "Đã duyệt mèo và đưa lên bản đồ chung.",
+                msg_submission_rejected: "Đã từ chối bài gửi.",
+                confirm_reject_submission: "Từ chối và xóa bài gửi mèo này?",
+                err_process_submission: "Không thể xử lý bài gửi: {message}",
+                err_read_local_for_migration: "Không thể đọc dữ liệu mèo trên thiết bị để di chuyển: {message}",
+                err_load_pending: "Không thể tải danh sách chờ duyệt: {message}",
+                err_realtime_disconnected: "Kết nối đồng bộ trực tiếp bị gián đoạn. Hãy tải lại trang nếu dữ liệu chưa cập nhật.",
+                label_location_prefix: "Vị trí: ",
+                err_geocode_retry_later: "Chưa thể tra cứu lại tên địa điểm.",
+                err_geocode_http: "OpenStreetMap trả về lỗi {status}.",
+                err_geocode_not_found: "Không tìm thấy tên vị trí cho tọa độ này.",
+                list_empty_fav_login: "Đăng nhập tài khoản để xem danh sách yêu thích của bạn.",
+                list_empty_fav_loading: "Đang tải danh sách yêu thích…",
+                list_empty_fav_error: "Chưa tải được yêu thích. Bấm mục Yêu thích để thử lại.",
+                list_empty_fav_none: "Chưa có mèo yêu thích. Bấm ♡ Yêu thích ở một bé mèo để thêm vào danh sách.",
+                list_empty_gps_wait: "Đang chờ vị trí GPS…",
+                list_empty_need_location: "Bấm “Dùng vị trí của tôi” hoặc chọn “Tất cả” trong Khoảng cách để xem mèo.",
+                list_empty_no_match: "Không tìm thấy bé mèo phù hợp. Hãy thử mở rộng khoảng cách hoặc xóa bộ lọc.",
+                list_empty_no_cats: "Chưa có mèo nào được lưu.",
+                err_supabase_lib: "Không tải được thư viện Supabase.",
+                err_storage_not_ready: "Kho dữ liệu chưa sẵn sàng.",
+                err_login_to_manage: "Hãy đăng nhập để thêm hoặc quản lý mèo.",
+                err_edit_own_only: "Bạn chỉ có thể sửa mèo do chính mình tạo.",
+                err_delete_own_only: "Bạn chỉ có thể xóa mèo do chính mình tạo.",
+                err_insert_failed: "Không thể thêm một hoặc nhiều bản ghi mèo.",
+                err_no_permission_update: "Không đủ quyền cập nhật một hoặc nhiều bản ghi mèo.",
+                err_no_permission_delete: "Không đủ quyền xóa một hoặc nhiều bản ghi mèo.",
+                err_login_to_migrate: "Bạn cần đăng nhập để đưa mèo lên dữ liệu chung.",
+                confirm_migrate_local: "Tải {count} mèo cùng ảnh và vị trí đang lưu trên thiết bị này lên bản đồ chung? Các bản gốc trên thiết bị sẽ được giữ nguyên.",
+                msg_migrate_state_not_saved: "Đã tải dữ liệu lên. Không lưu được trạng thái di chuyển trên thiết bị này; đừng chạy di chuyển lần nữa để tránh bản trùng.",
+                msg_migrate_local_done: "Đã đưa {count} mèo lên dữ liệu chung. Bản gốc trên thiết bị vẫn được giữ.",
+                warn_geocode_failed: "Không tra cứu được tên vị trí qua OpenStreetMap; mèo vẫn được lưu bằng tọa độ.",
+                msg_cat_added: "Đã thêm mèo lên bản đồ chung.",
+                err_save_location: "Không thể lưu vị trí: {message}",
+                err_open_saved_image: "Không thể mở ảnh đã lưu.",
+                modal_edit_cat_title: "Sửa thông tin mèo",
+                err_invalid_status: "Tình trạng mèo không hợp lệ.",
+                err_status_note_required: "Nhập nội dung tình trạng khác, tối đa 200 ký tự.",
+                err_cat_record_not_found: "Không tìm thấy bản ghi mèo.",
+                err_login_to_update_status: "Hãy đăng nhập để cập nhật tình trạng mèo.",
+                prompt_feeder_name: "Nhập tên của bạn để ghi nhận tiếp tế (hoặc để trống):",
+                btn_recording: "Đang ghi nhận...",
+                err_record_feed: "Không thể ghi nhận: {message}",
+                btn_feed_retry: "🥣 Thử lại",
+                btn_giving: "Đang tặng...",
+                err_give_pate: "Không thể tặng: {message}",
+                err_report_sos: "Không thể báo SOS: {message}",
+                err_update: "Không thể cập nhật: {message}",
+                err_update_status: "Không thể cập nhật tình trạng: {message}",
+                err_update_data: "Không thể cập nhật dữ liệu: {message}",
+                err_process_image: "Không thể xử lý ảnh: {message}",
+                err_email_required: "Vui lòng nhập email.",
+                err_email_invalid: "Vui lòng nhập email đúng định dạng.",
+                err_migrate_local: "Không thể đưa dữ liệu lên: {message}",
+                err_signout: "Không thể đăng xuất: {message}",
+                err_verify_account: "Không thể xác nhận quyền tài khoản: {message}",
+                err_location_denied: "Chưa được cấp quyền vị trí. Hãy cho phép truy cập vị trí trong trình duyệt hoặc chọn “Tất cả” trong Khoảng cách.",
+                err_location_unavailable: "Không lấy được vị trí. Hãy thử lại hoặc chọn “Tất cả” trong Khoảng cách.",
+                msg_distance_uses_previous: "Khoảng cách vẫn dùng vị trí đã lấy trước đó.",
+                err_read_photo: "Không thể đọc ảnh này. Vui lòng thử ảnh khác!",
+                prompt_copy_link: "Sao chép đường link bên dưới:",
+                toast_app_installed: "🎉 Chúc mừng bạn đã cài đặt Sổ Tay Bắt Mèo lên màn hình chính!",
+                toast_install_hint: "Để cài đặt, hãy chọn \"Thêm vào màn hình chính\" (Add to Home Screen) trong menu trình duyệt nhé!",
+                err_migrate_images: "Không thể di chuyển ảnh: {message}",
+                err_create_backup: "Không thể tạo bản sao lưu: {message}",
+                err_account_changed_restore: "Tài khoản hoặc quyền admin đã thay đổi. Hãy đăng nhập lại để khôi phục.",
+                err_backup_other_app: "File này có định dạng sao lưu của ứng dụng khác.",
+                err_backup_version: "Phiên bản sao lưu {version} chưa được hỗ trợ.",
+                err_backup_no_cats: "Không tìm thấy danh sách mèo trong file JSON.",
+                msg_restore_done: "Đã khôi phục thêm {count} dấu mèo. Dữ liệu hiện có được giữ nguyên.",
+                err_restore_failed: "Khôi phục thất bại: {message}",
+                btn_saving: "Đang lưu...",
+                btn_getting_location: "Đang lấy vị trí...",
+                btn_save_location: "Lưu vị trí",
+                err_invalid_coords: "Vĩ độ hoặc kinh độ không hợp lệ.",
+                btn_syncing: "Đang đồng bộ...",
+                err_geo_denied: "Bạn đã từ chối quyền truy cập vị trí.",
+                err_geo_unavailable: "Thiết bị không xác định được vị trí.",
+                err_geo_timeout: "Đã hết thời gian chờ GPS.",
+                confirm_use_map_center: "{reason}\n\nBạn có muốn đặt dấu mèo tại tâm bản đồ hiện tại không? Đây chỉ là vị trí ước lượng, không phải vị trí GPS.",
+                err_save_info: "Không thể lưu thông tin: {message}",
+                err_storage_init: "Không thể mở kho dữ liệu trên trình duyệt: {message}"
             },
             en: {
                 app_title: "Stray Cat Notebook 🐾",
@@ -4457,7 +4572,124 @@
                 install_help_browser_note: "If opened inside Zalo or Facebook, tap ⋯ and choose 'Open in Browser' first.",
                 install_help_url_label: "Application Link",
                 btn_got_it: "Got it",
-                map_selection_prompt: "Tap on the map to place the cat marker"
+                map_selection_prompt: "Tap on the map to place the cat marker",
+                // Dynamic messages (JS)
+                alt_cat_photo: "Photo of {name}",
+                alt_unnamed: "unnamed cat",
+                alt_unnamed_cat: "unnamed cat",
+                alt_submission_photo: "Submitted photo: {name}",
+                alt_cat: "Cat",
+                alt_sos_cat: "SOS cat",
+                err_fav_sync: "Couldn't sync your favorites. Tap Favorites to try again.",
+                err_fav_save: "Your favorites weren't saved yet. Tap Favorites to sync again.",
+                err_idb_open: "Couldn't open IndexedDB.",
+                err_idb_blocked: "IndexedDB is blocked by another tab.",
+                err_idb_read: "Couldn't read from IndexedDB.",
+                err_idb_read_aborted: "Reading from IndexedDB was aborted.",
+                err_idb_write: "Couldn't write to IndexedDB.",
+                err_idb_write_aborted: "Writing to IndexedDB was aborted.",
+                err_backup_not_list: "The backup file must contain a list of cats.",
+                err_invalid_cat_data: "Invalid cat data; nothing was imported.",
+                err_login_before_upload: "Please sign in before uploading photos.",
+                err_read_upload_image: "Couldn't read the photo to upload ({status}).",
+                err_unsupported_image: "This photo format isn't supported yet; please choose a JPEG, PNG or WebP photo.",
+                err_admin_only_migrate: "Only admins can migrate legacy photos.",
+                msg_no_legacy_images: "No legacy-format photos left in the shared cat data.",
+                confirm_migrate_images: "Move {total} legacy photos (including map photos and the old review queue) to Supabase Storage? Each photo is only replaced with a link after it uploads successfully.",
+                err_no_permission_cat_image: "You don't have permission to update the photo of cat {name}.",
+                err_no_permission_submission_image: "You don't have permission to update the photo of pending submission {name}.",
+                msg_migrate_progress: "Moved {migrated}/{total} photos to Storage…",
+                msg_migrate_done: "Moved {count} photos to Supabase Storage.",
+                err_reload_latest: "Couldn't reload the latest list: {message}",
+                err_migrate_partial: "Moved {migrated}/{total} photos; the remaining photos were left unchanged. ",
+                aria_backup_open: "Open backup menu",
+                aria_backup_close: "Close backup menu",
+                moderation_empty: "No cats waiting for review.",
+                btn_approve: "Approve",
+                btn_reject: "Reject",
+                err_admin_only_moderate: "Only admins can review submissions.",
+                msg_submission_approved: "Cat approved and added to the shared map.",
+                msg_submission_rejected: "Submission rejected.",
+                confirm_reject_submission: "Reject and delete this cat submission?",
+                err_process_submission: "Couldn't process the submission: {message}",
+                err_read_local_for_migration: "Couldn't read the cat data on this device for migration: {message}",
+                err_load_pending: "Couldn't load the review queue: {message}",
+                err_realtime_disconnected: "Live sync was interrupted. Reload the page if the data doesn't update.",
+                label_location_prefix: "Location: ",
+                err_geocode_retry_later: "Can't look up the place name again just yet.",
+                err_geocode_http: "OpenStreetMap returned error {status}.",
+                err_geocode_not_found: "No place name found for these coordinates.",
+                list_empty_fav_login: "Sign in to see your favorite cats.",
+                list_empty_fav_loading: "Loading your favorites…",
+                list_empty_fav_error: "Couldn't load your favorites. Tap Favorites to try again.",
+                list_empty_fav_none: "No favorite cats yet. Tap ♡ Favorite on a cat to add it to your list.",
+                list_empty_gps_wait: "Waiting for GPS location…",
+                list_empty_need_location: "Tap “Use my location” or choose “All” under Distance to see cats.",
+                list_empty_no_match: "No matching cats found. Try a wider distance or clear the filters.",
+                list_empty_no_cats: "No cats saved yet.",
+                err_supabase_lib: "Couldn't load the Supabase library.",
+                err_storage_not_ready: "Data storage isn't ready yet.",
+                err_login_to_manage: "Please sign in to add or manage cats.",
+                err_edit_own_only: "You can only edit cats you created.",
+                err_delete_own_only: "You can only delete cats you created.",
+                err_insert_failed: "Couldn't add one or more cat records.",
+                err_no_permission_update: "You don't have permission to update one or more cat records.",
+                err_no_permission_delete: "You don't have permission to delete one or more cat records.",
+                err_login_to_migrate: "You need to sign in to upload cats to the shared data.",
+                confirm_migrate_local: "Upload {count} cats, with the photos and locations saved on this device, to the shared map? The originals on this device will be kept.",
+                msg_migrate_state_not_saved: "Data uploaded. Couldn't save the migration status on this device; don't run the migration again to avoid duplicates.",
+                msg_migrate_local_done: "Uploaded {count} cats to the shared data. The originals on this device are kept.",
+                warn_geocode_failed: "Couldn't look up the place name via OpenStreetMap; the cat is still saved with its coordinates.",
+                msg_cat_added: "Cat added to the shared map.",
+                err_save_location: "Couldn't save the location: {message}",
+                err_open_saved_image: "Couldn't open the saved photo.",
+                modal_edit_cat_title: "Edit cat details",
+                err_invalid_status: "Invalid cat status.",
+                err_status_note_required: "Describe the other status, up to 200 characters.",
+                err_cat_record_not_found: "Cat record not found.",
+                err_login_to_update_status: "Please sign in to update the cat's status.",
+                prompt_feeder_name: "Enter your name to log this feeding (or leave blank):",
+                btn_recording: "Logging...",
+                err_record_feed: "Couldn't log the feeding: {message}",
+                btn_feed_retry: "🥣 Try again",
+                btn_giving: "Giving...",
+                err_give_pate: "Couldn't give pate: {message}",
+                err_report_sos: "Couldn't report SOS: {message}",
+                err_update: "Couldn't update: {message}",
+                err_update_status: "Couldn't update status: {message}",
+                err_update_data: "Couldn't update data: {message}",
+                err_process_image: "Couldn't process the photo: {message}",
+                err_email_required: "Please enter your email.",
+                err_email_invalid: "Please enter a valid email address.",
+                err_migrate_local: "Couldn't upload the data: {message}",
+                err_signout: "Couldn't sign out: {message}",
+                err_verify_account: "Couldn't verify account permissions: {message}",
+                err_location_denied: "Location permission not granted. Allow location access in your browser or choose “All” under Distance.",
+                err_location_unavailable: "Couldn't get your location. Try again or choose “All” under Distance.",
+                msg_distance_uses_previous: "Distances still use your previously detected location.",
+                err_read_photo: "Couldn't read this photo. Please try another one!",
+                prompt_copy_link: "Copy the link below:",
+                toast_app_installed: "🎉 Yay! Stray Cat Notebook is now on your home screen, Hooman!",
+                toast_install_hint: "To install, choose \"Add to Home Screen\" from your browser menu!",
+                err_migrate_images: "Couldn't migrate photos: {message}",
+                err_create_backup: "Couldn't create the backup: {message}",
+                err_account_changed_restore: "Your account or admin permissions changed. Please sign in again to restore.",
+                err_backup_other_app: "This file is a backup from a different app.",
+                err_backup_version: "Backup version {version} isn't supported yet.",
+                err_backup_no_cats: "No cat list found in the JSON file.",
+                msg_restore_done: "Restored {count} more cat markers. Your existing data was kept.",
+                err_restore_failed: "Restore failed: {message}",
+                btn_saving: "Saving...",
+                btn_getting_location: "Getting location...",
+                btn_save_location: "Save Location",
+                err_invalid_coords: "Invalid latitude or longitude.",
+                btn_syncing: "Syncing...",
+                err_geo_denied: "You denied location access.",
+                err_geo_unavailable: "Your device couldn't determine its location.",
+                err_geo_timeout: "GPS timed out.",
+                confirm_use_map_center: "{reason}\n\nWould you like to place the cat marker at the current map center instead? This is only an approximate location, not a GPS position.",
+                err_save_info: "Couldn't save the details: {message}",
+                err_storage_init: "Couldn't open the browser data storage: {message}"
             }
         };
 
@@ -4486,7 +4718,8 @@
             let text = langDict[key] || I18N['vi'][key] || key;
             if (params && typeof params === 'object') {
                 for (const [k, v] of Object.entries(params)) {
-                    text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+                    // Dùng hàm thay thế để ký tự `$` trong tên mèo/người không bị hiểu là mẫu thay thế.
+                    text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), () => String(v));
                 }
             }
             return text;
@@ -4580,10 +4813,22 @@
                 const preservedNote = sightingNoteInput ? sightingNoteInput.value : '';
                 const preservedReporter = sightingReporterInput ? sightingReporterInput.value : '';
                 const preservedDate = sightingDateInput ? sightingDateInput.value : '';
+                const preservedImage = currentSightingImageDataUrl;
+                const wasSubmitting = sightingSubmitBtn.disabled;
                 openSightingModal(currentSightingCatId);
                 if (sightingNoteInput && preservedNote) sightingNoteInput.value = preservedNote;
                 if (sightingReporterInput && preservedReporter) sightingReporterInput.value = preservedReporter;
                 if (sightingDateInput && preservedDate) sightingDateInput.value = preservedDate;
+                // Giữ ảnh đã chọn và trạng thái đang lưu khi đổi ngôn ngữ.
+                if (preservedImage) {
+                    currentSightingImageDataUrl = preservedImage;
+                    sightingPhotoPreview.src = preservedImage;
+                    sightingPhotoPreviewWrap.style.display = 'block';
+                }
+                if (wasSubmitting) {
+                    sightingSubmitBtn.disabled = true;
+                    sightingSubmitBtn.textContent = currentLang === 'vi' ? 'Đang lưu kỷ niệm...' : 'Saving encounter...';
+                }
             }
 
             // Nếu có popup mèo đang mở trên bản đồ, làm mới nội dung theo ngôn ngữ mới
@@ -4757,7 +5002,7 @@
                 return true;
             } catch (error) {
                 if (currentUser?.id === userId && requestVersion === favoriteRequestVersion) {
-                    favoriteSyncError = 'Không thể đồng bộ yêu thích. Bấm mục Yêu thích để thử lại.';
+                    favoriteSyncError = t('err_fav_sync');
                     console.error('Không thể đồng bộ yêu thích:', error);
                 }
                 return false;
@@ -4821,7 +5066,7 @@
                 else favoriteCatIds.delete(catId);
             } catch (error) {
                 if (currentUser?.id === userId && requestVersion === favoriteRequestVersion) {
-                    favoriteSyncError = 'Chưa lưu được yêu thích. Bấm mục Yêu thích để thử đồng bộ lại.';
+                    favoriteSyncError = t('err_fav_save');
                     console.error('Không thể lưu yêu thích:', error);
                 }
             } finally {
@@ -5171,6 +5416,7 @@
         let cats = [];
         let storageReady = false;
         let editingCatId = null;
+        let editModalSeq = 0;
         let database;
 
         function createCatId() {
@@ -5188,18 +5434,18 @@
                 database = request.result;
                 resolve(database);
             };
-            request.onerror = () => reject(request.error || new Error('Không thể mở IndexedDB.'));
-            request.onblocked = () => reject(new Error('IndexedDB đang bị chặn bởi một tab khác.'));
+            request.onerror = () => reject(request.error || new Error(t('err_idb_open')));
+            request.onblocked = () => reject(new Error(t('err_idb_blocked')));
         });
 
         function validateCats(data) {
-            if (!Array.isArray(data)) throw new Error('File sao lưu phải chứa danh sách mèo.');
+            if (!Array.isArray(data)) throw new Error(t('err_backup_not_list'));
             return data.map(cat => {
                 if (!cat || !Number.isFinite(cat.lat) || cat.lat < -90 || cat.lat > 90 ||
                     !Number.isFinite(cat.lng) || cat.lng < -180 || cat.lng > 180 ||
                     typeof cat.note !== 'string' ||
                     (cat.image !== null && cat.image !== undefined && typeof cat.image !== 'string')) {
-                    throw new Error('Dữ liệu mèo không hợp lệ; không có dữ liệu nào được nhập.');
+                    throw new Error(t('err_invalid_cat_data'));
                 }
                 return {
                     id: typeof cat.id === 'string' && cat.id ? cat.id : createCatId(),
@@ -5237,7 +5483,7 @@
                 lng: Number(row.lng),
                 name: row.name || '',
                 location_name: row.location_name || '',
-                note: row.note,
+                note: typeof row.note === 'string' ? row.note : '',
                 image: row.image || null,
                 approximate: Boolean(row.approximate),
                 current_status: row.current_status || 'unknown',
@@ -5267,9 +5513,9 @@
         }
 
         async function uploadCatImage(image, catId, collection = 'cats') {
-            if (!currentUser) throw new Error('Hãy đăng nhập trước khi tải ảnh lên.');
+            if (!currentUser) throw new Error(t('err_login_before_upload'));
             const response = await fetch(image);
-            if (!response.ok) throw new Error(`Không thể đọc ảnh cần tải lên (${response.status}).`);
+            if (!response.ok) throw new Error(t('err_read_upload_image', { status: response.status }));
             const blob = await response.blob();
             const extensionByType = {
                 'image/jpeg': 'jpg',
@@ -5277,7 +5523,7 @@
                 'image/webp': 'webp'
             };
             const extension = extensionByType[blob.type];
-            if (!extension) throw new Error('Định dạng ảnh chưa được hỗ trợ; hãy chọn ảnh JPEG, PNG hoặc WebP.');
+            if (!extension) throw new Error(t('err_unsupported_image'));
             const path = `${currentUser.id}/${collection}/${catId}.${extension}`;
             const { error } = await supabaseClient.storage.from('cat-images').upload(path, blob, {
                 cacheControl: '31536000',
@@ -5289,7 +5535,7 @@
         }
 
         async function migrateLegacyCloudImages() {
-            if (!isCatAdmin) throw new Error('Chỉ admin mới có thể di chuyển ảnh cũ.');
+            if (!isCatAdmin) throw new Error(t('err_admin_only_migrate'));
             const imagesToMigrate = cats.filter(cat => cat.image?.startsWith('data:'));
             const { data: submissions, error: submissionsError } = await supabaseClient
                 .from('cat_submissions')
@@ -5300,10 +5546,10 @@
             );
             const totalImages = imagesToMigrate.length + submissionsToMigrate.length;
             if (!totalImages) {
-                showAppStatus('Không còn ảnh dạng cũ trong dữ liệu mèo chung.');
+                showAppStatus(t('msg_no_legacy_images'));
                 return;
             }
-            if (!confirm(`Chuyển ${totalImages} ảnh cũ (gồm ảnh trên bản đồ và hàng chờ cũ) sang Supabase Storage? Ảnh chỉ được thay bằng đường dẫn sau khi tải lên thành công.`)) return;
+            if (!confirm(t('confirm_migrate_images', { total: totalImages }))) return;
 
             collaborationMigrateImagesButton.disabled = true;
             let migratedCount = 0;
@@ -5317,11 +5563,11 @@
                         .select('id');
                     if (error) throw error;
                     if ((data || []).length !== 1) {
-                        throw new Error(`Không đủ quyền cập nhật ảnh của mèo ${cat.name || cat.id}.`);
+                        throw new Error(t('err_no_permission_cat_image', { name: cat.name || cat.id }));
                     }
                     cat.image = path;
                     migratedCount += 1;
-                    showAppStatus(`Đã chuyển ${migratedCount}/${totalImages} ảnh lên Storage…`);
+                    showAppStatus(t('msg_migrate_progress', { migrated: migratedCount, total: totalImages }));
                 }
                 for (const submission of submissionsToMigrate) {
                     const path = await uploadCatImage(submission.image, submission.id, 'submissions');
@@ -5332,23 +5578,23 @@
                         .select('id');
                     if (error) throw error;
                     if ((data || []).length !== 1) {
-                        throw new Error(`Không đủ quyền cập nhật ảnh bài chờ duyệt ${submission.name || submission.id}.`);
+                        throw new Error(t('err_no_permission_submission_image', { name: submission.name || submission.id }));
                     }
                     migratedCount += 1;
-                    showAppStatus(`Đã chuyển ${migratedCount}/${totalImages} ảnh lên Storage…`);
+                    showAppStatus(t('msg_migrate_progress', { migrated: migratedCount, total: totalImages }));
                 }
                 renderCatMarkers();
                 await refreshPendingSubmissions();
-                showAppStatus(`Đã chuyển ${migratedCount} ảnh sang Supabase Storage.`);
+                showAppStatus(t('msg_migrate_done', { count: migratedCount }));
             } catch (error) {
                 let refreshError = '';
                 try {
                     await Promise.all([refreshCloudCats(), refreshPendingSubmissions()]);
                 } catch (reloadError) {
-                    refreshError = ` Không tải lại được danh sách mới nhất: ${reloadError.message}`;
+                    refreshError = ' ' + t('err_reload_latest', { message: reloadError.message });
                 }
                 throw new Error(
-                    `Đã chuyển ${migratedCount}/${totalImages} ảnh; ảnh còn lại vẫn được giữ nguyên. ` +
+                    t('err_migrate_partial', { migrated: migratedCount, total: totalImages }) +
                     `${error.message}${refreshError}`
                 );
             } finally {
@@ -5382,6 +5628,34 @@
             };
         }
 
+        const CAT_UPDATABLE_FIELDS = [
+            'lat', 'lng', 'name', 'location_name', 'note', 'image', 'approximate',
+            'current_status', 'status_note', 'status_updated_at', 'last_fed_at', 'last_fed_by',
+            'fed_count', 'pate_count', 'is_sos', 'sos_note', 'sightings_count'
+        ];
+
+        // Khi cập nhật chỉ gửi các cột thật sự đổi, để không ghi đè số liệu
+        // (lượt cho ăn, pate, SOS…) người khác vừa cập nhật mà máy này chưa nhận.
+        // Không gửi created_by: chủ sở hữu không đổi khi sửa.
+        function catUpdatePatch(previous, cat) {
+            const patch = {};
+            CAT_UPDATABLE_FIELDS.forEach(field => {
+                if ((previous[field] ?? null) !== (cat[field] ?? null)) patch[field] = cat[field] ?? null;
+            });
+            return patch;
+        }
+
+        function isStorageImagePath(image) {
+            return typeof image === 'string' && image !== '' && !image.startsWith('data:') && !/^https?:\/\//i.test(image);
+        }
+
+        async function removeStorageImages(paths) {
+            const validPaths = paths.filter(isStorageImagePath);
+            if (!validPaths.length || !supabaseClient) return;
+            const { error } = await supabaseClient.storage.from('cat-images').remove(validPaths);
+            if (error) console.warn('Không thể dọn ảnh trong Storage:', error.message);
+        }
+
         function catContentChanged(first, second) {
             return first.lat !== second.lat || first.lng !== second.lng || first.name !== second.name ||
                 first.location_name !== second.location_name || first.note !== second.note ||
@@ -5408,8 +5682,8 @@
                 let result;
                 request.onsuccess = () => { result = request.result; };
                 transaction.oncomplete = () => resolve(result || []);
-                transaction.onerror = () => reject(transaction.error || new Error('Không thể đọc IndexedDB.'));
-                transaction.onabort = () => reject(transaction.error || new Error('Đọc IndexedDB đã bị hủy.'));
+                transaction.onerror = () => reject(transaction.error || new Error(t('err_idb_read')));
+                transaction.onabort = () => reject(transaction.error || new Error(t('err_idb_read_aborted')));
             }));
         }
 
@@ -5420,8 +5694,8 @@
                 store.clear();
                 records.forEach(cat => store.put(cat));
                 transaction.oncomplete = () => resolve();
-                transaction.onerror = () => reject(transaction.error || new Error('Không thể ghi IndexedDB.'));
-                transaction.onabort = () => reject(transaction.error || new Error('Ghi IndexedDB đã bị hủy.'));
+                transaction.onerror = () => reject(transaction.error || new Error(t('err_idb_write')));
+                transaction.onabort = () => reject(transaction.error || new Error(t('err_idb_write_aborted')));
             }));
         }
 
@@ -5437,7 +5711,7 @@
             if (!allowed) {
                 backupActions.classList.remove('expanded');
                 backupMenuToggle.setAttribute('aria-expanded', 'false');
-                backupMenuToggle.setAttribute('aria-label', 'Mở menu sao lưu');
+                backupMenuToggle.setAttribute('aria-label', t('aria_backup_open'));
                 backupFileInput.value = '';
             }
         }
@@ -5511,27 +5785,31 @@
             renderCatMarkers();
         }
 
+        // Tính trạng thái mới xong mới gán một lần, để các thao tác đang chạy
+        // không thấy currentUser = null giữa chừng.
         async function refreshEditorAccess() {
-            currentUser = null;
-            resetCatFavoriteState();
-            isSignedIn = false;
-            isCatAdmin = false;
-            updateBackupControls();
+            let nextUser = null;
+            let nextIsAdmin = false;
             if (supabaseClient) {
                 const { data: sessionResult, error: sessionError } = await supabaseClient.auth.getSession();
                 if (sessionError) throw sessionError;
-                currentUser = sessionResult.session?.user || null;
-                if (currentUser) {
+                nextUser = sessionResult.session?.user || null;
+                if (nextUser) {
                     const { data, error } = await supabaseClient
                         .from('cat_editors')
                         .select('user_id, is_admin')
-                        .eq('user_id', currentUser.id)
+                        .eq('user_id', nextUser.id)
                         .maybeSingle();
-                    if (error) throw error;
-                    isSignedIn = true;
-                    isCatAdmin = Boolean(data?.is_admin);
+                    // Lỗi đọc quyền admin không có nghĩa là chưa đăng nhập.
+                    if (error) console.warn('Không thể kiểm tra quyền admin:', error.message);
+                    else nextIsAdmin = Boolean(data?.is_admin);
                 }
             }
+            if ((currentUser?.id || null) !== (nextUser?.id || null)) resetCatFavoriteState();
+            currentUser = nextUser;
+            isSignedIn = Boolean(nextUser);
+            isCatAdmin = nextIsAdmin;
+            updateBackupControls();
             updateCollaborationControls();
         }
 
@@ -5570,10 +5848,10 @@
         function renderModerationQueue() {
             stopObservingCatLocations(moderationQueue);
             moderationQueue.replaceChildren();
-            moderationQueueToggle.textContent = `Bài cũ chờ duyệt (${pendingCatSubmissions.length})`;
+            moderationQueueToggle.textContent = t('btn_pending_reviews', { count: pendingCatSubmissions.length });
             if (!pendingCatSubmissions.length) {
                 const emptyMessage = document.createElement('p');
-                emptyMessage.textContent = 'Chưa có mèo nào chờ duyệt.';
+                emptyMessage.textContent = t('moderation_empty');
                 moderationQueue.appendChild(emptyMessage);
                 return;
             }
@@ -5582,7 +5860,7 @@
                 const card = document.createElement('article');
                 card.className = 'submission-card';
                 const title = document.createElement('b');
-                title.textContent = submission.name || 'Mèo chưa đặt tên';
+                title.textContent = submission.name || t('unnamed_cat');
                 card.appendChild(title);
                 const location = document.createElement('small');
                 setCatLocationLabel(location, submission);
@@ -5593,7 +5871,7 @@
                 if (submission.image) {
                     const image = document.createElement('img');
                     image.src = getCatImageUrl(submission.image);
-                    image.alt = `Ảnh đề xuất: ${submission.name || 'mèo chưa đặt tên'}`;
+                    image.alt = t('alt_submission_photo', { name: submission.name || t('alt_unnamed_cat') });
                     card.appendChild(image);
                 }
 
@@ -5604,7 +5882,7 @@
                     button.type = 'button';
                     button.dataset.submissionAction = action;
                     button.dataset.submissionId = submission.id;
-                    button.textContent = action === 'approve' ? 'Duyệt' : 'Từ chối';
+                    button.textContent = action === 'approve' ? t('btn_approve') : t('btn_reject');
                     actions.appendChild(button);
                 });
                 card.appendChild(actions);
@@ -5625,14 +5903,14 @@
         }
 
         async function moderateCatSubmission(action, submissionId) {
-            if (!isCatAdmin) throw new Error('Chỉ admin mới được duyệt bài gửi.');
+            if (!isCatAdmin) throw new Error(t('err_admin_only_moderate'));
             const functionName = action === 'approve'
                 ? 'approve_cat_submission'
                 : 'reject_cat_submission';
             const { error } = await supabaseClient.rpc(functionName, { p_submission_id: submissionId });
             if (error) throw error;
             await Promise.all([refreshPendingSubmissions(), refreshCloudCats()]);
-            showAppStatus(action === 'approve' ? 'Đã duyệt mèo và đưa lên bản đồ chung.' : 'Đã từ chối bài gửi.');
+            showAppStatus(action === 'approve' ? t('msg_submission_approved') : t('msg_submission_rejected'));
         }
 
         function applyCloudCatChange(payload) {
@@ -5641,7 +5919,14 @@
                 if (!deletedId || !cats.some(cat => cat.id === deletedId)) return;
                 cats = cats.filter(cat => cat.id !== deletedId);
             } else if (payload.new?.id) {
-                const changedCat = catFromCloudRow(payload.new);
+                // Chuẩn hóa giống lúc tải toàn bộ danh sách; bỏ qua bản ghi hỏng thay vì làm hỏng cả tab.
+                let changedCat;
+                try {
+                    changedCat = validateCats([catFromCloudRow(payload.new)])[0];
+                } catch (error) {
+                    console.warn('Bỏ qua bản ghi mèo realtime không hợp lệ:', payload.new.id, error);
+                    return;
+                }
                 const existingIndex = cats.findIndex(cat => cat.id === changedCat.id);
                 if (existingIndex >= 0 && !catContentChanged(cats[existingIndex], changedCat)) return;
                 if (existingIndex >= 0) cats[existingIndex] = changedCat;
@@ -5665,7 +5950,7 @@
                 return legacyData ? validateCats(JSON.parse(legacyData)) : [];
             } catch (error) {
                 console.error('Không thể đọc dữ liệu cũ để di chuyển lên đám mây:', error);
-                showAppStatus(`Không thể đọc dữ liệu mèo trên thiết bị để di chuyển: ${error.message}`);
+                showAppStatus(t('err_read_local_for_migration', { message: error.message }));
                 return [];
             }
         }
@@ -5681,13 +5966,13 @@
                     if (isCatAdmin) {
                         refreshPendingSubmissions().catch(error => {
                             console.error('Không thể tải danh sách mèo chờ duyệt:', error);
-                            showAppStatus(`Không thể tải danh sách chờ duyệt: ${error.message}`);
+                            showAppStatus(t('err_load_pending', { message: error.message }));
                         });
                     }
                 })
                 .subscribe(status => {
                     if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-                        showAppStatus('Kết nối đồng bộ trực tiếp bị gián đoạn. Hãy tải lại trang nếu dữ liệu chưa cập nhật.');
+                        showAppStatus(t('err_realtime_disconnected'));
                     }
                 });
         }
@@ -5776,11 +6061,7 @@
             return cached && (!savedName || savedName === cached.baseName) ? cached.name : savedName;
         }
 
-        function formatCatLocation(cat) {
-            return `Vị trí: ${getCatLocationName(cat) || 'Chưa xác định địa điểm'}`;
-        }
-
-        function setCatLocationLabel(element, cat, prefix = 'Vị trí: ') {
+        function setCatLocationLabel(element, cat, prefix = t('label_location_prefix')) {
             const name = getCatLocationName(cat);
             element.textContent = prefix + (name || (currentLang === 'vi' ? 'Đang tìm tên địa điểm…' : 'Locating address…'));
             if (name) element.title = name;
@@ -5836,7 +6117,7 @@
             if (reverseGeocodeCache.has(cacheKey)) return Promise.resolve(reverseGeocodeCache.get(cacheKey).name);
             if (reverseGeocodePending.has(cacheKey)) return reverseGeocodePending.get(cacheKey);
             if ((reverseGeocodeFailures.get(cacheKey) || 0) > Date.now()) {
-                return Promise.reject(new Error('Chưa thể tra cứu lại tên địa điểm.'));
+                return Promise.reject(new Error(t('err_geocode_retry_later')));
             }
 
             const lookup = reverseGeocodeQueue.then(async () => {
@@ -5857,10 +6138,10 @@
                 let result;
                 try {
                     const response = await fetch(url, {
-                        headers: { 'Accept-Language': 'vi' },
+                        headers: { 'Accept-Language': currentLang === 'en' ? 'en' : 'vi' },
                         signal: controller.signal
                     });
-                    if (!response.ok) throw new Error(`OpenStreetMap trả về lỗi ${response.status}.`);
+                    if (!response.ok) throw new Error(t('err_geocode_http', { status: response.status }));
                     result = await response.json();
                 } finally {
                     clearTimeout(timeoutId);
@@ -5875,7 +6156,7 @@
                 const baseName = [...new Set([road, area, locality].filter(Boolean))].join(', ') || fallbackName;
                 const streetAddress = [String(address.house_number ?? '').trim(), road].filter(Boolean).join(' ');
                 const locationName = [...new Set([streetAddress, area, locality].filter(Boolean))].join(', ') || fallbackName;
-                if (!locationName) throw new Error('Không tìm thấy tên vị trí cho tọa độ này.');
+                if (!locationName) throw new Error(t('err_geocode_not_found'));
                 const normalizedName = locationName.slice(0, 120);
                 reverseGeocodeCache.set(cacheKey, { name: normalizedName, baseName: (baseName || locationName).slice(0, 120) });
                 reverseGeocodeFailures.delete(cacheKey);
@@ -5911,7 +6192,7 @@
                 return (!favoritesOnly || favoriteCatIds.has(cat.id)) &&
                     matchesStatus &&
                     (!radius || (distance !== null && distance <= radius)) &&
-                    normalizeSearchText(`${cat.name || ''} ${cat.note || ''} ${getCatDisplayNote(cat)} ${formatCatLocation(cat)}`).includes(query);
+                    normalizeSearchText(`${cat.name || ''} ${cat.note || ''} ${getCatDisplayNote(cat)} ${getCatLocationName(cat)}`).includes(query);
             });
             if (catFilterLocation) results.sort((a, b) => a.distance - b.distance);
             return results;
@@ -5964,14 +6245,14 @@
                 const emptyMessage = document.createElement('p');
                 emptyMessage.className = 'cat-search-empty';
                 emptyMessage.textContent = favoritesOnly && !currentUser
-                    ? 'Đăng nhập tài khoản để xem danh sách yêu thích của bạn.'
-                    : favoritesOnly && favoriteLoading ? 'Đang tải danh sách yêu thích…'
-                    : favoritesOnly && favoriteSyncError ? 'Chưa tải được yêu thích. Bấm mục Yêu thích để thử lại.'
+                    ? t('list_empty_fav_login')
+                    : favoritesOnly && favoriteLoading ? t('list_empty_fav_loading')
+                    : favoritesOnly && favoriteSyncError ? t('list_empty_fav_error')
                     : favoritesOnly && !favoriteCount
-                    ? 'Chưa có mèo yêu thích. Bấm ♡ Yêu thích ở một bé mèo để thêm vào danh sách.'
+                    ? t('list_empty_fav_none')
                     : catDistanceFilter.value && !catFilterLocation
-                    ? catLocationLoading ? 'Đang chờ vị trí GPS…' : 'Bấm “Dùng vị trí của tôi” hoặc chọn “Tất cả” trong Khoảng cách để xem mèo.'
-                    : cats.length ? 'Không tìm thấy bé mèo phù hợp. Hãy thử mở rộng khoảng cách hoặc xóa bộ lọc.' : 'Chưa có mèo nào được lưu.';
+                    ? catLocationLoading ? t('list_empty_gps_wait') : t('list_empty_need_location')
+                    : cats.length ? t('list_empty_no_match') : t('list_empty_no_cats');
                 catSearchResults.appendChild(emptyMessage);
                 return;
             }
@@ -5995,7 +6276,7 @@
                 const details = document.createElement('small');
                 const distanceLabel = distance === null ? '' : distance < 1000
                     ? `${Math.round(distance)} m`
-                    : `${(distance / 1000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} km`;
+                    : `${(distance / 1000).toLocaleString(currentLang === 'en' ? 'en-US' : 'vi-VN', { maximumFractionDigits: 1 })} km`;
                 details.textContent = [getCatStatusLabel(cat.current_status), distanceLabel].filter(Boolean).join(' · ');
                 button.appendChild(details);
                 const displayNote = getCatDisplayNote(cat);
@@ -6051,8 +6332,31 @@
             if (openPopup) openCatGroupPopup(group);
         }
 
+        // Làm mới popup mèo đang mở bằng dữ liệu mới nhất thay vì đóng nó.
+        function refreshOpenCatPopup(catIds) {
+            const freshCats = catIds.map(id => cats.find(cat => cat.id === id)).filter(Boolean);
+            if (!freshCats.length) {
+                map.closePopup();
+                return;
+            }
+            activePopupCats = freshCats;
+            const popupElement = activeCatPopup.getElement();
+            const focused = document.activeElement;
+            // Người dùng đang gõ trong popup: giữ nguyên để không mất chữ đang nhập.
+            if (popupElement && focused && popupElement.contains(focused) && /^(INPUT|TEXTAREA|SELECT)$/.test(focused.tagName)) {
+                return;
+            }
+            stopObservingCatLocations(activeCatPopup.getContent());
+            const content = createCatPopupContent(freshCats);
+            L.DomEvent.disableScrollPropagation(content);
+            activeCatPopup.setContent(content);
+        }
+
         function renderCatMarkers() {
-            map.closePopup();
+            const openPopupCatIds = activeCatPopup && activePopupCats && activeCatPopup.isOpen()
+                ? activePopupCats.map(cat => cat.id)
+                : null;
+            if (!openPopupCatIds) map.closePopup();
             markerGroups.forEach(group => group.marker.remove());
             markerGroups.clear();
             const results = getFilteredCatResults();
@@ -6060,11 +6364,12 @@
             renderCatList(results);
             updateDailyFortuneBadge();
             updateSosBadge();
+            if (openPopupCatIds) refreshOpenCatPopup(openPopupCatIds);
         }
 
         async function initializeStorage() {
             if (isCloudConfigured) {
-                if (!supabaseClient) throw new Error('Không tải được thư viện Supabase.');
+                if (!supabaseClient) throw new Error(t('err_supabase_lib'));
                 const migrationStateKey = `catMapMigratedToCloud_${supabaseUrl.split('.')[0].replace('https://', '')}`;
                 try {
                     localCatsMigrationComplete = localStorage.getItem(migrationStateKey) === 'true';
@@ -6113,9 +6418,9 @@
         }
 
         async function persistCats(updatedCats) {
-            if (!storageReady) throw new Error('Kho dữ liệu chưa sẵn sàng.');
+            if (!storageReady) throw new Error(t('err_storage_not_ready'));
             if (isCloudConfigured && !currentUser) {
-                throw new Error('Hãy đăng nhập để thêm hoặc quản lý mèo.');
+                throw new Error(t('err_login_to_manage'));
             }
             const validatedCats = validateCats(updatedCats);
             if (supabaseClient) {
@@ -6128,55 +6433,64 @@
                 changedCats.forEach(cat => {
                     const previous = previousById.get(cat.id);
                     if (previous && !canManageCat(previous)) {
-                        throw new Error('Bạn chỉ có thể sửa mèo do chính mình tạo.');
+                        throw new Error(t('err_edit_own_only'));
                     }
                 });
+                const actingUserId = currentUser.id;
                 const rowsToInsert = changedCats
                     .filter(cat => !previousById.has(cat.id))
                     .map(catToCloudRow);
-                const rowsToUpdate = changedCats
-                    .filter(cat => previousById.has(cat.id))
-                    .map(catToCloudRow);
+                const catsToUpdate = changedCats.filter(cat => previousById.has(cat.id));
                 const persistedImages = new Map();
                 const nextById = new Map(validatedCats.map(cat => [cat.id, cat]));
                 const idsToDelete = cats.filter(cat => !nextById.has(cat.id)).map(cat => cat.id);
                 const catsToDelete = cats.filter(cat => idsToDelete.includes(cat.id));
                 if (catsToDelete.some(cat => !canManageCat(cat))) {
-                    throw new Error('Bạn chỉ có thể xóa mèo do chính mình tạo.');
+                    throw new Error(t('err_delete_own_only'));
                 }
 
                 if (rowsToInsert.length) {
-                    const cloudRows = await Promise.all(rowsToInsert.map(async row => {
-                        const cat = changedCats.find(item => item.id === row.id);
-                        const image = cat.image ? await uploadCatImage(cat.image, cat.id) : null;
-                        persistedImages.set(cat.id, image);
-                        return { ...row, image };
-                    }));
-                    const { data, error } = await supabaseClient.from('cats').insert(cloudRows).select('id');
-                    if (error) throw error;
-                    if ((data || []).length !== rowsToInsert.length) {
-                        throw new Error('Không thể thêm một hoặc nhiều bản ghi mèo.');
+                    const uploadedPaths = [];
+                    try {
+                        const cloudRows = await Promise.all(rowsToInsert.map(async row => {
+                            const cat = changedCats.find(item => item.id === row.id);
+                            let image = cat.image || null;
+                            if (image?.startsWith('data:')) {
+                                image = await uploadCatImage(image, cat.id);
+                                uploadedPaths.push(image);
+                            }
+                            persistedImages.set(cat.id, image);
+                            return { ...row, image };
+                        }));
+                        const { data, error } = await supabaseClient.from('cats').insert(cloudRows).select('id');
+                        if (error) throw error;
+                        if ((data || []).length !== rowsToInsert.length) {
+                            throw new Error(t('err_insert_failed'));
+                        }
+                    } catch (error) {
+                        // Thêm thất bại: dọn ảnh vừa tải lên để không để lại ảnh mồ côi.
+                        await removeStorageImages(uploadedPaths);
+                        throw error;
                     }
                 }
-                if (rowsToUpdate.length) {
+                if (catsToUpdate.length) {
                     try {
-                        await Promise.all(rowsToUpdate.map(async row => {
-                            const cat = changedCats.find(item => item.id === row.id);
-                            const cloudRow = {
-                                ...row,
-                                image: cat.image && (cat.image.startsWith('data:') || /^https?:\/\//i.test(cat.image))
-                                    ? await uploadCatImage(cat.image, cat.id)
-                                    : cat.image
-                            };
-                            persistedImages.set(cat.id, cloudRow.image);
+                        await Promise.all(catsToUpdate.map(async cat => {
+                            const patch = catUpdatePatch(previousById.get(cat.id), cat);
+                            // Chỉ tải lên ảnh mới chụp/chọn (data URL); ảnh cũ giữ nguyên đường dẫn.
+                            if (patch.image?.startsWith('data:')) {
+                                patch.image = await uploadCatImage(patch.image, cat.id);
+                            }
+                            persistedImages.set(cat.id, 'image' in patch ? patch.image : cat.image);
+                            if (!Object.keys(patch).length) return;
                             const { data, error } = await supabaseClient
                                 .from('cats')
-                                .update(cloudRow)
-                                .eq('id', cloudRow.id)
+                                .update(patch)
+                                .eq('id', cat.id)
                                 .select('id');
                             if (error) throw error;
                             if ((data || []).length !== 1) {
-                                throw new Error('Không đủ quyền cập nhật một hoặc nhiều bản ghi mèo.');
+                                throw new Error(t('err_no_permission_update'));
                             }
                         }));
                     } catch (error) {
@@ -6192,8 +6506,10 @@
                     }
                     if ((data || []).length !== idsToDelete.length) {
                         await refreshCloudCats();
-                        throw new Error('Không đủ quyền xóa một hoặc nhiều bản ghi mèo.');
+                        throw new Error(t('err_no_permission_delete'));
                     }
+                    // Dọn ảnh của mèo đã xóa (lỗi dọn ảnh không chặn việc xóa).
+                    await removeStorageImages(catsToDelete.map(cat => cat.image));
                 }
                 const deletedIds = new Set(idsToDelete);
                 cats = cats.filter(cat => !deletedIds.has(cat.id));
@@ -6203,8 +6519,8 @@
                     const savedCat = {
                         ...cat,
                         image: persistedImages.has(cat.id) ? persistedImages.get(cat.id) : cat.image,
-                        created_by: previous?.created_by || currentUser.id,
-                        updated_by: currentUser.id,
+                        created_by: previous ? previous.created_by : actingUserId,
+                        updated_by: actingUserId,
                         updated_at: new Date().toISOString()
                     };
                     if (existingIndex >= 0) cats[existingIndex] = savedCat;
@@ -6223,12 +6539,11 @@
 
         async function migrateLocalCatsToCloud() {
             if (!supabaseClient || !isSignedIn) {
-                throw new Error('Bạn cần đăng nhập để đưa mèo lên dữ liệu chung.');
+                throw new Error(t('err_login_to_migrate'));
             }
             if (!localCatsForMigration.length || localCatsMigrationComplete) return;
             const confirmed = confirm(
-                `Tải ${localCatsForMigration.length} mèo cùng ảnh và vị trí đang lưu trên thiết bị này lên bản đồ chung? ` +
-                'Các bản gốc trên thiết bị sẽ được giữ nguyên.'
+                t('confirm_migrate_local', { count: localCatsForMigration.length })
             );
             if (!confirmed) return;
 
@@ -6247,10 +6562,10 @@
                 updateCollaborationControls();
             } catch (error) {
                 console.error('Đã tải mèo lên nhưng không thể lưu trạng thái di chuyển:', error);
-                showAppStatus('Đã tải dữ liệu lên. Không lưu được trạng thái di chuyển trên thiết bị này; đừng chạy di chuyển lần nữa để tránh bản trùng.');
+                showAppStatus(t('msg_migrate_state_not_saved'));
                 return;
             }
-            showAppStatus(`Đã đưa ${importedCats.length} mèo lên dữ liệu chung. Bản gốc trên thiết bị vẫn được giữ.`);
+            showAppStatus(t('msg_migrate_local_done', { count: importedCats.length }));
         }
 
         async function saveCatAt(lat, lng, name, note, approximate, image = currentImageDataUrl, locationName = '') {
@@ -6260,7 +6575,7 @@
                     locationName = await lookupLocationName(lat, lng);
                 } catch (error) {
                     console.warn('Không thể tra cứu tên vị trí từ OpenStreetMap:', error);
-                    locationLookupWarning = 'Không tra cứu được tên vị trí qua OpenStreetMap; mèo vẫn được lưu bằng tọa độ.';
+                    locationLookupWarning = t('warn_geocode_failed');
                 }
             }
             const cat = {
@@ -6277,7 +6592,7 @@
             };
             if (isCloudConfigured) {
                 await persistCats(cats.concat(cat));
-                showAppStatus(locationLookupWarning || 'Đã thêm mèo lên bản đồ chung.');
+                showAppStatus(locationLookupWarning || t('msg_cat_added'));
                 map.setView([lat, lng], 17);
                 resetAndCloseModal();
                 return locationLookupWarning;
@@ -6290,10 +6605,13 @@
             return locationLookupWarning;
         }
 
+        let isSavingMapCat = false;
         map.on('click', async event => {
-            if (!pendingMapCat) return;
+            // Chặn chạm lần 2 trong lúc đang lưu (tra địa chỉ + tải ảnh có thể mất vài giây).
+            if (!pendingMapCat || isSavingMapCat) return;
 
             const selectedCat = pendingMapCat;
+            isSavingMapCat = true;
             try {
                 const locationLookupWarning = await saveCatAt(
                     event.latlng.lat,
@@ -6311,7 +6629,9 @@
                 else if (!isCloudConfigured) clearAppStatus();
             } catch (error) {
                 console.error('Không thể lưu mèo tại vị trí đã chọn:', error);
-                showAppStatus(`Không thể lưu vị trí: ${error.message}`);
+                showAppStatus(t('err_save_location', { message: error.message }));
+            } finally {
+                isSavingMapCat = false;
             }
         });
 
@@ -6435,7 +6755,7 @@
             if (match) {
                 icon = match[1];
                 text = match[2];
-            } else if (/lỗi|không thể|thất bại|error|failed/i.test(trimmed)) {
+            } else if (/lỗi|không thể|thất bại|error|failed|couldn't|could not|unable/i.test(trimmed)) {
                 icon = '😿';
             }
 
@@ -6533,7 +6853,7 @@
             return new Promise((resolve, reject) => {
                 const image = new Image();
                 image.onload = () => resolve(image);
-                image.onerror = () => reject(new Error('Không thể mở ảnh đã lưu.'));
+                image.onerror = () => reject(new Error(t('err_open_saved_image')));
                 image.src = getCatImageUrl(dataUrl);
             });
         }
@@ -6541,11 +6861,12 @@
         async function openEditModal(catId) {
             const cat = cats.find(item => item.id === catId);
             if (!cat) return;
-            if (!canManageCat(cat)) throw new Error('Bạn chỉ có thể sửa mèo do chính mình tạo.');
+            if (!canManageCat(cat)) throw new Error(t('err_edit_own_only'));
 
             editingCatId = cat.id;
-            modalTitle.textContent = 'Sửa thông tin mèo';
-            saveButton.textContent = 'Lưu thay đổi';
+            const editRequestId = ++editModalSeq;
+            modalTitle.textContent = t('modal_edit_cat_title');
+            saveButton.textContent = t('btn_save_changes');
             chooseMapLocationButton.style.display = 'none';
             document.getElementById('catName').value = cat.name || '';
             document.getElementById('catLocationName').value = getCatLocationName(cat);
@@ -6559,10 +6880,14 @@
             previewContainer.style.display = 'none';
             if (cat.image) {
                 try {
-                    sourceImage = await loadImageForEditing(cat.image);
+                    const loadedImage = await loadImageForEditing(cat.image);
+                    // Trong lúc tải ảnh, người dùng đã đóng modal hoặc chuyển sang thêm/sửa mèo khác.
+                    if (editRequestId !== editModalSeq) return;
+                    sourceImage = loadedImage;
                     resetImageEditor();
                     previewContainer.style.display = 'block';
                 } catch (error) {
+                    if (editRequestId !== editModalSeq) return;
                     console.error('Không thể mở ảnh đã lưu để chỉnh sửa:', error);
                     showAppStatus(error.message);
                 }
@@ -6579,17 +6904,17 @@
 
         async function updateCatStatus(catId, status, statusNote = '') {
             if (!['seen', 'helped', 'not_found', 'other'].includes(status)) {
-                throw new Error('Tình trạng mèo không hợp lệ.');
+                throw new Error(t('err_invalid_status'));
             }
             const normalizedNote = status === 'other' ? statusNote.trim() : '';
             if (status === 'other' && (!normalizedNote || normalizedNote.length > 200)) {
-                throw new Error('Nhập nội dung tình trạng khác, tối đa 200 ký tự.');
+                throw new Error(t('err_status_note_required'));
             }
             const cat = cats.find(item => item.id === catId);
-            if (!cat) throw new Error('Không tìm thấy bản ghi mèo.');
+            if (!cat) throw new Error(t('err_cat_record_not_found'));
             const statusUpdatedAt = new Date().toISOString();
             if (isCloudConfigured) {
-                if (!currentUser) throw new Error('Hãy đăng nhập để cập nhật tình trạng mèo.');
+                if (!currentUser) throw new Error(t('err_login_to_update_status'));
                 const { error } = await supabaseClient.rpc('report_cat_status', {
                     p_cat_id: catId,
                     p_status: status,
@@ -6609,17 +6934,17 @@
             }
             const updatedCat = cats.find(item => item.id === catId);
             if (updatedCat && getFilteredCatResults().some(({ cat }) => cat.id === catId)) openSingleCatPopup(updatedCat);
-            showAppStatus(`Đã cập nhật tình trạng: ${getCatStatusLabel(status)}.`);
+            showAppStatus(t('toast_status_updated', { status: getCatStatusLabel(status) }));
         }
 
         async function checkInCatFeed(catId) {
             const cat = cats.find(item => item.id === catId);
-            if (!cat) throw new Error('Không tìm thấy bản ghi mèo.');
+            if (!cat) throw new Error(t('err_cat_record_not_found'));
 
             let feederName = currentUser?.email ? currentUser.email.split('@')[0] : '';
             if (!feederName) {
                 const storedName = localStorage.getItem('catMap_feeder_name') || '';
-                const entered = prompt('Nhập tên của bạn để ghi nhận tiếp tế (hoặc để trống):', storedName);
+                const entered = prompt(t('prompt_feeder_name'), storedName);
                 if (entered === null) return;
                 feederName = entered.trim().slice(0, 40) || 'Một Sen tốt bụng';
                 if (entered.trim()) {
@@ -7126,7 +7451,7 @@
                     avatarEl = document.createElement('img');
                     avatarEl.className = 'leaderboard-card-avatar';
                     avatarEl.src = getCatImageUrl(cat.image);
-                    avatarEl.alt = cat.name || 'Mèo';
+                    avatarEl.alt = cat.name || t('alt_cat');
                 } else {
                     avatarEl = document.createElement('div');
                     avatarEl.className = 'leaderboard-card-avatar emoji-avatar';
@@ -7201,7 +7526,7 @@
                     avatarEl = document.createElement('img');
                     avatarEl.className = 'leaderboard-card-avatar';
                     avatarEl.src = getCatImageUrl(cat.image);
-                    avatarEl.alt = cat.name || 'Mèo SOS';
+                    avatarEl.alt = cat.name || t('alt_sos_cat');
                 } else {
                     avatarEl = document.createElement('div');
                     avatarEl.className = 'leaderboard-card-avatar emoji-avatar';
@@ -7345,6 +7670,7 @@
         }
 
         function closeSightingModal() {
+            sightingPhotoSeq++;
             sightingModal.classList.remove('active');
             currentSightingCatId = null;
             currentSightingImageDataUrl = '';
@@ -7442,10 +7768,12 @@
             }
         }
 
+        let timelineRequestSeq = 0;
         async function openTimelineModal(catId) {
             const cat = cats.find(item => item.id === catId);
             if (!cat) return;
             currentTimelineCatId = catId;
+            const requestId = ++timelineRequestSeq;
 
             const catName = cat.name || (currentLang === 'vi' ? 'Bé mèo' : 'Kitty');
             timelineModalTitle.textContent = t('timeline_modal_title_cat', { name: catName });
@@ -7454,6 +7782,8 @@
             timelineModal.classList.add('active');
 
             const sightings = await fetchCatSightings(catId);
+            // Bỏ kết quả cũ nếu trong lúc chờ đã mở hành trình của bé khác hoặc đã đóng modal.
+            if (requestId !== timelineRequestSeq || currentTimelineCatId !== catId || !timelineModal.classList.contains('active')) return;
             const totalCount = 1 + sightings.length;
             const countNum = Math.max(totalCount, Number(cat.sightings_count) || 1);
             timelineTotalCount.textContent = t('timeline_total_encounters', { count: countNum });
@@ -7558,10 +7888,39 @@
             currentTimelineCatId = null;
         }
 
+        let currentFortuneIdx = 0;
+        const FORTUNE_SEEN_KEY = 'catMap_fortune_seen_date';
+
+        function getDailyHash(text) {
+            let hash = 0;
+            for (let i = 0; i < text.length; i++) {
+                hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
+            }
+            return hash;
+        }
+
+        function isFortuneSeenToday(todayStr) {
+            try {
+                return localStorage.getItem(FORTUNE_SEEN_KEY) === todayStr;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // Dùng một khóa duy nhất thay vì mỗi ngày một khóa, và dọn các khóa cũ.
+        function markFortuneSeen(todayStr) {
+            try {
+                localStorage.setItem(FORTUNE_SEEN_KEY, todayStr);
+                Object.keys(localStorage)
+                    .filter(key => key.startsWith('catMap_fortune_seen_') && key !== FORTUNE_SEEN_KEY)
+                    .forEach(key => localStorage.removeItem(key));
+            } catch (e) {}
+        }
+
         function updateDailyFortuneBadge() {
             if (!fortunePillBadge) return;
             const todayStr = new Date().toLocaleDateString('en-CA');
-            const seen = localStorage.getItem('catMap_fortune_seen_' + todayStr);
+            const seen = isFortuneSeenToday(todayStr);
             if (seen) {
                 fortunePillBadge.classList.add('hidden');
             } else {
@@ -7595,7 +7954,7 @@
                     : 'Hôm nay là một ngày tuyệt vời! Hãy mở mắt thật to, có thể bạn sẽ là người đầu tiên ghi dấu một bé mèo lên bản đồ đấy.';
                 fortuneGoToCatBtn.style.display = 'none';
                 fortuneModal.classList.add('active');
-                localStorage.setItem('catMap_fortune_seen_' + todayStr, 'true');
+                markFortuneSeen(todayStr);
                 fortunePillBadge.classList.add('hidden');
                 return;
             }
@@ -7610,19 +7969,19 @@
                     const otherCats = cats.filter(c => !currentFortuneCat || c.id !== currentFortuneCat.id);
                     selectedCat = otherCats[Math.floor(Math.random() * otherCats.length)];
                 } else if (!forceRandom) {
-                    let hash = 0;
-                    for (let i = 0; i < todayStr.length; i++) {
-                        hash = (hash * 31 + todayStr.charCodeAt(i)) >>> 0;
-                    }
-                    selectedCat = cats[hash % cats.length];
+                    selectedCat = cats[getDailyHash(todayStr) % cats.length];
                 } else {
                     selectedCat = cats[0];
                 }
-                const fortuneIdx = Math.floor(Math.random() * fortunesList.length);
-                fortune = fortunesList[fortuneIdx];
+                // Quẻ trong ngày cố định theo ngày; "xem quẻ khác" thì ngẫu nhiên.
+                currentFortuneIdx = forceRandom
+                    ? Math.floor(Math.random() * fortunesList.length)
+                    : getDailyHash(todayStr + '|fortune') % fortunesList.length;
+                fortune = fortunesList[currentFortuneIdx];
             } else {
+                // Mở lại (hoặc đổi ngôn ngữ): giữ đúng quẻ đã rút.
                 selectedCat = currentFortuneCat;
-                fortune = fortunesList[0];
+                fortune = fortunesList[currentFortuneIdx % fortunesList.length];
             }
 
             currentFortuneCat = selectedCat;
@@ -7644,7 +8003,7 @@
             fortuneMessage.textContent = fortune.desc;
 
             fortuneModal.classList.add('active');
-            localStorage.setItem('catMap_fortune_seen_' + todayStr, 'true');
+            markFortuneSeen(todayStr);
             fortunePillBadge.classList.add('hidden');
         }
 
@@ -7659,14 +8018,14 @@
                 event.stopPropagation();
                 const catId = feedBtn.dataset.catFeed;
                 feedBtn.disabled = true;
-                feedBtn.textContent = 'Đang ghi nhận...';
+                feedBtn.textContent = t('btn_recording');
                 try {
                     await checkInCatFeed(catId);
                 } catch (error) {
                     console.error('Không thể ghi nhận bữa ăn:', error);
-                    showAppStatus(`Không thể ghi nhận: ${error.message}`);
+                    showAppStatus(t('err_record_feed', { message: error.message }));
                     feedBtn.disabled = false;
-                    feedBtn.textContent = '🥣 Thử lại';
+                    feedBtn.textContent = t('btn_feed_retry');
                 }
                 return;
             }
@@ -7676,14 +8035,14 @@
                 event.stopPropagation();
                 const catId = pateBtn.dataset.catPate;
                 pateBtn.disabled = true;
-                pateBtn.textContent = 'Đang tặng...';
+                pateBtn.textContent = t('btn_giving');
                 try {
                     await giveCatPate(catId);
                 } catch (error) {
                     console.error('Không thể tặng pate:', error);
-                    showAppStatus(`Không thể tặng: ${error.message}`);
+                    showAppStatus(t('err_give_pate', { message: error.message }));
                     pateBtn.disabled = false;
-                    pateBtn.textContent = '🐟 Tặng 1 lon pate';
+                    pateBtn.textContent = t('btn_give_pate');
                 }
                 return;
             }
@@ -7705,7 +8064,7 @@
                     await toggleCatSos(catId, true, note);
                 } catch (error) {
                     console.error('Không thể báo SOS:', error);
-                    showAppStatus(`Không thể báo SOS: ${error.message}`);
+                    showAppStatus(t('err_report_sos', { message: error.message }));
                     sosReportBtn.disabled = false;
                     sosReportBtn.textContent = t('btn_report_sos');
                 }
@@ -7730,7 +8089,7 @@
                     await toggleCatSos(catId, false, '');
                 } catch (error) {
                     console.error('Không thể hủy SOS:', error);
-                    showAppStatus(`Không thể cập nhật: ${error.message}`);
+                    showAppStatus(t('err_update', { message: error.message }));
                     sosResolveBtn.disabled = false;
                     sosResolveBtn.textContent = t('btn_resolve_sos');
                 }
@@ -7767,7 +8126,7 @@
                     await updateCatStatus(statusButton.dataset.catId, statusButton.dataset.catStatus);
                 } catch (error) {
                     console.error('Không thể cập nhật tình trạng mèo:', error);
-                    showAppStatus(`Không thể cập nhật tình trạng: ${error.message}`);
+                    showAppStatus(t('err_update_status', { message: error.message }));
                     statusButtons.forEach(button => { button.disabled = false; });
                 }
                 return;
@@ -7784,7 +8143,7 @@
                     await updateCatStatus(statusSubmitButton.dataset.catStatusSubmit, 'other', statusNote);
                 } catch (error) {
                     console.error('Không thể cập nhật tình trạng mèo:', error);
-                    showAppStatus(`Không thể cập nhật tình trạng: ${error.message}`);
+                    showAppStatus(t('err_update_status', { message: error.message }));
                     statusButtons.forEach(button => { button.disabled = false; });
                 }
                 return;
@@ -7801,7 +8160,7 @@
                 }
             } catch (error) {
                 console.error('Không thể cập nhật dấu mèo:', error);
-                showAppStatus(`Không thể cập nhật dữ liệu: ${error.message}`);
+                showAppStatus(t('err_update_data', { message: error.message }));
             }
         });
 
@@ -7819,6 +8178,7 @@
                 return;
             }
             editingCatId = null;
+            editModalSeq++;
             modalTitle.textContent = t('add_modal_title');
             saveButton.textContent = isCloudConfigured ? t('btn_add_to_map') : (currentLang === 'en' ? 'Save Location' : 'Lưu vị trí');
             chooseMapLocationButton.style.display = 'block';
@@ -7847,7 +8207,7 @@
                 map.closePopup();
             } catch (error) {
                 console.error('Không thể chuẩn bị ảnh mèo:', error);
-                showAppStatus(`Không thể xử lý ảnh: ${error.message}`);
+                showAppStatus(t('err_process_image', { message: error.message }));
             }
         };
         document.getElementById('cancelMapSelectionBtn').onclick = () => {
@@ -7863,9 +8223,9 @@
         function validateCollaborationEmail() {
             collaborationEmail.value = collaborationEmail.value.trim();
             collaborationEmail.setCustomValidity(!collaborationEmail.value
-                ? 'Vui lòng nhập email.'
+                ? t('err_email_required')
                 : collaborationEmail.validity.typeMismatch
-                    ? 'Vui lòng nhập email đúng định dạng.'
+                    ? t('err_email_invalid')
                     : '');
             if (!collaborationEmail.reportValidity()) {
                 collaborationEmail.focus();
@@ -7979,7 +8339,7 @@
                 await migrateLocalCatsToCloud();
             } catch (error) {
                 console.error('Không thể di chuyển mèo lên dữ liệu chung:', error);
-                collaborationMessage.textContent = `Không thể đưa dữ liệu lên: ${error.message}`;
+                collaborationMessage.textContent = t('err_migrate_local', { message: error.message });
             } finally {
                 collaborationMigrateLocalButton.disabled = !isSignedIn;
             }
@@ -7996,7 +8356,7 @@
                 updateCollaborationControls();
             } catch (error) {
                 console.error('Không thể đăng xuất:', error);
-                collaborationMessage.textContent = `Không thể đăng xuất: ${error.message}`;
+                collaborationMessage.textContent = t('err_signout', { message: error.message });
             }
         };
         moderationQueueToggle.onclick = async () => {
@@ -8009,7 +8369,7 @@
                     await refreshPendingSubmissions();
                 } catch (error) {
                     console.error('Không thể tải danh sách mèo chờ duyệt:', error);
-                    showAppStatus(`Không thể tải danh sách chờ duyệt: ${error.message}`);
+                    showAppStatus(t('err_load_pending', { message: error.message }));
                 } finally {
                     moderationQueueToggle.disabled = false;
                 }
@@ -8019,7 +8379,7 @@
             const button = event.target.closest('button[data-submission-action]');
             if (!button) return;
             if (button.dataset.submissionAction === 'reject' &&
-                !confirm('Từ chối và xóa bài gửi mèo này?')) return;
+                !confirm(t('confirm_reject_submission'))) return;
             const submissionId = button.dataset.submissionId;
             const actionButtons = [...moderationQueue.querySelectorAll('button[data-submission-id]')]
                 .filter(actionButton => actionButton.dataset.submissionId === submissionId);
@@ -8028,12 +8388,12 @@
                 await moderateCatSubmission(button.dataset.submissionAction, submissionId);
             } catch (error) {
                 console.error('Không thể duyệt bài gửi mèo:', error);
-                showAppStatus(`Không thể xử lý bài gửi: ${error.message}`);
+                showAppStatus(t('err_process_submission', { message: error.message }));
                 actionButtons.forEach(actionButton => { actionButton.disabled = false; });
             }
         });
         if (supabaseClient) {
-            collaborationToggle.textContent = '☁️ Đang kết nối dữ liệu chung…';
+            collaborationToggle.textContent = t('collab_connecting');
             supabaseClient.auth.onAuthStateChange(event => {
                 if (event === 'PASSWORD_RECOVERY') passwordRecoveryMode = true;
                 if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
@@ -8055,7 +8415,7 @@
                             }
                         } catch (error) {
                             console.error('Không thể cập nhật quyền cộng tác:', error);
-                            showAppStatus(`Không thể xác nhận quyền tài khoản: ${error.message}`);
+                            showAppStatus(t('err_verify_account', { message: error.message }));
                         }
                     }, 0);
                 }
@@ -8119,9 +8479,9 @@
         map.on('locationerror', event => {
             catLocationLoading = false;
             catLocationError = event.code === 1
-                ? 'Chưa được cấp quyền vị trí. Hãy cho phép truy cập vị trí trong trình duyệt hoặc chọn “Tất cả” trong Khoảng cách.'
-                : 'Không lấy được vị trí. Hãy thử lại hoặc chọn “Tất cả” trong Khoảng cách.';
-            if (catFilterLocation) catLocationError += ' Khoảng cách vẫn dùng vị trí đã lấy trước đó.';
+                ? t('err_location_denied')
+                : t('err_location_unavailable');
+            if (catFilterLocation) catLocationError += ' ' + t('msg_distance_uses_previous');
             updateCatLocationControls();
             renderCatList();
         });
@@ -8195,20 +8555,25 @@
         };
         const handleSightingPhotoFile = async (file) => {
             if (!file) return;
+            const targetCatId = currentSightingCatId;
+            const requestId = ++sightingPhotoSeq;
             try {
                 const dataUrl = await compressImageFile(file, 1280, 0.82);
+                // Bỏ ảnh nếu trong lúc nén người dùng đã đóng modal, bỏ ảnh hoặc chuyển sang bé khác.
+                if (requestId !== sightingPhotoSeq || currentSightingCatId !== targetCatId || !sightingModal.classList.contains('active')) return;
                 currentSightingImageDataUrl = dataUrl;
                 sightingPhotoPreview.src = dataUrl;
                 sightingPhotoPreviewWrap.style.display = 'block';
             } catch (error) {
                 console.error('Không thể xử lý ảnh:', error);
-                alert('Không thể đọc ảnh này. Vui lòng thử ảnh khác!');
+                alert(t('err_read_photo'));
             }
         };
         if (sightingPhotoCamera) sightingPhotoCamera.onchange = (e) => handleSightingPhotoFile(e.target.files[0]);
         if (sightingPhotoInput) sightingPhotoInput.onchange = (e) => handleSightingPhotoFile(e.target.files[0]);
 
         sightingRemovePhotoBtn.onclick = () => {
+            sightingPhotoSeq++;
             if (sightingPhotoInput) sightingPhotoInput.value = '';
             if (sightingPhotoCamera) sightingPhotoCamera.value = '';
             currentSightingImageDataUrl = '';
@@ -8225,10 +8590,10 @@
                 const url = 'https://phamduyen6611-ops.github.io/so-tay-bat-meo/';
                 try {
                     await navigator.clipboard.writeText(url);
-                    copyAppUrlBtn.textContent = '✅ Đã chép link!';
-                    setTimeout(() => { copyAppUrlBtn.textContent = '📋 Sao chép Link'; }, 2000);
+                    copyAppUrlBtn.textContent = t('btn_copied');
+                    setTimeout(() => { copyAppUrlBtn.textContent = t('btn_copy_link'); }, 2000);
                 } catch {
-                    prompt('Sao chép đường link bên dưới:', url);
+                    prompt(t('prompt_copy_link'), url);
                 }
             };
         }
@@ -8822,13 +9187,13 @@
             if (pwaInstallBtn) {
                 pwaInstallBtn.style.display = 'none';
             }
-            showAppStatus('🎉 Chúc mừng bạn đã cài đặt Sổ Tay Bắt Mèo lên màn hình chính!');
+            showAppStatus(t('toast_app_installed'));
         });
 
         if (pwaInstallBtn) {
             pwaInstallBtn.onclick = async () => {
                 if (!deferredInstallPrompt) {
-                    showAppStatus('Để cài đặt, hãy chọn "Thêm vào màn hình chính" (Add to Home Screen) trong menu trình duyệt nhé!');
+                    showAppStatus(t('toast_install_hint'));
                     return;
                 }
                 deferredInstallPrompt.prompt();
@@ -8851,13 +9216,13 @@
             if (!canManageBackups()) return;
             const expanded = backupActions.classList.toggle('expanded');
             backupMenuToggle.setAttribute('aria-expanded', String(expanded));
-            backupMenuToggle.setAttribute('aria-label', expanded ? 'Đóng menu sao lưu' : 'Mở menu sao lưu');
+            backupMenuToggle.setAttribute('aria-label', expanded ? t('aria_backup_close') : t('aria_backup_open'));
         };
         document.addEventListener('click', event => {
             if (!backupActions.contains(event.target)) {
                 backupActions.classList.remove('expanded');
                 backupMenuToggle.setAttribute('aria-expanded', 'false');
-                backupMenuToggle.setAttribute('aria-label', 'Mở menu sao lưu');
+                backupMenuToggle.setAttribute('aria-label', t('aria_backup_open'));
             }
         });
         document.getElementById('closeModalBtn').onclick = resetAndCloseModal;
@@ -8918,7 +9283,7 @@
                 await migrateLegacyCloudImages();
             } catch (error) {
                 console.error('Không thể di chuyển ảnh cũ sang Storage:', error);
-                showAppStatus(`Không thể di chuyển ảnh: ${error.message}`);
+                showAppStatus(t('err_migrate_images', { message: error.message }));
             }
         };
 
@@ -8946,7 +9311,7 @@
                 clearAppStatus();
             } catch (error) {
                 console.error('Không thể tạo bản sao lưu:', error);
-                showAppStatus(`Không thể tạo bản sao lưu: ${error.message}`);
+                showAppStatus(t('err_create_backup', { message: error.message }));
             }
         };
 
@@ -8965,30 +9330,30 @@
             try {
                 const backup = JSON.parse(await file.text());
                 if (!canManageBackups() || currentUser.id !== importingUserId) {
-                    throw new Error('Tài khoản hoặc quyền admin đã thay đổi. Hãy đăng nhập lại để khôi phục.');
+                    throw new Error(t('err_account_changed_restore'));
                 }
                 let backupCats;
                 if (Array.isArray(backup)) {
                     backupCats = backup;
                 } else if (backup && typeof backup === 'object' && Array.isArray(backup.cats)) {
                     if (backup.format && backup.format !== 'cat-map-backup') {
-                        throw new Error('File này có định dạng sao lưu của ứng dụng khác.');
+                        throw new Error(t('err_backup_other_app'));
                     }
                     if (backup.version !== undefined && backup.version !== 1) {
-                        throw new Error(`Phiên bản sao lưu ${backup.version} chưa được hỗ trợ.`);
+                        throw new Error(t('err_backup_version', { version: backup.version }));
                     }
                     backupCats = backup.cats;
                 } else {
-                    throw new Error('Không tìm thấy danh sách mèo trong file JSON.');
+                    throw new Error(t('err_backup_no_cats'));
                 }
                 const importedCats = validateCats(backupCats).map(cat => ({ ...cat, id: createCatId() }));
                 await persistCats(cats.concat(importedCats));
-                showAppStatus(`Đã khôi phục thêm ${importedCats.length} dấu mèo. Dữ liệu hiện có được giữ nguyên.`);
+                showAppStatus(t('msg_restore_done', { count: importedCats.length }));
                 clearTimeout(window.appStatusTimer);
                 window.appStatusTimer = setTimeout(clearAppStatus, 7000);
             } catch (error) {
                 console.error('Không thể khôi phục bản sao lưu:', error);
-                showAppStatus(`Khôi phục thất bại: ${error.message}`);
+                showAppStatus(t('err_restore_failed', { message: error.message }));
             } finally {
                 backupFileInput.value = '';
             }
@@ -8999,7 +9364,7 @@
             const note = document.getElementById('catNote').value.trim() || t('default_cat_note');
             const isEditing = Boolean(editingCatId);
             saveButton.disabled = true;
-            saveButton.innerText = isEditing ? 'Đang lưu...' : 'Đang lấy vị trí...';
+            saveButton.innerText = isEditing ? t('btn_saving') : t('btn_getting_location');
             await new Promise(resolve => requestAnimationFrame(resolve));
             try {
                 currentImageDataUrl = sourceImage ? photoPreviewCanvas.toDataURL('image/jpeg', 0.82) : '';
@@ -9007,8 +9372,8 @@
                 console.error('Không thể xuất ảnh đã chỉnh sửa:', error);
                 showAppStatus(currentLang === 'vi' ? 'Không thể xử lý ảnh này. Vui lòng chọn ảnh khác.' : 'Could not process this image. Please choose another.');
                 saveButton.disabled = false;
-                saveButton.innerText = isEditing ? 'Lưu thay đổi' :
-                    isCloudConfigured ? 'Thêm lên bản đồ' : 'Lưu vị trí';
+                saveButton.innerText = isEditing ? t('btn_save_changes') :
+                    isCloudConfigured ? t('btn_add_to_map') : t('btn_save_location');
                 return;
             }
             let locationLookupWarning = '';
@@ -9018,16 +9383,16 @@
                     const lat = Number(editLatitude.value);
                     const lng = Number(editLongitude.value);
                     if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lng) || lng < -180 || lng > 180) {
-                        throw new Error('Vĩ độ hoặc kinh độ không hợp lệ.');
+                        throw new Error(t('err_invalid_coords'));
                     }
-                    saveButton.innerText = 'Đang đồng bộ...';
+                    saveButton.innerText = t('btn_syncing');
                     let locationName = document.getElementById('catLocationName').value.trim();
                     if (!locationName) {
                         try {
                             locationName = await lookupLocationName(lat, lng);
                         } catch (error) {
                             console.warn('Không thể tra cứu tên vị trí từ OpenStreetMap:', error);
-                            locationLookupWarning = 'Không tra cứu được tên vị trí qua OpenStreetMap; mèo vẫn được lưu bằng tọa độ.';
+                            locationLookupWarning = t('warn_geocode_failed');
                         }
                     }
                     const updatedCats = cats.map(cat => cat.id === editingCatId
@@ -9056,7 +9421,7 @@
                             { enableHighAccuracy: true, timeout: 7000, maximumAge: 15000 }
                         );
                     });
-                    saveButton.innerText = 'Đang đồng bộ...';
+                    saveButton.innerText = t('btn_syncing');
                     locationLookupWarning = await saveCatAt(
                         position.coords.latitude,
                         position.coords.longitude,
@@ -9073,11 +9438,11 @@
                 if (!editingCatId && error?.geolocationError) {
                     const locationError = error.geolocationError;
                     const reason = locationError.code === locationError.PERMISSION_DENIED
-                        ? 'Bạn đã từ chối quyền truy cập vị trí.'
+                        ? t('err_geo_denied')
                         : locationError.code === locationError.POSITION_UNAVAILABLE
-                            ? 'Thiết bị không xác định được vị trí.'
-                            : 'Đã hết thời gian chờ GPS.';
-                    if (confirm(`${reason}\n\nBạn có muốn đặt dấu mèo tại tâm bản đồ hiện tại không? Đây chỉ là vị trí ước lượng, không phải vị trí GPS.`)) {
+                            ? t('err_geo_unavailable')
+                            : t('err_geo_timeout');
+                    if (confirm(t('confirm_use_map_center', { reason }))) {
                         const center = map.getCenter();
                         try {
                             locationLookupWarning = await saveCatAt(
@@ -9092,17 +9457,17 @@
                             if (locationLookupWarning) showAppStatus(locationLookupWarning);
                         } catch (saveError) {
                             console.error('Không thể lưu vị trí mèo:', saveError);
-                            showAppStatus(`Không thể lưu vị trí: ${saveError.message}`);
+                            showAppStatus(t('err_save_location', { message: saveError.message }));
                         }
                     }
                 } else {
                     console.error('Không thể lưu thông tin mèo:', error);
-                    showAppStatus(`Không thể lưu thông tin: ${error.message}`);
+                    showAppStatus(t('err_save_info', { message: error.message }));
                 }
             } finally {
                 saveButton.disabled = false;
-                saveButton.innerText = editingCatId ? 'Lưu thay đổi' :
-                    isCloudConfigured ? 'Thêm lên bản đồ' : 'Lưu vị trí';
+                saveButton.innerText = editingCatId ? t('btn_save_changes') :
+                    isCloudConfigured ? t('btn_add_to_map') : t('btn_save_location');
             }
         };
 
@@ -9116,6 +9481,7 @@
             document.getElementById('catNote').value = "";
             previewContainer.style.display = "none";
             editingCatId = null;
+            editModalSeq++;
             modalTitle.textContent = t('add_modal_title');
             saveButton.innerText = isCloudConfigured ? t('btn_add_to_map') : (currentLang === 'en' ? 'Save Location' : 'Lưu vị trí');
             editLocationFields.classList.remove('active');
@@ -9133,9 +9499,20 @@
             checkDailyStreak();
             updateWalletDisplay();
             updateSosBadge();
+
+            // App để mở qua nửa đêm (thường gặp với PWA): điểm danh khi người dùng quay lại.
+            let lastStreakCheckDate = new Date().toLocaleDateString('en-CA');
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState !== 'visible') return;
+                const todayStr = new Date().toLocaleDateString('en-CA');
+                if (todayStr === lastStreakCheckDate) return;
+                lastStreakCheckDate = todayStr;
+                checkDailyStreak();
+                updateDailyFortuneBadge();
+            });
         }).catch(error => {
             console.error('Không thể khởi tạo kho dữ liệu:', error);
-            showAppStatus(`Không thể mở kho dữ liệu trên trình duyệt: ${error.message}`);
+            showAppStatus(t('err_storage_init', { message: error.message }));
         });
     </script>
 </body>
