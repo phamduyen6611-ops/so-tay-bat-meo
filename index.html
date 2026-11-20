@@ -3618,7 +3618,10 @@
             document.body.classList.remove('popup-active');
             backupActions.classList.remove('popup-active');
             stopObservingCatLocations(event.popup.getContent());
-            if (activeCatPopup === event.popup) activeCatPopup = null;
+            if (activeCatPopup === event.popup) {
+                activeCatPopup = null;
+                activePopupCats = null;
+            }
         });
 
         const catIcon = L.divIcon({
@@ -3987,6 +3990,9 @@
                 popup_sos_alert: "🚨 BÉ ĐANG CẦN HỖ TRỢ KHẨN CẤP",
                 btn_resolve_sos: "✅ Đánh dấu bé đã an toàn / Đã được cứu",
                 btn_report_sos: "🚨 Báo bé này cần hỗ trợ khẩn cấp (SOS)",
+                btn_directions: "↗ Chỉ đường",
+                btn_report_info: "Báo thông tin sai",
+                unnamed_cat: "Mèo chưa đặt tên",
                 btn_edit: "Sửa",
                 btn_delete: "Xóa",
                 login_to_update_status: "Đăng nhập để cập nhật tình trạng.",
@@ -4175,6 +4181,9 @@
                 popup_sos_alert: "🚨 THIS CAT NEEDS URGENT HELP",
                 btn_resolve_sos: "✅ Mark safe / Rescued",
                 btn_report_sos: "🚨 Report urgent assistance needed (SOS)",
+                btn_directions: "↗ Directions",
+                btn_report_info: "Report wrong info",
+                unnamed_cat: "Unnamed cat",
                 btn_edit: "Edit",
                 btn_delete: "Delete",
                 login_to_update_status: "Sign in to update status.",
@@ -4350,6 +4359,11 @@
             // Nếu modal Dòng thời gian đang mở
             if (timelineModal && timelineModal.classList.contains('active') && currentTimelineCatId) {
                 openTimelineModal(currentTimelineCatId);
+            }
+
+            // Nếu có popup mèo đang mở trên bản đồ, làm mới nội dung theo ngôn ngữ mới
+            if (activeCatPopup && activePopupCats && activeCatPopup.isOpen && activeCatPopup.isOpen()) {
+                activeCatPopup.setContent(createCatPopupContent(activePopupCats));
             }
         }
 
@@ -4606,7 +4620,7 @@
             const favoriteButton = document.createElement('button');
             favoriteButton.type = 'button';
             favoriteButton.dataset.catFavorite = cat.id;
-            favoriteButton.dataset.catName = cat.name || 'Mèo chưa đặt tên';
+            favoriteButton.dataset.catName = cat.name || t('unnamed_cat');
             updateCatFavoriteButton(favoriteButton);
             favoriteButton.addEventListener('click', event => {
                 event.preventDefault();
@@ -4620,20 +4634,20 @@
                 directions.href = href;
                 directions.target = '_blank';
                 directions.rel = 'noopener noreferrer';
-                directions.textContent = '↗ Chỉ đường';
-                directions.setAttribute('aria-label', `Chỉ đường đến ${cat.name || 'mèo'} trên Google Maps (mở trong thẻ mới)`);
+                directions.textContent = t('btn_directions');
+                directions.setAttribute('aria-label', currentLang === 'en' ? `Directions to ${cat.name || 'cat'} on Google Maps (opens in new tab)` : `Chỉ đường đến ${cat.name || 'mèo'} trên Google Maps (mở trong thẻ mới)`);
                 directions.addEventListener('click', event => event.stopPropagation());
                 actions.appendChild(directions);
             }
             const report = document.createElement('a');
             const reportUrl = new URL('https://phamduyen6611-ops.github.io/lien-he.html');
-            reportUrl.search = new URLSearchParams({ cat: String(cat.id), ten: cat.name || 'Mèo chưa đặt tên' });
+            reportUrl.search = new URLSearchParams({ cat: String(cat.id), ten: cat.name || (currentLang === 'en' ? 'Unnamed cat' : 'Mèo chưa đặt tên') });
             report.className = 'cat-report-link';
             report.href = reportUrl.href;
             report.target = '_blank';
             report.rel = 'noopener noreferrer';
-            report.textContent = 'Báo thông tin sai';
-            report.setAttribute('aria-label', `Báo thông tin sai về ${cat.name || 'mèo'} (mở trong thẻ mới)`);
+            report.textContent = t('btn_report_info');
+            report.setAttribute('aria-label', currentLang === 'en' ? `Report incorrect information about ${cat.name || 'cat'} (opens in new tab)` : `Báo thông tin sai về ${cat.name || 'mèo'} (mở trong thẻ mới)`);
             report.addEventListener('click', event => event.stopPropagation());
             actions.appendChild(report);
             return actions;
@@ -4643,7 +4657,7 @@
             const content = document.createElement('div');
             content.className = 'cat-popup-list';
             content.setAttribute('role', 'region');
-            content.setAttribute('aria-label', 'Thông tin mèo trên bản đồ');
+            content.setAttribute('aria-label', currentLang === 'en' ? 'Cat information on map' : 'Thông tin mèo trên bản đồ');
             groupCats.forEach(cat => {
                 const entry = document.createElement('div');
                 entry.className = 'cat-popup-entry';
@@ -4653,7 +4667,7 @@
                 titleRow.className = 'cat-popup-title-row';
                 const title = document.createElement('b');
                 title.className = 'cat-popup-title';
-                title.textContent = cat.name || 'Mèo chưa đặt tên';
+                title.textContent = cat.name || t('unnamed_cat');
                 const statusValue = document.createElement('span');
                 statusValue.className = 'cat-status-value';
                 statusValue.dataset.status = cat.current_status || 'unknown';
@@ -4671,7 +4685,7 @@
                     const image = document.createElement('img');
                     image.src = getCatImageUrl(cat.image);
                     image.className = 'popup-img';
-                    image.alt = `Ảnh mèo ${cat.name || 'chưa đặt tên'}; chạm để xem ảnh lớn`;
+                    image.alt = currentLang === 'en' ? `Photo of ${cat.name || 'unnamed cat'}; tap to enlarge` : `Ảnh mèo ${cat.name || 'chưa đặt tên'}; chạm để xem ảnh lớn`;
                     image.tabIndex = 0;
                     image.setAttribute('role', 'button');
                     image.addEventListener('click', () => openImageViewer(image));
@@ -4915,6 +4929,7 @@
 
         const markerGroups = new Map();
         let activeCatPopup = null;
+        let activePopupCats = null;
         let cats = [];
         let storageReady = false;
         let editingCatId = null;
@@ -5439,11 +5454,12 @@
                 });
         }
 
-        function showCatPopup(content, latlng, options) {
+        function showCatPopup(content, latlng, options, groupCats = null) {
             if (activeCatPopup) {
                 activeCatPopup.remove();
                 activeCatPopup = null;
             }
+            activePopupCats = groupCats;
             map.closePopup();
             L.DomEvent.disableScrollPropagation(content);
             activeCatPopup = L.popup(options).setLatLng(latlng).setContent(content);
@@ -5480,16 +5496,16 @@
         }
 
         function openSingleCatPopup(cat) {
-            showCatPopup(createCatPopupContent([cat]), [cat.lat, cat.lng], getCatPopupOptions());
+            showCatPopup(createCatPopupContent([cat]), [cat.lat, cat.lng], getCatPopupOptions(), [cat]);
         }
 
         function openCatGroupPopup(group) {
-            showCatPopup(createCatPopupContent(group.cats), group.marker.getLatLng(), getCatPopupOptions());
+            showCatPopup(createCatPopupContent(group.cats), group.marker.getLatLng(), getCatPopupOptions(), group.cats);
         }
 
         function openNearbyCatPopup(groups, latlng) {
             const nearbyCats = groups.flatMap(group => group.cats);
-            showCatPopup(createCatPopupContent(nearbyCats), latlng, getCatPopupOptions());
+            showCatPopup(createCatPopupContent(nearbyCats), latlng, getCatPopupOptions(), nearbyCats);
         }
 
         function normalizeSearchText(value) {
@@ -5528,7 +5544,7 @@
 
         function setCatLocationLabel(element, cat, prefix = 'Vị trí: ') {
             const name = getCatLocationName(cat);
-            element.textContent = prefix + (name || 'Đang tìm tên địa điểm…');
+            element.textContent = prefix + (name || (currentLang === 'vi' ? 'Đang tìm tên địa điểm…' : 'Locating address…'));
             if (name) element.title = name;
             const cacheKey = getLocationCacheKey(cat.lat, cat.lng);
             if (reverseGeocodeCache.has(cacheKey)) return;
@@ -5548,7 +5564,7 @@
                 element.textContent = locationPrefix + name;
                 element.title = name;
             } catch (error) {
-                if (element.isConnected) element.textContent = locationPrefix + (locationSavedName || 'Chưa xác định địa điểm');
+                if (element.isConnected) element.textContent = locationPrefix + (locationSavedName || (currentLang === 'vi' ? 'Chưa xác định địa điểm' : 'Location undetermined'));
             }
         }
 
@@ -5732,7 +5748,7 @@
                 button.className = 'cat-search-open';
                 button.dataset.catOpen = cat.id;
                 const name = document.createElement('span');
-                name.textContent = cat.name || 'Mèo chưa đặt tên';
+                name.textContent = cat.name || t('unnamed_cat');
                 button.appendChild(name);
                 const location = document.createElement('small');
                 location.className = 'cat-search-location';
@@ -6203,8 +6219,8 @@
 
         async function deleteCat(catId) {
             const cat = cats.find(item => item.id === catId);
-            if (cat && !canManageCat(cat)) throw new Error('Bạn chỉ có thể xóa mèo do chính mình tạo.');
-            if (!cat || !confirm('Bạn có chắc muốn xóa dấu mèo này?')) return;
+            if (cat && !canManageCat(cat)) throw new Error(currentLang === 'vi' ? 'Bạn chỉ có thể xóa mèo do chính mình tạo.' : 'You can only delete cats created by you.');
+            if (!cat || !confirm(currentLang === 'vi' ? 'Bạn có chắc muốn xóa dấu mèo này?' : 'Are you sure you want to delete this cat marker?')) return;
             await persistCats(cats.filter(item => item.id !== catId));
         }
 
@@ -7326,18 +7342,21 @@
                 event.stopPropagation();
                 const catId = sosReportBtn.dataset.catSosReport;
                 const cat = cats.find(c => c.id === catId);
-                const catName = cat?.name || 'bé mèo';
-                const note = prompt(`Nhập tình trạng hoặc lý do cần cứu trợ cho ${catName} (VD: bị thương, đói lả, cần đưa đi thú y...):`, cat?.sos_note || '');
+                const catName = cat?.name || (currentLang === 'vi' ? 'bé mèo' : 'cat');
+                const promptMsg = currentLang === 'vi'
+                    ? `Nhập tình trạng hoặc lý do cần cứu trợ cho ${catName} (VD: bị thương, đói lả, cần đưa đi thú y...):`
+                    : `Enter situation or reason urgent help is needed for ${catName} (e.g. injured, starving, needs vet...):`;
+                const note = prompt(promptMsg, cat?.sos_note || '');
                 if (note === null) return;
                 sosReportBtn.disabled = true;
-                sosReportBtn.textContent = 'Đang gửi báo cáo...';
+                sosReportBtn.textContent = currentLang === 'vi' ? 'Đang gửi báo cáo...' : 'Submitting report...';
                 try {
                     await toggleCatSos(catId, true, note);
                 } catch (error) {
                     console.error('Không thể báo SOS:', error);
                     showAppStatus(`Không thể báo SOS: ${error.message}`);
                     sosReportBtn.disabled = false;
-                    sosReportBtn.textContent = '🚨 Báo bé này cần hỗ trợ khẩn cấp (SOS)';
+                    sosReportBtn.textContent = t('btn_report_sos');
                 }
                 return;
             }
@@ -7347,19 +7366,22 @@
                 event.stopPropagation();
                 const catId = sosResolveBtn.dataset.catSosResolve;
                 const cat = cats.find(c => c.id === catId);
-                const catName = cat?.name || 'bé mèo';
-                if (!confirm(`Xác nhận bé ${catName} đã được hỗ trợ hoặc đã an toàn?`)) {
+                const catName = cat?.name || (currentLang === 'vi' ? 'bé mèo' : 'cat');
+                const confirmMsg = currentLang === 'vi'
+                    ? `Xác nhận bé ${catName} đã được hỗ trợ hoặc đã an toàn?`
+                    : `Confirm that ${catName} has received help or is now safe?`;
+                if (!confirm(confirmMsg)) {
                     return;
                 }
                 sosResolveBtn.disabled = true;
-                sosResolveBtn.textContent = 'Đang cập nhật...';
+                sosResolveBtn.textContent = currentLang === 'vi' ? 'Đang cập nhật...' : 'Updating...';
                 try {
                     await toggleCatSos(catId, false, '');
                 } catch (error) {
                     console.error('Không thể hủy SOS:', error);
                     showAppStatus(`Không thể cập nhật: ${error.message}`);
                     sosResolveBtn.disabled = false;
-                    sosResolveBtn.textContent = '✅ Đánh dấu bé đã an toàn / Đã được cứu';
+                    sosResolveBtn.textContent = t('btn_resolve_sos');
                 }
                 return;
             }
