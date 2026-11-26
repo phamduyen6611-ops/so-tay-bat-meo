@@ -16,6 +16,8 @@
     <link rel="icon" type="image/svg+xml" href="./icons/cat-icon.svg">
     <link rel="apple-touch-icon" href="./icons/icon-192.png">
     <script src="./install.js" defer></script>
+    <link rel="stylesheet" href="./community.css">
+    <script src="./community.js" defer></script>
     <meta name="google-adsense-account" content="ca-pub-9861032559060235">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9861032559060235"
         crossorigin="anonymous"></script>
@@ -3358,6 +3360,7 @@
             <button type="button" id="collaborationResetPasswordBtn" data-i18n="btn_forgot_password">Quên mật khẩu?</button>
             <button type="button" id="collaborationSetPasswordBtn" data-i18n="btn_set_password" hidden>Đặt mật khẩu</button>
             <button type="button" id="moderationQueueToggle" hidden>Chờ duyệt (0)</button>
+            <button type="button" id="commentReportsButton" hidden>Bình luận bị báo cáo</button>
             <div class="moderation-queue" id="moderationQueue" hidden></div>
             <button type="button" id="collaborationMigrateImagesBtn" data-i18n="btn_migrate_images" hidden>Chuyển ảnh cũ lên Storage</button>
             <button type="button" id="collaborationMigrateLocalBtn" class="collaboration-migrate-button" hidden></button>
@@ -5112,6 +5115,15 @@
         function createCatQuickActions(cat) {
             const actions = document.createElement('div');
             actions.className = 'cat-quick-actions';
+            const commentsButton = document.createElement('button');
+            commentsButton.type = 'button';
+            commentsButton.className = 'cat-comments-button';
+            commentsButton.textContent = '💬 Bình luận';
+            commentsButton.addEventListener('click', event => {
+                event.stopPropagation();
+                window.catCommunity?.open(cat);
+            });
+            actions.appendChild(commentsButton);
             const favoriteButton = document.createElement('button');
             favoriteButton.type = 'button';
             favoriteButton.dataset.catFavorite = cat.id;
@@ -5729,6 +5741,7 @@
         }
 
         function updateCollaborationControls() {
+            document.getElementById('commentReportsButton').hidden = !Boolean(currentUser && isCatAdmin);
             updateBackupControls();
             if (!isCloudConfigured) {
                 collaborationToggle.textContent = t('collab_not_configured');
@@ -8450,6 +8463,9 @@
                 console.error('Không thể đăng xuất:', error);
                 collaborationMessage.textContent = t('err_signout', { message: error.message });
             }
+        };
+        document.getElementById('commentReportsButton').onclick = () => {
+            if (currentUser && isCatAdmin) window.catCommunity?.open(null, true);
         };
         moderationQueueToggle.onclick = async () => {
             if (!isCatAdmin) return;
