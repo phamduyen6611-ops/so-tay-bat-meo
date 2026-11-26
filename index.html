@@ -1204,6 +1204,190 @@
             transform: scale(1.01);
         }
 
+        .popup-img-carousel-wrap {
+            position: relative;
+            margin: 0 0 11px;
+            border-radius: 13px;
+            overflow: hidden;
+            box-shadow: 0 3px 12px rgba(49, 32, 35, 0.1);
+            background: #fff5f7;
+        }
+
+        .popup-img-carousel {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .popup-img-carousel::-webkit-scrollbar {
+            display: none;
+        }
+
+        .popup-img-slide {
+            flex: 0 0 100%;
+            width: 100%;
+            scroll-snap-align: center;
+        }
+
+        .popup-img-slide .popup-img {
+            margin: 0;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .popup-img-counter {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: rgba(32, 20, 24, 0.65);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 800;
+            backdrop-filter: blur(4px);
+            pointer-events: none;
+        }
+
+        .popup-img-dots {
+            position: absolute;
+            left: 50%;
+            bottom: 10px;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(32, 20, 24, 0.35);
+            backdrop-filter: blur(4px);
+        }
+
+        .popup-img-dot {
+            width: 6px;
+            height: 6px;
+            padding: 0;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.55);
+            cursor: pointer;
+            transition: transform 0.16s ease, background 0.16s ease;
+        }
+
+        .popup-img-dot.active {
+            background: #ffffff;
+            transform: scale(1.3);
+        }
+
+        .popup-img-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 28px;
+            height: 28px;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.85);
+            color: #49363a;
+            font-size: 18px;
+            font-weight: 900;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+            z-index: 2;
+            transition: background 0.16s ease, transform 0.16s ease;
+        }
+
+        .popup-img-nav:hover {
+            background: #ffffff;
+            transform: translateY(-50%) scale(1.08);
+        }
+
+        .popup-img-nav.prev {
+            left: 8px;
+        }
+
+        .popup-img-nav.next {
+            right: 8px;
+        }
+
+        .cat-photo-strip {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 4px 2px 8px;
+            margin-bottom: 8px;
+            scrollbar-width: thin;
+        }
+
+        .cat-photo-strip[hidden] {
+            display: none;
+        }
+
+        .cat-photo-thumb {
+            position: relative;
+            flex: 0 0 auto;
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #f1cbd2;
+            cursor: pointer;
+            background: #fff5f7;
+            transition: border-color 0.15s ease, transform 0.15s ease;
+        }
+
+        .cat-photo-thumb.active {
+            border-color: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(255, 117, 140, 0.25);
+        }
+
+        .cat-photo-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .cat-photo-thumb-cover {
+            position: absolute;
+            left: 3px;
+            bottom: 3px;
+            padding: 1px 5px;
+            border-radius: 999px;
+            background: rgba(255, 117, 140, 0.92);
+            color: white;
+            font-size: 9px;
+            font-weight: 800;
+            pointer-events: none;
+        }
+
+        .cat-photo-thumb-remove {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 18px;
+            height: 18px;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(32, 20, 24, 0.72);
+            color: white;
+            font-size: 12px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+        }
+
         .location-lookup-note {
             display: block;
             margin: -8px 0 12px;
@@ -1696,6 +1880,56 @@
             color: var(--text-color);
             font-size: 26px;
             cursor: pointer;
+            z-index: 2;
+        }
+
+        .image-viewer-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            border: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--text-color);
+            font-size: 26px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .image-viewer-nav[hidden] {
+            display: none;
+        }
+
+        .image-viewer-nav.prev {
+            left: max(12px, env(safe-area-inset-left));
+        }
+
+        .image-viewer-nav.next {
+            right: max(12px, env(safe-area-inset-right));
+        }
+
+        .image-viewer-counter {
+            position: absolute;
+            bottom: max(18px, env(safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 5px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.16);
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 800;
+            backdrop-filter: blur(4px);
+        }
+
+        .image-viewer-counter[hidden] {
+            display: none;
         }
 
         @media (max-width: 600px) {
@@ -3526,7 +3760,10 @@
     <div class="map-status app-status" id="appStatus" role="status" aria-live="polite"></div>
     <div class="image-viewer" id="imageViewer" role="dialog" aria-modal="true" aria-label="Xem ảnh mèo">
         <button type="button" class="image-viewer-close" id="imageViewerClose" aria-label="Đóng ảnh">×</button>
+        <button type="button" class="image-viewer-nav prev" id="imageViewerPrev" aria-label="Ảnh trước" hidden>‹</button>
         <img id="imageViewerImage" alt="Ảnh mèo kích thước đầy đủ">
+        <button type="button" class="image-viewer-nav next" id="imageViewerNext" aria-label="Ảnh sau" hidden>›</button>
+        <div class="image-viewer-counter" id="imageViewerCounter" hidden></div>
     </div>
     <section class="cat-list-panel" id="catListPanel" aria-label="Danh sách mèo">
         <button type="button" class="cat-list-toggle" id="catListToggle" aria-expanded="false"
@@ -3683,9 +3920,10 @@
                 </label>
                 <label class="file-upload-btn upload-gallery-btn">
                     <span data-i18n="btn_gallery">🖼️ Tải ảnh từ thư viện</span>
-                    <input type="file" id="catPhotoGallery" accept="image/*">
+                    <input type="file" id="catPhotoGallery" accept="image/*" multiple>
                 </label>
             </div>
+            <div class="cat-photo-strip" id="catPhotoStrip" hidden></div>
             <div id="previewContainer" style="display:none; margin-bottom: 15px;">
                 <div class="image-preview-frame">
                     <canvas id="photoPreviewCanvas" width="900" height="675"
@@ -5206,13 +5444,61 @@
         exportBackupButton.disabled = true;
         importBackupButton.disabled = true;
 
+        const imageViewerPrev = document.getElementById('imageViewerPrev');
+        const imageViewerNext = document.getElementById('imageViewerNext');
+        const imageViewerCounter = document.getElementById('imageViewerCounter');
+        let imageViewerGallery = [];
+        let imageViewerIndex = 0;
+
+        function renderImageViewerSlide() {
+            if (!imageViewerGallery.length) return;
+            imageViewerImage.src = imageViewerGallery[imageViewerIndex];
+            const hasMultiple = imageViewerGallery.length > 1;
+            if (imageViewerPrev) imageViewerPrev.hidden = !hasMultiple;
+            if (imageViewerNext) imageViewerNext.hidden = !hasMultiple;
+            if (imageViewerCounter) {
+                imageViewerCounter.hidden = !hasMultiple;
+                if (hasMultiple) imageViewerCounter.textContent = `${imageViewerIndex + 1} / ${imageViewerGallery.length}`;
+            }
+        }
+
+        function stepImageViewer(delta) {
+            if (imageViewerGallery.length <= 1) return;
+            imageViewerIndex = (imageViewerIndex + delta + imageViewerGallery.length) % imageViewerGallery.length;
+            renderImageViewerSlide();
+        }
+
+        if (imageViewerPrev) imageViewerPrev.addEventListener('click', e => { e.stopPropagation(); stepImageViewer(-1); });
+        if (imageViewerNext) imageViewerNext.addEventListener('click', e => { e.stopPropagation(); stepImageViewer(1); });
+
+        (() => {
+            let touchStartX = 0;
+            imageViewer.addEventListener('touchstart', e => {
+                touchStartX = e.touches[0].clientX;
+            }, { passive: true });
+            imageViewer.addEventListener('touchend', e => {
+                const dx = e.changedTouches[0].clientX - touchStartX;
+                if (Math.abs(dx) > 45) stepImageViewer(dx < 0 ? 1 : -1);
+            }, { passive: true });
+            document.addEventListener('keydown', e => {
+                if (!imageViewer.classList.contains('active')) return;
+                if (e.key === 'ArrowLeft') stepImageViewer(-1);
+                else if (e.key === 'ArrowRight') stepImageViewer(1);
+            });
+        })();
+
         function closeImageViewer() {
             imageViewer.classList.remove('active');
             imageViewerImage.removeAttribute('src');
+            imageViewerGallery = [];
+            imageViewerIndex = 0;
         }
 
-        function openImageViewer(image) {
-            imageViewerImage.src = image.src;
+        function openImageViewer(image, galleryUrls = null, startIndex = 0) {
+            const list = Array.isArray(galleryUrls) && galleryUrls.length ? galleryUrls : [image.src].filter(Boolean);
+            imageViewerGallery = list;
+            imageViewerIndex = Math.max(0, Math.min(startIndex, list.length - 1));
+            renderImageViewerSlide();
             imageViewer.classList.add('active');
             imageViewerClose.focus();
         }
@@ -5497,21 +5783,103 @@
                 location.className = 'cat-popup-location';
                 setCatLocationLabel(location, cat, '📍 ');
                 header.appendChild(location);
-                if (cat.image) {
+                const catImageUrls = getCatImageUrls(cat.image);
+                if (catImageUrls.length === 1) {
                     const image = document.createElement('img');
-                    image.src = getCatImageUrl(cat.image);
+                    image.src = catImageUrls[0];
                     image.className = 'popup-img';
                     image.alt = currentLang === 'en' ? `Photo of ${cat.name || 'unnamed cat'}; tap to enlarge` : `Ảnh mèo ${cat.name || 'chưa đặt tên'}; chạm để xem ảnh lớn`;
                     image.tabIndex = 0;
                     image.setAttribute('role', 'button');
-                    image.addEventListener('click', () => openImageViewer(image));
+                    image.addEventListener('click', () => openImageViewer(image, catImageUrls, 0));
                     image.addEventListener('keydown', event => {
                         if (event.key === 'Enter' || event.key === ' ') {
                             event.preventDefault();
-                            openImageViewer(image);
+                            openImageViewer(image, catImageUrls, 0);
                         }
                     });
                     entry.appendChild(image);
+                } else if (catImageUrls.length > 1) {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'popup-img-carousel-wrap';
+                    const carousel = document.createElement('div');
+                    carousel.className = 'popup-img-carousel';
+                    const dotsWrap = document.createElement('div');
+                    dotsWrap.className = 'popup-img-dots';
+                    const counter = document.createElement('span');
+                    counter.className = 'popup-img-counter';
+                    counter.textContent = `1 / ${catImageUrls.length}`;
+
+                    const dots = [];
+                    catImageUrls.forEach((url, imgIdx) => {
+                        const slide = document.createElement('div');
+                        slide.className = 'popup-img-slide';
+                        const image = document.createElement('img');
+                        image.src = url;
+                        image.className = 'popup-img';
+                        image.alt = currentLang === 'en'
+                            ? `Photo ${imgIdx + 1} of ${catImageUrls.length} for ${cat.name || 'unnamed cat'}; tap to enlarge`
+                            : `Ảnh ${imgIdx + 1}/${catImageUrls.length} của ${cat.name || 'mèo chưa đặt tên'}; chạm để xem ảnh lớn`;
+                        image.tabIndex = 0;
+                        image.setAttribute('role', 'button');
+                        image.addEventListener('click', () => openImageViewer(image, catImageUrls, imgIdx));
+                        image.addEventListener('keydown', event => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                openImageViewer(image, catImageUrls, imgIdx);
+                            }
+                        });
+                        slide.appendChild(image);
+                        carousel.appendChild(slide);
+
+                        const dot = document.createElement('button');
+                        dot.type = 'button';
+                        dot.className = 'popup-img-dot' + (imgIdx === 0 ? ' active' : '');
+                        dot.setAttribute('aria-label', `${imgIdx + 1}/${catImageUrls.length}`);
+                        dot.addEventListener('click', e => {
+                            e.stopPropagation();
+                            carousel.scrollTo({ left: imgIdx * carousel.clientWidth, behavior: 'smooth' });
+                        });
+                        dots.push(dot);
+                        dotsWrap.appendChild(dot);
+                    });
+
+                    const updateCarouselIndicator = () => {
+                        const width = carousel.clientWidth || 1;
+                        const activeIdx = Math.max(0, Math.min(catImageUrls.length - 1, Math.round(carousel.scrollLeft / width)));
+                        counter.textContent = `${activeIdx + 1} / ${catImageUrls.length}`;
+                        dots.forEach((d, idx) => d.classList.toggle('active', idx === activeIdx));
+                    };
+                    carousel.addEventListener('scroll', updateCarouselIndicator, { passive: true });
+
+                    const prevBtn = document.createElement('button');
+                    prevBtn.type = 'button';
+                    prevBtn.className = 'popup-img-nav prev';
+                    prevBtn.textContent = '‹';
+                    prevBtn.setAttribute('aria-label', currentLang === 'en' ? 'Previous photo' : 'Ảnh trước');
+                    prevBtn.addEventListener('click', e => {
+                        e.stopPropagation();
+                        const width = carousel.clientWidth || 1;
+                        const idx = Math.round(carousel.scrollLeft / width);
+                        const nextIdx = idx <= 0 ? catImageUrls.length - 1 : idx - 1;
+                        carousel.scrollTo({ left: nextIdx * width, behavior: 'smooth' });
+                    });
+
+                    const nextBtn = document.createElement('button');
+                    nextBtn.type = 'button';
+                    nextBtn.className = 'popup-img-nav next';
+                    nextBtn.textContent = '›';
+                    nextBtn.setAttribute('aria-label', currentLang === 'en' ? 'Next photo' : 'Ảnh sau');
+                    nextBtn.addEventListener('click', e => {
+                        e.stopPropagation();
+                        const width = carousel.clientWidth || 1;
+                        const idx = Math.round(carousel.scrollLeft / width);
+                        const nextIdx = idx >= catImageUrls.length - 1 ? 0 : idx + 1;
+                        carousel.scrollTo({ left: nextIdx * width, behavior: 'smooth' });
+                    });
+
+                    wrap.append(carousel, prevBtn, nextBtn, dotsWrap, counter);
+                    entry.appendChild(wrap);
                 }
 
                 entry.appendChild(header);
@@ -5847,9 +6215,57 @@
             };
         }
 
-        function getCatImageUrl(image) {
+        function parseCatImages(image) {
+            if (!image) return [];
+            if (Array.isArray(image)) return image.filter(item => typeof item === 'string' && item.trim());
+            if (typeof image === 'string') {
+                const trimmed = image.trim();
+                if (!trimmed) return [];
+                if (trimmed.startsWith('[')) {
+                    try {
+                        const parsed = JSON.parse(trimmed);
+                        if (Array.isArray(parsed)) return parsed.filter(item => typeof item === 'string' && item.trim());
+                    } catch (e) {}
+                }
+                return [trimmed];
+            }
+            return [];
+        }
+
+        function serializeCatImages(images) {
+            const list = (Array.isArray(images) ? images : []).filter(item => typeof item === 'string' && item.trim());
+            if (!list.length) return null;
+            if (list.length === 1) return list[0];
+            return JSON.stringify(list);
+        }
+
+        function getCatSingleImageUrl(image) {
             if (!image || image.startsWith('data:') || /^https?:\/\//i.test(image)) return image || '';
             return supabaseClient.storage.from('cat-images').getPublicUrl(image).data.publicUrl;
+        }
+
+        function getCatImageUrls(image) {
+            return parseCatImages(image).map(getCatSingleImageUrl).filter(Boolean);
+        }
+
+        function getCatImageUrl(image) {
+            return getCatImageUrls(image)[0] || '';
+        }
+
+        async function uploadCatImages(image, catId, collection = 'cats') {
+            const items = parseCatImages(image);
+            if (!items.length) return { value: null, uploadedPaths: [] };
+            const uploadedPaths = [];
+            const results = await Promise.all(items.map(async (item, idx) => {
+                if (item.startsWith('data:')) {
+                    const suffix = items.length === 1 && idx === 0 ? catId : `${catId}_${idx}_${Date.now().toString(36)}`;
+                    const path = await uploadCatImage(item, suffix, collection);
+                    uploadedPaths.push(path);
+                    return path;
+                }
+                return item;
+            }));
+            return { value: serializeCatImages(results), uploadedPaths };
         }
 
         function getCatStatusLabel(status) {
@@ -6904,9 +7320,10 @@
                         const cloudRows = await Promise.all(rowsToInsert.map(async row => {
                             const cat = changedCats.find(item => item.id === row.id);
                             let image = cat.image || null;
-                            if (image?.startsWith('data:')) {
-                                image = await uploadCatImage(image, cat.id);
-                                uploadedPaths.push(image);
+                            if (image) {
+                                const uploaded = await uploadCatImages(image, cat.id);
+                                image = uploaded.value;
+                                uploadedPaths.push(...uploaded.uploadedPaths);
                             }
                             persistedImages.set(cat.id, image);
                             return { ...row, image };
@@ -6927,8 +7344,9 @@
                         await Promise.all(catsToUpdate.map(async cat => {
                             const patch = catUpdatePatch(previousById.get(cat.id), cat);
                             // Chỉ tải lên ảnh mới chụp/chọn (data URL); ảnh cũ giữ nguyên đường dẫn.
-                            if (patch.image?.startsWith('data:')) {
-                                patch.image = await uploadCatImage(patch.image, cat.id);
+                            if (patch.image) {
+                                const uploaded = await uploadCatImages(patch.image, cat.id);
+                                patch.image = uploaded.value;
                             }
                             persistedImages.set(cat.id, 'image' in patch ? patch.image : cat.image);
                             if (!Object.keys(patch).length) return;
@@ -7329,11 +7747,14 @@
             editLocationFields.classList.add('active');
             resetImageEditor();
             sourceImage = null;
+            modalCatPhotos = parseCatImages(cat.image).map(val => ({ value: val, url: getCatSingleImageUrl(val), dirty: false }));
+            activeModalPhotoIndex = modalCatPhotos.length ? 0 : -1;
+            renderCatPhotoStrip();
             currentImageDataUrl = cat.image || '';
             previewContainer.style.display = 'none';
-            if (cat.image) {
+            if (modalCatPhotos.length) {
                 try {
-                    const loadedImage = await loadImageForEditing(cat.image);
+                    const loadedImage = await loadImageForEditing(modalCatPhotos[0].value);
                     // Trong lúc tải ảnh, người dùng đã đóng modal hoặc chuyển sang thêm/sửa mèo khác.
                     if (editRequestId !== editModalSeq) return;
                     sourceImage = loadedImage;
@@ -8698,6 +9119,9 @@
             document.getElementById('catLocationName').value = '';
             document.getElementById('catNote').value = '';
             sourceImage = null;
+            modalCatPhotos = [];
+            activeModalPhotoIndex = -1;
+            renderCatPhotoStrip();
             currentImageDataUrl = '';
             previewContainer.style.display = 'none';
             resetImageEditor();
@@ -8705,7 +9129,8 @@
         };
         chooseMapLocationButton.onclick = () => {
             try {
-                currentImageDataUrl = sourceImage ? photoPreviewCanvas.toDataURL('image/jpeg', 0.9) : '';
+                commitActiveModalPhotoEdit();
+                currentImageDataUrl = serializeCatImages(modalCatPhotos.map(p => p.value)) || '';
                 pendingMapCat = {
                     name: document.getElementById('catName').value.trim() || t('unnamed_cat'),
                     location_name: document.getElementById('catLocationName').value.trim(),
@@ -9780,34 +10205,161 @@
         };
         document.getElementById('resetImageEditBtn').onclick = resetImageEditor;
 
-        function handleCatPhotoSelected(file) {
-            if (file) {
-                sourceImage = null;
-                currentImageDataUrl = "";
-                previewContainer.style.display = 'none';
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const image = new Image();
-                    image.onload = () => {
-                        sourceImage = image;
-                        resetImageEditor();
-                        previewContainer.style.display = 'block';
-                    };
-                    image.onerror = () => {
-                        showAppStatus(currentLang === 'vi' ? 'Không thể mở ảnh đã chọn. Vui lòng chọn ảnh khác.' : 'Could not open selected image. Please choose another.');
-                    };
-                    image.src = event.target.result;
-                };
-                reader.onerror = () => {
-                    showAppStatus(currentLang === 'vi' ? 'Không thể đọc ảnh đã chọn. Vui lòng thử lại.' : 'Could not read selected image. Please try again.');
-                };
-                reader.readAsDataURL(file);
+        const catPhotoStrip = document.getElementById('catPhotoStrip');
+        const MAX_CAT_PHOTOS = 8;
+        let modalCatPhotos = [];
+        let activeModalPhotoIndex = -1;
+        let isActiveModalPhotoDirty = false;
+
+        function markActiveModalPhotoDirty() {
+            if (activeModalPhotoIndex >= 0 && modalCatPhotos[activeModalPhotoIndex]) {
+                isActiveModalPhotoDirty = true;
             }
         }
 
-        if (catPhotoCamera) catPhotoCamera.onchange = (e) => handleCatPhotoSelected(e.target.files[0]);
-        if (catPhotoGallery) catPhotoGallery.onchange = (e) => handleCatPhotoSelected(e.target.files[0]);
-        if (photoInput && photoInput !== catPhotoGallery) photoInput.onchange = (e) => handleCatPhotoSelected(e.target.files[0]);
+        ['imageZoom', 'imagePanX', 'imagePanY', 'imageFilter'].forEach(id => {
+            document.getElementById(id)?.addEventListener('input', markActiveModalPhotoDirty);
+        });
+        ['rotateLeftBtn', 'rotateRightBtn', 'flipHorizontalBtn', 'flipVerticalBtn'].forEach(id => {
+            document.getElementById(id)?.addEventListener('click', markActiveModalPhotoDirty);
+        });
+
+        function commitActiveModalPhotoEdit() {
+            if (activeModalPhotoIndex < 0 || !modalCatPhotos[activeModalPhotoIndex]) return;
+            if (!sourceImage) return;
+            const current = modalCatPhotos[activeModalPhotoIndex];
+            if (isActiveModalPhotoDirty || current.value.startsWith('data:')) {
+                try {
+                    const exported = photoPreviewCanvas.toDataURL('image/jpeg', 0.82);
+                    current.value = exported;
+                    current.url = exported;
+                    isActiveModalPhotoDirty = false;
+                } catch (error) {
+                    console.warn('Không thể xuất lại ảnh đang chọn:', error);
+                }
+            }
+        }
+
+        function renderCatPhotoStrip() {
+            if (!catPhotoStrip) return;
+            catPhotoStrip.innerHTML = '';
+            if (!modalCatPhotos.length) {
+                catPhotoStrip.hidden = true;
+                return;
+            }
+            catPhotoStrip.hidden = false;
+            modalCatPhotos.forEach((item, idx) => {
+                const thumb = document.createElement('div');
+                thumb.className = 'cat-photo-thumb' + (idx === activeModalPhotoIndex ? ' active' : '');
+                const img = document.createElement('img');
+                img.src = item.url;
+                img.alt = `${currentLang === 'en' ? 'Photo' : 'Ảnh'} ${idx + 1}`;
+                thumb.appendChild(img);
+
+                if (idx === 0) {
+                    const cover = document.createElement('span');
+                    cover.className = 'cat-photo-thumb-cover';
+                    cover.textContent = currentLang === 'en' ? 'Cover' : 'Bìa';
+                    thumb.appendChild(cover);
+                }
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'cat-photo-thumb-remove';
+                removeBtn.textContent = '×';
+                removeBtn.setAttribute('aria-label', currentLang === 'en' ? 'Remove photo' : 'Xóa ảnh này');
+                removeBtn.addEventListener('click', async e => {
+                    e.stopPropagation();
+                    modalCatPhotos.splice(idx, 1);
+                    if (!modalCatPhotos.length) {
+                        activeModalPhotoIndex = -1;
+                        sourceImage = null;
+                        previewContainer.style.display = 'none';
+                        renderCatPhotoStrip();
+                        return;
+                    }
+                    const nextIdx = Math.min(idx, modalCatPhotos.length - 1);
+                    await selectModalPhoto(nextIdx, false);
+                });
+                thumb.appendChild(removeBtn);
+
+                thumb.addEventListener('click', () => selectModalPhoto(idx, true));
+                catPhotoStrip.appendChild(thumb);
+            });
+        }
+
+        async function selectModalPhoto(idx, commitCurrent = true) {
+            if (commitCurrent) commitActiveModalPhotoEdit();
+            if (idx < 0 || idx >= modalCatPhotos.length) return;
+            activeModalPhotoIndex = idx;
+            isActiveModalPhotoDirty = false;
+            renderCatPhotoStrip();
+            try {
+                const loadedImage = await loadImageForEditing(modalCatPhotos[idx].value);
+                sourceImage = loadedImage;
+                resetImageEditor();
+                previewContainer.style.display = 'block';
+            } catch (error) {
+                console.warn('Không thể tải ảnh vào trình chỉnh sửa:', error);
+                sourceImage = null;
+                previewContainer.style.display = 'none';
+            }
+        }
+
+        function readFileToCompressedDataUrl(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = event => {
+                    const image = new Image();
+                    image.onload = () => {
+                        const maxW = 900;
+                        const maxH = 675;
+                        const scale = Math.min(1, maxW / image.width, maxH / image.height);
+                        const w = Math.max(1, Math.round(image.width * scale));
+                        const h = Math.max(1, Math.round(image.height * scale));
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w;
+                        canvas.height = h;
+                        canvas.getContext('2d').drawImage(image, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', 0.82));
+                    };
+                    image.onerror = () => reject(new Error(currentLang === 'vi' ? 'Không thể mở ảnh đã chọn.' : 'Could not open selected image.'));
+                    image.src = event.target.result;
+                };
+                reader.onerror = () => reject(new Error(currentLang === 'vi' ? 'Không thể đọc ảnh đã chọn.' : 'Could not read selected image.'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function handleCatPhotosSelected(fileList) {
+            const files = Array.from(fileList || []).filter(Boolean);
+            if (!files.length) return;
+            commitActiveModalPhotoEdit();
+            const remaining = MAX_CAT_PHOTOS - modalCatPhotos.length;
+            if (remaining <= 0) {
+                showToast(currentLang === 'vi' ? `Mỗi bé tối đa ${MAX_CAT_PHOTOS} ảnh thôi nhé! 📸` : `Maximum ${MAX_CAT_PHOTOS} photos per cat! 📸`, 'warning');
+                return;
+            }
+            const toProcess = files.slice(0, remaining);
+            if (files.length > remaining) {
+                showToast(currentLang === 'vi' ? `Chỉ thêm được ${remaining} ảnh nữa (tối đa ${MAX_CAT_PHOTOS} ảnh).` : `Added ${remaining} photos (max ${MAX_CAT_PHOTOS}).`, 'info');
+            }
+            for (const file of toProcess) {
+                try {
+                    const dataUrl = await readFileToCompressedDataUrl(file);
+                    modalCatPhotos.push({ value: dataUrl, url: dataUrl });
+                } catch (err) {
+                    showAppStatus(err.message);
+                }
+            }
+            if (modalCatPhotos.length) {
+                await selectModalPhoto(modalCatPhotos.length - 1, false);
+            }
+        }
+
+        if (catPhotoCamera) catPhotoCamera.onchange = (e) => { handleCatPhotosSelected(e.target.files); e.target.value = ''; };
+        if (catPhotoGallery) catPhotoGallery.onchange = (e) => { handleCatPhotosSelected(e.target.files); e.target.value = ''; };
+        if (photoInput && photoInput !== catPhotoGallery) photoInput.onchange = (e) => { handleCatPhotosSelected(e.target.files); e.target.value = ''; };
 
         collaborationMigrateImagesButton.onclick = async () => {
             try {
@@ -9827,9 +10379,7 @@
                     exportedAt: new Date().toISOString(),
                     cats: cats.map(cat => ({
                         ...cat,
-                        image: cat.image && !cat.image.startsWith('data:') && !/^https?:\/\//i.test(cat.image)
-                            ? getCatImageUrl(cat.image)
-                            : cat.image
+                        image: serializeCatImages(getCatImageUrls(cat.image))
                     }))
                 };
                 const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -9899,11 +10449,8 @@
             await new Promise(resolve => requestAnimationFrame(resolve));
             const editingCat = isEditing ? cats.find(cat => cat.id === editingCatId) : null;
             try {
-                // Đang sửa mà ảnh cũ chưa/không tải được vào trình chỉnh: giữ nguyên ảnh cũ
-                // (modal không có nút xóa ảnh, nên người dùng không thể cố ý xóa).
-                currentImageDataUrl = sourceImage
-                    ? photoPreviewCanvas.toDataURL('image/jpeg', 0.82)
-                    : (editingCat?.image || '');
+                commitActiveModalPhotoEdit();
+                currentImageDataUrl = serializeCatImages(modalCatPhotos.map(p => p.value)) || '';
             } catch (error) {
                 if (editingCat?.image && sourceImage) {
                     // Không xuất lại được ảnh cũ: giữ nguyên ảnh cũ, vẫn lưu tên/ghi chú.
@@ -10022,6 +10569,10 @@
             document.getElementById('catLocationName').value = "";
             document.getElementById('catNote').value = "";
             previewContainer.style.display = "none";
+            modalCatPhotos = [];
+            activeModalPhotoIndex = -1;
+            isActiveModalPhotoDirty = false;
+            renderCatPhotoStrip();
             editingCatId = null;
             editModalSeq++;
             modalTitle.textContent = t('add_modal_title');
