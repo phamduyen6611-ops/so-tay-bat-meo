@@ -597,6 +597,7 @@
             transform: translateY(-1px);
         }
 
+        .leaflet-container a.cat-report-link,
         .cat-report-link {
             display: block;
             margin-top: 8px;
@@ -607,9 +608,53 @@
             text-decoration: none;
         }
 
+        .leaflet-container a.cat-report-link:hover,
         .cat-report-link:hover {
             color: var(--primary);
             text-decoration: underline;
+        }
+
+        .cat-popup-tabs {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow-x: auto;
+            padding: 2px 36px 4px 2px;
+            scrollbar-width: none;
+        }
+
+        .cat-popup-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .cat-popup-tab {
+            flex: 0 0 auto;
+            max-width: 140px;
+            padding: 6px 11px;
+            border: 1px solid #f1cbd2;
+            border-radius: 999px;
+            background: #ffffff;
+            color: #6b5357;
+            font: inherit;
+            font-size: 11.5px;
+            font-weight: 800;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+            transition: all 0.16s ease;
+        }
+
+        .cat-popup-tab:hover {
+            background: #fff0f3;
+            border-color: #f497aa;
+        }
+
+        .cat-popup-tab.active {
+            background: linear-gradient(135deg, #ff758c, #ff8da1);
+            border-color: transparent;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(255, 117, 140, 0.3);
         }
 
         .app-info-links {
@@ -863,7 +908,25 @@
             overscroll-behavior: contain;
             padding: 2px;
             scrollbar-width: thin;
+            scrollbar-color: rgba(244, 151, 170, 0.55) transparent;
             -webkit-overflow-scrolling: touch;
+        }
+
+        .cat-popup-list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .cat-popup-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .cat-popup-list::-webkit-scrollbar-thumb {
+            background: rgba(244, 151, 170, 0.5);
+            border-radius: 999px;
+        }
+
+        .cat-popup-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(244, 151, 170, 0.85);
         }
 
         .cat-popup-entry {
@@ -875,6 +938,10 @@
             background: #ffffff;
             box-shadow: 0 2px 10px rgba(255, 117, 140, 0.06);
             overflow-wrap: anywhere;
+        }
+
+        .cat-popup-entry[hidden] {
+            display: none;
         }
 
         .cat-popup-header {
@@ -910,9 +977,9 @@
         .cat-popup-note {
             margin-top: 10px;
             padding: 10px 12px;
-            border: 1px solid #f5e4e8;
+            border: 0;
             border-radius: 12px;
-            background: #fff9fa;
+            background: #fff7f9;
             color: #5b484b;
             font-size: 13px;
             line-height: 1.45;
@@ -1997,10 +2064,10 @@
         /* Nhật ký cho ăn trong popup thông tin mèo */
         .cat-feeding-section {
             margin-top: 10px;
-            padding: 10px 12px;
-            background: #fff8f9;
-            border-radius: 12px;
-            border: 1px solid #ffd8e0;
+            padding: 11px 12px;
+            background: #fff8fa;
+            border-radius: 13px;
+            border: 1px solid rgba(255, 182, 193, 0.45);
         }
 
         .cat-feeding-header {
@@ -2642,10 +2709,10 @@
         /* Nhật ký gặp lại & Hành trình lớn lên */
         .cat-sightings-section {
             margin-top: 10px;
-            padding: 10px 12px;
-            background: #fffaf5;
-            border-radius: 12px;
-            border: 1px solid #fed7aa;
+            padding: 11px 12px;
+            background: #fff8f0;
+            border-radius: 13px;
+            border: 0;
         }
 
         .cat-sightings-header {
@@ -2667,14 +2734,19 @@
         }
 
         .cat-sighting-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
             flex: 1;
-            min-height: 34px;
-            padding: 6px 10px;
-            border-radius: 8px;
+            min-height: 36px;
+            padding: 6px 8px;
+            border-radius: 10px;
             border: 0;
             font: inherit;
             font-size: 11px;
             font-weight: 800;
+            white-space: nowrap;
             cursor: pointer;
             transition: all 0.2s;
             text-align: center;
@@ -4574,7 +4646,7 @@
                 btn_give_pate: "🐟 Give 1 pate",
                 popup_sightings_count: "🐾 Encounters: <b>{count} times</b>",
                 btn_meet_again: "📸 Met again today!",
-                btn_view_timeline: "📅 View Photo Journey",
+                btn_view_timeline: "📅 View Journey",
                 popup_sos_alert: "🚨 THIS CAT NEEDS URGENT HELP",
                 btn_resolve_sos: "✅ Mark safe / Rescued",
                 btn_report_sos: "🚨 Report urgent assistance needed (SOS)",
@@ -5231,9 +5303,42 @@
             content.className = 'cat-popup-list';
             content.setAttribute('role', 'region');
             content.setAttribute('aria-label', currentLang === 'en' ? 'Cat information on map' : 'Thông tin mèo trên bản đồ');
-            groupCats.forEach(cat => {
+            const hasTabs = groupCats.length > 1;
+            const entries = [];
+            let tabsBar = null;
+            if (hasTabs) {
+                tabsBar = document.createElement('div');
+                tabsBar.className = 'cat-popup-tabs';
+                tabsBar.setAttribute('role', 'tablist');
+                content.appendChild(tabsBar);
+            }
+            groupCats.forEach((cat, index) => {
                 const entry = document.createElement('div');
                 entry.className = 'cat-popup-entry';
+                if (hasTabs && index > 0) entry.hidden = true;
+                entries.push(entry);
+                if (tabsBar) {
+                    const tab = document.createElement('button');
+                    tab.type = 'button';
+                    tab.className = 'cat-popup-tab' + (index === 0 ? ' active' : '');
+                    tab.setAttribute('role', 'tab');
+                    tab.setAttribute('aria-selected', String(index === 0));
+                    const catLabel = cat.name || t('unnamed_cat');
+                    tab.textContent = (cat.is_sos ? '🚨 ' : '🐾 ') + catLabel;
+                    tab.addEventListener('click', event => {
+                        event.stopPropagation();
+                        tabsBar.querySelectorAll('.cat-popup-tab').forEach((btn, idx) => {
+                            const active = idx === index;
+                            btn.classList.toggle('active', active);
+                            btn.setAttribute('aria-selected', String(active));
+                        });
+                        entries.forEach((item, idx) => {
+                            item.hidden = idx !== index;
+                        });
+                        content.scrollTop = 0;
+                    });
+                    tabsBar.appendChild(tab);
+                }
                 const header = document.createElement('div');
                 header.className = 'cat-popup-header';
                 const titleRow = document.createElement('div');
@@ -5312,14 +5417,17 @@
 
                 const detail = document.createElement('div');
                 detail.className = 'feeding-detail';
+                const feederDisplayName = (cat.last_fed_by === 'Một Sen tốt bụng' && currentLang === 'en')
+                    ? 'A kind Hooman'
+                    : cat.last_fed_by;
                 if (isFedToday) {
                     detail.textContent = currentLang === 'vi'
-                        ? `Lần gần nhất: ${formatRelativeTime(lastFedTime)} bởi ${cat.last_fed_by || 'Một Sen tốt bụng'}${cat.fed_count ? ` (${cat.fed_count} lần tiếp tế)` : ''}`
-                        : `Most recent: ${formatRelativeTime(lastFedTime)} by ${cat.last_fed_by || 'A kind Hooman'}${cat.fed_count ? ` (${cat.fed_count} feedings)` : ''}`;
+                        ? `Lần gần nhất: ${formatRelativeTime(lastFedTime)} bởi ${feederDisplayName || 'Một Sen tốt bụng'}${cat.fed_count ? ` (${cat.fed_count} lần tiếp tế)` : ''}`
+                        : `Most recent: ${formatRelativeTime(lastFedTime)} by ${feederDisplayName || 'A kind Hooman'}${cat.fed_count ? ` (${cat.fed_count} ${cat.fed_count === 1 ? 'feeding' : 'feedings'})` : ''}`;
                 } else if (lastFedTime && Number.isFinite(lastFedTime.getTime())) {
                     detail.textContent = currentLang === 'vi'
-                        ? `Lần ăn trước: ${formatRelativeTime(lastFedTime)}${cat.last_fed_by ? ` (bởi ${cat.last_fed_by})` : ''}`
-                        : `Previous meal: ${formatRelativeTime(lastFedTime)}${cat.last_fed_by ? ` (by ${cat.last_fed_by})` : ''}`;
+                        ? `Lần ăn trước: ${formatRelativeTime(lastFedTime)}${feederDisplayName ? ` (bởi ${feederDisplayName})` : ''}`
+                        : `Previous meal: ${formatRelativeTime(lastFedTime)}${feederDisplayName ? ` (by ${feederDisplayName})` : ''}`;
                 } else {
                     detail.textContent = currentLang === 'vi' ? 'Bé đang đợi một Sen ghé thăm tiếp tế!' : 'Waiting for a kind Hooman to visit and feed!';
                 }
@@ -5362,7 +5470,9 @@
                 const sightingsTitle = document.createElement('span');
                 sightingsTitle.className = 'cat-sightings-title';
                 const totalSightings = Math.max(1, Number(cat.sightings_count) || 1);
-                sightingsTitle.innerHTML = t('popup_sightings_count', { count: totalSightings });
+                sightingsTitle.innerHTML = currentLang === 'en'
+                    ? `🐾 Encounters: <b>${totalSightings} ${totalSightings === 1 ? 'time' : 'times'}</b>`
+                    : t('popup_sightings_count', { count: totalSightings });
 
                 sightingsHeader.appendChild(sightingsTitle);
                 sightingsSection.appendChild(sightingsHeader);
