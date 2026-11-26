@@ -726,6 +726,18 @@
             transform: translateX(-50%) translateY(50px) !important;
         }
 
+        body.popup-active .top-left-actions,
+        body.popup-active .collaboration-panel,
+        body.popup-active .cat-list-panel,
+        body:has(.leaflet-popup) .top-left-actions,
+        body:has(.leaflet-popup) .collaboration-panel,
+        body:has(.leaflet-popup) .cat-list-panel {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transform: translateY(-14px) !important;
+            transition: opacity 0.18s ease, transform 0.18s ease !important;
+        }
+
         .install-help-dialog {
             width: min(430px, calc(100vw - 32px));
             max-height: calc(100dvh - 40px);
@@ -846,7 +858,7 @@
             display: grid;
             gap: 10px;
             width: min(365px, calc(100vw - 64px));
-            max-height: min(70dvh, 560px);
+            max-height: min(78dvh, 640px);
             overflow-y: auto;
             overscroll-behavior: contain;
             padding: 2px;
@@ -6075,8 +6087,7 @@
                 if (!popupElement) return;
                 const popupBounds = popupElement.getBoundingClientRect();
                 const mapBounds = map.getContainer().getBoundingClientRect();
-                const edgePadding = 10;
-                const topSafePadding = window.innerWidth <= 600 ? 116 : 104;
+                const edgePadding = 12;
                 const horizontalOverflow = popupBounds.right > mapBounds.right - edgePadding
                     ? popupBounds.right - (mapBounds.right - edgePadding)
                     : popupBounds.left < mapBounds.left + edgePadding
@@ -6084,8 +6095,8 @@
                         : 0;
                 const verticalOverflow = popupBounds.bottom > mapBounds.bottom - edgePadding
                     ? popupBounds.bottom - (mapBounds.bottom - edgePadding)
-                    : popupBounds.top < mapBounds.top + topSafePadding
-                        ? popupBounds.top - (mapBounds.top + topSafePadding)
+                    : popupBounds.top < mapBounds.top + edgePadding
+                        ? popupBounds.top - (mapBounds.top + edgePadding)
                         : 0;
                 if (horizontalOverflow || verticalOverflow) {
                     map.panBy([horizontalOverflow, verticalOverflow], { animate: false });
