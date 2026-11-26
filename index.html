@@ -2073,10 +2073,18 @@
         .cat-feeding-header {
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
             gap: 6px;
             font-size: 12px;
             color: #634347;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
+        }
+
+        .cat-feeding-header-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .cat-feeding-info {
@@ -2087,10 +2095,129 @@
         .feeding-status-tag {
             display: inline-block;
             padding: 3px 8px;
-            border-radius: 8px;
+            border-radius: 999px;
             font-weight: 800;
-            font-size: 11px;
-            margin-bottom: 4px;
+            font-size: 10.5px;
+            margin-bottom: 0;
+        }
+
+        /* Mobile Bottom Sheet cho Popup Mèo */
+        .cat-mobile-sheet {
+            position: fixed;
+            inset: 0;
+            z-index: 1300;
+            display: flex;
+            align-items: flex-end;
+            pointer-events: none;
+        }
+
+        .cat-mobile-sheet[hidden] {
+            display: none !important;
+        }
+
+        .cat-mobile-sheet-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(32, 20, 24, 0.34);
+            backdrop-filter: blur(2px);
+            opacity: 0;
+            transition: opacity 0.22s ease;
+            pointer-events: auto;
+        }
+
+        .cat-mobile-sheet.open .cat-mobile-sheet-backdrop {
+            opacity: 1;
+        }
+
+        .cat-mobile-sheet-panel {
+            position: relative;
+            width: 100%;
+            max-height: 76dvh;
+            display: flex;
+            flex-direction: column;
+            background: #fffafb;
+            border-radius: 22px 22px 0 0;
+            box-shadow: 0 -10px 32px rgba(49, 32, 35, 0.22);
+            transform: translateY(100%);
+            transition: transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+            pointer-events: auto;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .cat-mobile-sheet.open .cat-mobile-sheet-panel {
+            transform: translateY(0);
+        }
+
+        .cat-mobile-sheet-handle-bar {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 11px 14px 7px;
+            flex-shrink: 0;
+            touch-action: none;
+            cursor: grab;
+        }
+
+        .cat-mobile-sheet-handle {
+            width: 42px;
+            height: 4px;
+            border-radius: 999px;
+            background: #e2c5cb;
+        }
+
+        .cat-mobile-sheet-close {
+            position: absolute;
+            right: 12px;
+            top: 7px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid #f3dce0;
+            background: #ffffff;
+            color: var(--text-color);
+            font-size: 19px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(49, 32, 35, 0.08);
+        }
+
+        .cat-mobile-sheet-body {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            padding: 2px 12px 16px;
+            flex: 1;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(244, 151, 170, 0.55) transparent;
+        }
+
+        .cat-mobile-sheet-body::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .cat-mobile-sheet-body::-webkit-scrollbar-thumb {
+            background: rgba(244, 151, 170, 0.5);
+            border-radius: 999px;
+        }
+
+        .cat-mobile-sheet-body .cat-popup-list {
+            width: 100% !important;
+            max-height: none !important;
+            overflow: visible !important;
+            padding: 0 !important;
+        }
+
+        .cat-mobile-sheet-body .cat-popup-tabs {
+            padding-right: 0 !important;
+        }
+
+        .cat-mobile-sheet-body .cat-popup-entry:first-child:not(:has(.popup-img)) .cat-popup-header {
+            padding-right: 0 !important;
         }
 
         .feeding-status-tag.fed-today {
@@ -3531,6 +3658,18 @@
         </div>
         <p class="install-help-status" id="installHelpStatus" role="status" aria-live="polite"></p>
     </dialog>
+
+    <!-- Bottom Sheet cho Mobile Popup Mèo -->
+    <div class="cat-mobile-sheet" id="catMobileSheet" hidden aria-hidden="true">
+        <div class="cat-mobile-sheet-backdrop" id="catMobileSheetBackdrop"></div>
+        <div class="cat-mobile-sheet-panel" role="dialog" aria-modal="true" aria-label="Thông tin mèo">
+            <div class="cat-mobile-sheet-handle-bar" id="catMobileSheetHandleBar">
+                <span class="cat-mobile-sheet-handle"></span>
+                <button type="button" class="cat-mobile-sheet-close" id="catMobileSheetClose" aria-label="Đóng">×</button>
+            </div>
+            <div class="cat-mobile-sheet-body" id="catMobileSheetBody"></div>
+        </div>
+    </div>
 
     <!-- Hộp thoại thêm dữ liệu -->
     <div class="modal" id="addCatModal">
@@ -4982,7 +5121,9 @@
             }
 
             // Nếu có popup mèo đang mở trên bản đồ, làm mới nội dung theo ngôn ngữ mới
-            if (activeCatPopup && activePopupCats && activeCatPopup.isOpen && activeCatPopup.isOpen()) {
+            if (isCatMobileSheetOpen() && activePopupCats) {
+                setMobileSheetContent(createCatPopupContent(activePopupCats));
+            } else if (activeCatPopup && activePopupCats && activeCatPopup.isOpen && activeCatPopup.isOpen()) {
                 activeCatPopup.setContent(createCatPopupContent(activePopupCats));
             }
 
@@ -5395,25 +5536,27 @@
                 const feedingSection = document.createElement('div');
                 feedingSection.className = 'cat-feeding-section';
 
+                const lastFedTime = cat.last_fed_at ? new Date(cat.last_fed_at) : null;
+                const isFedToday = Boolean(lastFedTime && Number.isFinite(lastFedTime.getTime()) && isSameDay(lastFedTime, new Date()));
+
                 const feedingHeader = document.createElement('div');
                 feedingHeader.className = 'cat-feeding-header';
+                const feedingTitleWrap = document.createElement('span');
+                feedingTitleWrap.className = 'cat-feeding-header-title';
                 const feedingIcon = document.createElement('span');
-                feedingIcon.textContent = '🥣 ';
+                feedingIcon.textContent = '🥣';
                 const feedingTitle = document.createElement('b');
-                feedingTitle.textContent = t('popup_feeding_title');
-                feedingHeader.append(feedingIcon, feedingTitle);
+                feedingTitle.textContent = t('popup_feeding_title').replace(/:$/, '');
+                feedingTitleWrap.append(feedingIcon, feedingTitle);
+
+                const statusTag = document.createElement('span');
+                statusTag.className = 'feeding-status-tag ' + (isFedToday ? 'fed-today' : 'fed-none');
+                statusTag.textContent = isFedToday ? t('popup_fed_today') : t('popup_fed_none');
+                feedingHeader.append(feedingTitleWrap, statusTag);
                 feedingSection.appendChild(feedingHeader);
 
                 const feedingInfo = document.createElement('div');
                 feedingInfo.className = 'cat-feeding-info';
-
-                const lastFedTime = cat.last_fed_at ? new Date(cat.last_fed_at) : null;
-                const isFedToday = Boolean(lastFedTime && Number.isFinite(lastFedTime.getTime()) && isSameDay(lastFedTime, new Date()));
-
-                const statusTag = document.createElement('div');
-                statusTag.className = 'feeding-status-tag ' + (isFedToday ? 'fed-today' : 'fed-none');
-                statusTag.textContent = isFedToday ? t('popup_fed_today') : t('popup_fed_none');
-                feedingInfo.appendChild(statusTag);
 
                 const detail = document.createElement('div');
                 detail.className = 'feeding-detail';
@@ -6180,7 +6323,96 @@
                 });
         }
 
+        const catMobileSheet = document.getElementById('catMobileSheet');
+        const catMobileSheetBody = document.getElementById('catMobileSheetBody');
+        const catMobileSheetPanel = catMobileSheet?.querySelector('.cat-mobile-sheet-panel');
+        let catMobileSheetCloseTimer = null;
+
+        function isCatMobileSheetOpen() {
+            return Boolean(catMobileSheet && !catMobileSheet.hidden);
+        }
+
+        function setMobileSheetContent(content) {
+            if (!catMobileSheetBody) return;
+            stopObservingCatLocations(catMobileSheetBody.firstElementChild);
+            catMobileSheetBody.innerHTML = '';
+            catMobileSheetBody.appendChild(content);
+            catMobileSheetBody.scrollTop = 0;
+        }
+
+        function closeCatMobileSheet() {
+            if (!catMobileSheet || catMobileSheet.hidden) return;
+            catMobileSheet.classList.remove('open');
+            catMobileSheet.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('popup-active');
+            backupActions.classList.remove('popup-active');
+            stopObservingCatLocations(catMobileSheetBody?.firstElementChild);
+            activePopupCats = null;
+            clearTimeout(catMobileSheetCloseTimer);
+            catMobileSheetCloseTimer = setTimeout(() => {
+                if (!catMobileSheet.classList.contains('open')) {
+                    catMobileSheet.hidden = true;
+                    if (catMobileSheetBody) catMobileSheetBody.innerHTML = '';
+                }
+            }, 260);
+        }
+
+        function openCatMobileSheet(content, latlng, groupCats) {
+            if (!catMobileSheet) return;
+            clearTimeout(catMobileSheetCloseTimer);
+            if (activeCatPopup) {
+                activeCatPopup.remove();
+                activeCatPopup = null;
+            }
+            map.closePopup();
+            activePopupCats = groupCats;
+            setMobileSheetContent(content);
+            if (catMobileSheetPanel) catMobileSheetPanel.style.transform = '';
+            catMobileSheet.hidden = false;
+            catMobileSheet.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('popup-active');
+            backupActions.classList.add('popup-active');
+            requestAnimationFrame(() => catMobileSheet.classList.add('open'));
+            if (latlng) {
+                const targetPoint = map.project(latlng, map.getZoom());
+                targetPoint.y += Math.round(window.innerHeight * 0.25);
+                map.panTo(map.unproject(targetPoint, map.getZoom()), { animate: true });
+            }
+        }
+
+        document.getElementById('catMobileSheetBackdrop')?.addEventListener('click', closeCatMobileSheet);
+        document.getElementById('catMobileSheetClose')?.addEventListener('click', closeCatMobileSheet);
+
+        (() => {
+            const handleBar = document.getElementById('catMobileSheetHandleBar');
+            if (!handleBar || !catMobileSheetPanel) return;
+            let startY = 0;
+            let deltaY = 0;
+            handleBar.addEventListener('touchstart', e => {
+                startY = e.touches[0].clientY;
+                deltaY = 0;
+                catMobileSheetPanel.style.transition = 'none';
+            }, { passive: true });
+            handleBar.addEventListener('touchmove', e => {
+                deltaY = Math.max(0, e.touches[0].clientY - startY);
+                catMobileSheetPanel.style.transform = `translateY(${deltaY}px)`;
+            }, { passive: true });
+            handleBar.addEventListener('touchend', () => {
+                catMobileSheetPanel.style.transition = '';
+                if (deltaY > 80) {
+                    closeCatMobileSheet();
+                } else {
+                    catMobileSheetPanel.style.transform = '';
+                }
+            });
+        })();
+
         function showCatPopup(content, latlng, options, groupCats = null) {
+            if (window.innerWidth <= 600 && catMobileSheet) {
+                openCatMobileSheet(content, latlng, groupCats);
+                return;
+            }
+            closeCatMobileSheet();
             if (activeCatPopup) {
                 activeCatPopup.remove();
                 activeCatPopup = null;
@@ -6539,10 +6771,19 @@
         function refreshOpenCatPopup(catIds) {
             const freshCats = catIds.map(id => cats.find(cat => cat.id === id)).filter(Boolean);
             if (!freshCats.length) {
+                closeCatMobileSheet();
                 map.closePopup();
                 return;
             }
             activePopupCats = freshCats;
+            if (isCatMobileSheetOpen()) {
+                const focused = document.activeElement;
+                if (catMobileSheetBody && focused && catMobileSheetBody.contains(focused) && /^(INPUT|TEXTAREA|SELECT)$/.test(focused.tagName)) {
+                    return;
+                }
+                setMobileSheetContent(createCatPopupContent(freshCats));
+                return;
+            }
             const popupElement = activeCatPopup.getElement();
             const focused = document.activeElement;
             // Người dùng đang gõ trong popup: giữ nguyên để không mất chữ đang nhập.
@@ -6556,10 +6797,15 @@
         }
 
         function renderCatMarkers() {
-            const openPopupCatIds = activeCatPopup && activePopupCats && activeCatPopup.isOpen()
+            const openPopupCatIds = (isCatMobileSheetOpen() && activePopupCats)
                 ? activePopupCats.map(cat => cat.id)
-                : null;
-            if (!openPopupCatIds) map.closePopup();
+                : (activeCatPopup && activePopupCats && activeCatPopup.isOpen()
+                    ? activePopupCats.map(cat => cat.id)
+                    : null);
+            if (!openPopupCatIds) {
+                closeCatMobileSheet();
+                map.closePopup();
+            }
             markerGroups.forEach(group => group.marker.remove());
             markerGroups.clear();
             const results = getFilteredCatResults();
