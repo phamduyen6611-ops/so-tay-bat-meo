@@ -25,6 +25,11 @@
     <!-- Thư viện Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" />
+    <!-- Thư viện Leaflet MarkerCluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+        crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+        crossorigin="anonymous" />
     <!-- Font chữ dễ thương (Nunito) -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
 
@@ -1930,6 +1935,40 @@
 
         .image-viewer-counter[hidden] {
             display: none;
+        }
+
+        /* Marker Cluster dễ thương */
+        .cat-cluster-icon {
+            background: transparent;
+            border: 0;
+        }
+
+        .cat-cluster-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff758c 0%, #ff8da1 100%);
+            color: #ffffff;
+            border: 3px solid #ffffff;
+            box-shadow: 0 4px 14px rgba(255, 117, 140, 0.42);
+            font-family: 'Nunito', sans-serif;
+            font-weight: 900;
+            font-size: 13px;
+            box-sizing: border-box;
+            transition: transform 0.16s ease;
+        }
+
+        .cat-cluster-badge:hover {
+            transform: scale(1.08);
+        }
+
+        .cat-cluster-badge.has-sos {
+            background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.48);
         }
 
         @media (max-width: 600px) {
@@ -4248,6 +4287,8 @@
     <!-- Ghim đúng phiên bản + kiểm tra toàn vẹn (SRI): CDN bị sửa file thì trình duyệt từ chối chạy -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"
+        crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.min.js"
         integrity="sha384-7i/4BYWz4Mn+lJfg2HWfEPfZQ7tmFKF3CTSKlXBpxWjNlLjcg+T6smpHG4gLmU1u" crossorigin="anonymous"></script>
 
@@ -4302,6 +4343,37 @@
         tileLayer.addTo(map);
 
         L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        const catMarkerLayer = typeof L.markerClusterGroup === 'function'
+            ? L.markerClusterGroup({
+                maxClusterRadius: 48,
+                showCoverageOnHover: false,
+                spiderfyOnMaxZoom: true,
+                zoomToBoundsOnClick: true,
+                disableClusteringAtZoom: 17,
+                iconCreateFunction: cluster => {
+                    const childMarkers = cluster.getAllChildMarkers();
+                    let totalCats = 0;
+                    let hasSos = false;
+                    childMarkers.forEach(m => {
+                        const groupCats = m._catGroup?.cats;
+                        if (Array.isArray(groupCats) && groupCats.length) {
+                            totalCats += groupCats.length;
+                            if (groupCats.some(c => c.is_sos)) hasSos = true;
+                        } else {
+                            totalCats += 1;
+                        }
+                    });
+                    const size = totalCats >= 50 ? 50 : totalCats >= 10 ? 44 : 38;
+                    const label = `${hasSos ? '🚨' : '🐾'}${totalCats}`;
+                    return L.divIcon({
+                        html: `<div class="cat-cluster-badge${hasSos ? ' has-sos' : ''}">${label}</div>`,
+                        className: 'cat-cluster-icon',
+                        iconSize: L.point(size, size)
+                    });
+                }
+            }).addTo(map)
+            : null;
         map.on('popupopen', () => {
             document.body.classList.add('popup-active');
             backupActions.classList.add('popup-active');
@@ -7174,14 +7246,23 @@
                 const previewCat = [...group.cats].reverse().find(item => item.image) || cat;
                 group.marker.setIcon(createCatIcon(previewCat));
             } else {
-                const marker = L.marker([cat.lat, cat.lng], { icon: createCatIcon(cat) }).addTo(map);
+                const marker = L.marker([cat.lat, cat.lng], { icon: createCatIcon(cat) });
                 group = { marker, cats: [cat] };
+                marker._catGroup = group;
+                if (catMarkerLayer) catMarkerLayer.addLayer(marker);
+                else marker.addTo(map);
                 markerGroups.set(key, group);
                 marker.on('click', () => {
                     if (!openNearbyCatPopupIfNeeded(group)) openCatGroupPopup(group);
                 });
             }
-            if (openPopup) openCatGroupPopup(group);
+            if (openPopup) {
+                if (catMarkerLayer && typeof catMarkerLayer.zoomToShowLayer === 'function') {
+                    catMarkerLayer.zoomToShowLayer(group.marker, () => openCatGroupPopup(group));
+                } else {
+                    openCatGroupPopup(group);
+                }
+            }
         }
 
         // Làm mới popup mèo đang mở bằng dữ liệu mới nhất thay vì đóng nó.
@@ -7223,7 +7304,8 @@
                 closeCatMobileSheet();
                 map.closePopup();
             }
-            markerGroups.forEach(group => group.marker.remove());
+            if (catMarkerLayer) catMarkerLayer.clearLayers();
+            else markerGroups.forEach(group => group.marker.remove());
             markerGroups.clear();
             const results = getFilteredCatResults();
             results.forEach(({ cat }) => addCatMarker(cat));

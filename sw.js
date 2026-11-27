@@ -1,5 +1,5 @@
 // Service Worker cho Sổ Tay Bắt Mèo 🐾
-const CACHE_NAME = 'so-tay-bat-meo-v21';
+const CACHE_NAME = 'so-tay-bat-meo-v22';
 const CORE_ASSETS = [
   './',
   './index.html',
