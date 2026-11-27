@@ -1,8 +1,13 @@
 // Service Worker cho Sổ Tay Bắt Mèo 🐾
-const CACHE_NAME = 'so-tay-bat-meo-v22';
+const CACHE_NAME = 'so-tay-bat-meo-v23';
 const CORE_ASSETS = [
   './',
   './index.html',
+  './styles.css',
+  './js/core.js',
+  './js/popup.js',
+  './js/storage-auth.js',
+  './js/features.js',
   './install.js',
   './manifest.webmanifest',
   './icons/cat-icon.svg',
