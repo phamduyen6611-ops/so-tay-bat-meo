@@ -8945,7 +8945,7 @@
             fortuneModal.classList.remove('active');
         }
 
-        map.getContainer().addEventListener('click', async event => {
+        async function handleCatPopupActionClick(event) {
             const feedBtn = event.target.closest('button[data-cat-feed]');
             if (feedBtn) {
                 event.preventDefault();
@@ -9096,7 +9096,10 @@
                 console.error('Không thể cập nhật dấu mèo:', error);
                 showAppStatus(t('err_update_data', { message: error.message }));
             }
-        });
+        }
+
+        map.getContainer().addEventListener('click', handleCatPopupActionClick);
+        if (catMobileSheetBody) catMobileSheetBody.addEventListener('click', handleCatPopupActionClick);
 
         openModalButton.onclick = () => {
             if (isCloudConfigured && !currentUser) {
