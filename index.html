@@ -6410,7 +6410,8 @@
         }
 
         async function removeStorageImages(paths) {
-            const validPaths = paths.filter(isStorageImagePath);
+            const flatPaths = (Array.isArray(paths) ? paths : [paths]).flatMap(parseCatImages);
+            const validPaths = [...new Set(flatPaths.filter(isStorageImagePath))];
             if (!validPaths.length || !supabaseClient) return;
             const { error } = await supabaseClient.storage.from('cat-images').remove(validPaths);
             if (error) console.warn('Không thể dọn ảnh trong Storage:', error.message);
@@ -7340,13 +7341,23 @@
                     }
                 }
                 if (catsToUpdate.length) {
+                    const uploadedNewPaths = [];
+                    const obsoleteOldPaths = [];
                     try {
                         await Promise.all(catsToUpdate.map(async cat => {
-                            const patch = catUpdatePatch(previousById.get(cat.id), cat);
+                            const previous = previousById.get(cat.id);
+                            const patch = catUpdatePatch(previous, cat);
                             // Chỉ tải lên ảnh mới chụp/chọn (data URL); ảnh cũ giữ nguyên đường dẫn.
-                            if (patch.image) {
-                                const uploaded = await uploadCatImages(patch.image, cat.id);
-                                patch.image = uploaded.value;
+                            if ('image' in patch) {
+                                if (patch.image) {
+                                    const uploaded = await uploadCatImages(patch.image, cat.id);
+                                    patch.image = uploaded.value;
+                                    uploadedNewPaths.push(...uploaded.uploadedPaths);
+                                }
+                                const nextSet = new Set(parseCatImages(patch.image));
+                                parseCatImages(previous?.image).forEach(oldPath => {
+                                    if (!nextSet.has(oldPath)) obsoleteOldPaths.push(oldPath);
+                                });
                             }
                             persistedImages.set(cat.id, 'image' in patch ? patch.image : cat.image);
                             if (!Object.keys(patch).length) return;
@@ -7360,7 +7371,11 @@
                                 throw new Error(t('err_no_permission_update'));
                             }
                         }));
+                        if (obsoleteOldPaths.length) {
+                            await removeStorageImages(obsoleteOldPaths);
+                        }
                     } catch (error) {
+                        await removeStorageImages(uploadedNewPaths);
                         await refreshCloudCats();
                         throw error;
                     }
