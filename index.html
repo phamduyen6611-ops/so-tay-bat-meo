@@ -4625,7 +4625,7 @@
                 add_modal_title: "Bắt được một bé! 🐾",
                 edit_modal_title: "Chỉnh sửa thông tin mèo 🐾",
                 btn_camera: "📸 Chụp ảnh ngay",
-                btn_gallery: "🖼️ Tải ảnh từ thư viện",
+                btn_gallery: "🖼️ Chọn nhiều ảnh",
                 ph_name: "Tên bé mèo (ví dụ: Mimi)",
                 ph_location_name: "Tên vị trí nếu muốn tự đặt",
                 ph_note: "Mèo tam thể, đang ngủ gật...",
@@ -4958,7 +4958,7 @@
                 add_modal_title: "Spotted a Cat! 🐾",
                 edit_modal_title: "Edit Cat Details 🐾",
                 btn_camera: "📸 Take Photo",
-                btn_gallery: "🖼️ Choose from Gallery",
+                btn_gallery: "🖼️ Choose Photos (Multi)",
                 ph_name: "Cat name (e.g., Mimi, Whiskers)",
                 ph_location_name: "Location name (optional)",
                 ph_note: "Calico cat, taking a nap...",
@@ -7767,6 +7767,8 @@
                 }
             }
             modal.classList.add('active');
+            const mc = modal.querySelector('.modal-content');
+            if (mc) mc.scrollTop = 0;
         }
 
         async function deleteCat(catId) {
@@ -9126,6 +9128,8 @@
             previewContainer.style.display = 'none';
             resetImageEditor();
             modal.classList.add('active');
+            const mc = modal.querySelector('.modal-content');
+            if (mc) mc.scrollTop = 0;
         };
         chooseMapLocationButton.onclick = () => {
             try {
@@ -10286,6 +10290,17 @@
                 thumb.addEventListener('click', () => selectModalPhoto(idx, true));
                 catPhotoStrip.appendChild(thumb);
             });
+            if (modalCatPhotos.length < MAX_CAT_PHOTOS && catPhotoGallery) {
+                const addTile = document.createElement('button');
+                addTile.type = 'button';
+                addTile.className = 'cat-photo-thumb';
+                addTile.style.cssText = 'display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:var(--primary);border-style:dashed;background:#fff8fa;';
+                addTile.textContent = '+';
+                addTile.title = currentLang === 'en' ? 'Add more photos' : 'Thêm ảnh';
+                addTile.setAttribute('aria-label', addTile.title);
+                addTile.addEventListener('click', () => catPhotoGallery.click());
+                catPhotoStrip.appendChild(addTile);
+            }
         }
 
         async function selectModalPhoto(idx, commitCurrent = true) {
